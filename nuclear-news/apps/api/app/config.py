@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/nuclear_news"
+
+    def model_post_init(self, __context):
+        if self.DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in self.DATABASE_URL:
+            object.__setattr__(self, "DATABASE_URL", self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1))
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
