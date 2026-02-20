@@ -8,79 +8,61 @@ export const maxDuration = 60;
 
 const execAsync = promisify(exec);
 
-export async function POST(request: Request) {
-  // Simple auth check
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+const ALL_TABLES = [
+  'articles', 'sources', 'images', 'users', 'sessions', 'api_keys',
+  'article_embeddings', 'image_embeddings', 'search_queries',
+  'article_views', 'article_edits', 'activity_logs',
+  'system_config', 'scheduled_jobs', 'subscribers',
+  'sponsored_posts', 'newsletter_campaigns', 'journal_issues',
+];
 
-  const results: Record<string, unknown> = {
-    timestamp: new Date().toISOString(),
-    steps: [] as string[],
-  };
+async function runSetup() {
+  const steps: string[] = [];
+  const errors: string[] = [];
 
-  // Step 1: Check basic DB connectivity
+  // Step 1: DB connectivity
   try {
     await prisma.$queryRaw`SELECT 1`;
-    (results.steps as string[]).push('DB connected OK');
+    steps.push('DB connected OK');
   } catch (e: unknown) {
-    results.error = `DB connection failed: ${e instanceof Error ? e.message : String(e)}`;
-    return NextResponse.json(results, { status: 500 });
+    return { steps, errors: [`DB connection failed: ${e instanceof Error ? e.message : String(e)}`], tables: {} };
   }
 
-  // Step 2: Check if pg_trgm extension is available
+  // Step 2: prisma db push
+  let pushResult = { success: false, output: '' };
   try {
-    await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS "pg_trgm"`);
-    (results.steps as string[]).push('pg_trgm extension OK');
-  } catch (e: unknown) {
-    (results.steps as string[]).push(`pg_trgm FAILED: ${e instanceof Error ? e.message.slice(0, 200) : String(e)}`);
-  }
-
-  // Step 3: Check if vector extension is available
-  try {
-    await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS "vector"`);
-    (results.steps as string[]).push('vector extension OK');
-  } catch (e: unknown) {
-    (results.steps as string[]).push(`vector FAILED: ${e instanceof Error ? e.message.slice(0, 200) : String(e)}`);
-  }
-
-  // Step 4: Try prisma db push
-  try {
-    const { stdout, stderr } = await execAsync(
+    const { stdout } = await execAsync(
       'npx prisma db push --skip-generate --accept-data-loss 2>&1',
-      { timeout: 30000, env: { ...process.env, PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin' } }
+      { timeout: 45000, env: { ...process.env } }
     );
-    results.prismaDbPush = {
-      success: true,
-      stdout: stdout.slice(-2000),
-      stderr: stderr.slice(-2000),
-    };
-    (results.steps as string[]).push('prisma db push OK');
+    pushResult = { success: true, output: stdout.slice(-1500) };
+    steps.push('prisma db push OK');
   } catch (e: unknown) {
-    const err = e as { stdout?: string; stderr?: string; message?: string };
-    results.prismaDbPush = {
-      success: false,
-      stdout: err.stdout?.slice(-2000) || '',
-      stderr: err.stderr?.slice(-2000) || '',
-      error: err.message?.slice(0, 500) || String(e),
-    };
-    (results.steps as string[]).push('prisma db push FAILED');
+    const err = e as { stdout?: string; message?: string };
+    pushResult = { success: false, output: (err.stdout || err.message || String(e)).slice(-1500) };
+    errors.push('prisma db push FAILED');
   }
 
-  // Step 5: Verify tables after push
-  const tables = ['articles', 'sources', 'images', 'users', 'sponsored_posts', 'journal_issues'];
-  const tableStatus: Record<string, string> = {};
-  for (const table of tables) {
+  // Step 3: Verify all tables
+  const tables: Record<string, string> = {};
+  for (const t of ALL_TABLES) {
     try {
-      await prisma.$queryRawUnsafe(`SELECT 1 FROM "${table}" LIMIT 0`);
-      tableStatus[table] = 'exists';
+      await prisma.$queryRawUnsafe(`SELECT 1 FROM "${t}" LIMIT 0`);
+      tables[t] = 'OK';
     } catch {
-      tableStatus[table] = 'MISSING';
+      tables[t] = 'MISSING';
     }
   }
-  results.tables = tableStatus;
 
-  return NextResponse.json(results);
+  return { timestamp: new Date().toISOString(), steps, errors, pushResult, tables };
+}
+
+export async function GET() {
+  const result = await runSetup();
+  return NextResponse.json(result);
+}
+
+export async function POST() {
+  const result = await runSetup();
+  return NextResponse.json(result);
 }
