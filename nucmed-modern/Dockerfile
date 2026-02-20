@@ -14,6 +14,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # CRITICAL: Generate Prisma Client BEFORE build
+# Provide a dummy DATABASE_URL to satisfy Prisma validation during build
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV DIRECT_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 RUN npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
