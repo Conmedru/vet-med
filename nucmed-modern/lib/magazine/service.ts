@@ -221,31 +221,36 @@ export async function deleteJournalIssue(id: string): Promise<void> {
 }
 
 export async function getLatestJournalIssueForBanner(): Promise<JournalIssueApiItem | null> {
-  const featured = await prisma.journalIssue.findFirst({
-    where: {
-      isPublished: true,
-      isFeatured: true,
-      coverImageUrl: {
-        not: "",
+  try {
+    const featured = await prisma.journalIssue.findFirst({
+      where: {
+        isPublished: true,
+        isFeatured: true,
+        coverImageUrl: {
+          not: "",
+        },
       },
-    },
-    orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
-    select: journalIssueSelect,
-  });
+      orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
+      select: journalIssueSelect,
+    });
 
-  if (featured) return toApiIssue(featured);
+    if (featured) return toApiIssue(featured);
 
-  const latestPublished = await prisma.journalIssue.findFirst({
-    where: {
-      isPublished: true,
-      coverImageUrl: {
-        not: "",
+    const latestPublished = await prisma.journalIssue.findFirst({
+      where: {
+        isPublished: true,
+        coverImageUrl: {
+          not: "",
+        },
       },
-    },
-    orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
-    select: journalIssueSelect,
-  });
+      orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
+      select: journalIssueSelect,
+    });
 
-  if (!latestPublished) return null;
-  return toApiIssue(latestPublished);
+    if (!latestPublished) return null;
+    return toApiIssue(latestPublished);
+  } catch (error) {
+    console.error("[Magazine] Failed to get latest journal issue for banner:", error);
+    return null;
+  }
 }

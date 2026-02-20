@@ -12,14 +12,25 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export default async function Home() {
-  const [articles, featured, stats, trendingTags, sponsoredPosts, latestJournalIssue] = await Promise.all([
-    getPublishedArticles(20),
-    getFeaturedArticles(5),
-    getArticleStats(),
-    getTrendingTags(8),
-    getActiveSponsoredPosts(),
-    getLatestJournalIssueForBanner(),
-  ]);
+  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = [];
+  let featured: Awaited<ReturnType<typeof getFeaturedArticles>> = [];
+  let stats: Awaited<ReturnType<typeof getArticleStats>> = { total: 0, thisWeek: 0, thisMonth: 0, categories: [] };
+  let trendingTags: string[] = [];
+  let sponsoredPosts: Awaited<ReturnType<typeof getActiveSponsoredPosts>> = [];
+  let latestJournalIssue: Awaited<ReturnType<typeof getLatestJournalIssueForBanner>> = null;
+
+  try {
+    [articles, featured, stats, trendingTags, sponsoredPosts, latestJournalIssue] = await Promise.all([
+      getPublishedArticles(20),
+      getFeaturedArticles(5),
+      getArticleStats(),
+      getTrendingTags(8),
+      getActiveSponsoredPosts(),
+      getLatestJournalIssueForBanner(),
+    ]);
+  } catch (error) {
+    console.error("[Home] Critical error loading page data:", error);
+  }
 
   // If no articles, show empty state
   if (articles.length === 0) {
