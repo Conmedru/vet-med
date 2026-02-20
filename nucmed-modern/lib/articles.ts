@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
 import { PAGINATION, CACHE, CONTENT } from "@/lib/config";
 
 /**
@@ -173,8 +172,7 @@ export const getTrendingArticles = async (limit = PAGINATION.TRENDING_ARTICLES) 
   }
 };
 
-export const getArticleStats = unstable_cache(
-  async () => {
+export async function getArticleStats() {
     try {
       const [total, thisWeek, thisMonth, categories] = await Promise.all([
         prisma.article.count({ where: { status: "PUBLISHED" } }),
@@ -210,10 +208,7 @@ export const getArticleStats = unstable_cache(
       console.error("Failed to fetch article stats:", error);
       return { total: 0, thisWeek: 0, thisMonth: 0, categories: [] };
     }
-  },
-  ["article-stats"],
-  { revalidate: CACHE.STATS_REVALIDATE, tags: ["articles"] }
-);
+}
 
 export function estimateReadingTime(content: string | null): string {
   if (!content) return "1 мин";
@@ -227,8 +222,7 @@ export function getArticleUrl(article: DBArticle): string {
   return `/news/${article.slug || article.id}`;
 }
 
-export const getTrendingTags = unstable_cache(
-  async (limit = 10) => {
+export async function getTrendingTags(limit = 10) {
     try {
       const articles = await prisma.article.findMany({
         where: { 
@@ -258,7 +252,4 @@ export const getTrendingTags = unstable_cache(
       console.error("Failed to fetch trending tags:", error);
       return [];
     }
-  },
-  ["trending-tags"],
-  { revalidate: CACHE.STATS_REVALIDATE, tags: ["articles"] }
-);
+}

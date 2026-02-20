@@ -2,7 +2,6 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Pagination } from "@/components/ui/pagination-custom";
-import { unstable_cache } from "next/cache";
 import { NewsList, NewsFilters } from "@/components/articles";
 import type { Metadata } from "next";
 
@@ -162,9 +161,8 @@ async function getPublishedArticles(
   return { articles, total };
 }
 
-// Fetch filter options (cached)
-const getFilterOptions = unstable_cache(
-  async () => {
+// Fetch filter options
+async function getFilterOptions() {
     const [categories, tagsResult] = await Promise.all([
       prisma.article.findMany({
         where: { status: "PUBLISHED" },
@@ -194,10 +192,7 @@ const getFilterOptions = unstable_cache(
       categories: categories.map(c => c.category).filter(Boolean) as string[],
       popularTags
     };
-  },
-  ["news-filter-options-v2"],
-  { revalidate: 3600 }
-);
+}
 
 export default async function NewsPage({
   searchParams,
