@@ -84,23 +84,23 @@
   margin-inline: auto;
   padding-inline: 2rem;
 
-  @media (width >=--theme-breakpoint-sm) {
+  @media (min-width: var(--theme-breakpoint-sm)) {
     max-width: none;
   }
 
-  @media (width >=--theme-breakpoint-md) {
+  @media (min-width: var(--theme-breakpoint-md)) {
     max-width: 61rem;
   }
 
-  @media (width >=--theme-breakpoint-lg) {
+  @media (min-width: var(--theme-breakpoint-lg)) {
     max-width: 65rem;
   }
 
-  @media (width >=--theme-breakpoint-xl) {
+  @media (min-width: var(--theme-breakpoint-xl)) {
     max-width: 73rem;
   }
 
-  @media (width >=--theme-breakpoint-2xl) {
+  @media (min-width: var(--theme-breakpoint-2xl)) {
     max-width: 80rem;
   }
 }

@@ -12,25 +12,29 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export default async function Home() {
-  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = [];
-  let featured: Awaited<ReturnType<typeof getFeaturedArticles>> = [];
-  let stats: Awaited<ReturnType<typeof getArticleStats>> = { total: 0, thisWeek: 0, thisMonth: 0, categories: [] };
-  let trendingTags: string[] = [];
-  let sponsoredPosts: Awaited<ReturnType<typeof getActiveSponsoredPosts>> = [];
-  let latestJournalIssue: Awaited<ReturnType<typeof getLatestJournalIssueForBanner>> = null;
+  const results = await Promise.allSettled([
+    getPublishedArticles(20),
+    getFeaturedArticles(5),
+    getArticleStats(),
+    getTrendingTags(8),
+    getActiveSponsoredPosts(),
+    getLatestJournalIssueForBanner(),
+  ]);
 
-  try {
-    [articles, featured, stats, trendingTags, sponsoredPosts, latestJournalIssue] = await Promise.all([
-      getPublishedArticles(20),
-      getFeaturedArticles(5),
-      getArticleStats(),
-      getTrendingTags(8),
-      getActiveSponsoredPosts(),
-      getLatestJournalIssueForBanner(),
-    ]);
-  } catch (error) {
-    console.error("[Home] Critical error loading page data:", error);
-  }
+  const articles = results[0].status === 'fulfilled' ? results[0].value : [];
+  const featured = results[1].status === 'fulfilled' ? results[1].value : [];
+  const stats = results[2].status === 'fulfilled' ? results[2].value : { total: 0, thisWeek: 0, thisMonth: 0, categories: [] };
+  const trendingTags = results[3].status === 'fulfilled' ? results[3].value : [];
+  const sponsoredPosts = results[4].status === 'fulfilled' ? results[4].value : [];
+  const latestJournalIssue = results[5].status === 'fulfilled' ? results[5].value : null;
+
+  // Log any failures for debugging
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      const names = ['getPublishedArticles', 'getFeaturedArticles', 'getArticleStats', 'getTrendingTags', 'getActiveSponsoredPosts', 'getLatestJournalIssueForBanner'];
+      console.error(`[Home] ${names[i]} FAILED:`, r.reason);
+    }
+  });
 
   // If no articles, show empty state
   if (articles.length === 0) {
