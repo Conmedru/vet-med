@@ -44,7 +44,7 @@ class RawArticle(Base):
     processing_status = Column(String(50), default="pending")
     # pending | processing | processed | failed | duplicate
     embedding = Column(Vector(1536))  # text-embedding-3-small dimension
-    metadata = Column(JSONB, default={})
+    extra_metadata = Column("metadata", JSONB, default={})
     
     source = relationship("Source", back_populates="raw_articles")
     
