@@ -8,7 +8,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
-  extensions = [pg_trgm, vector]
+  extensions = [pg_trgm]
 }
 
 model Source {
@@ -184,7 +184,7 @@ model ApiKey {
 model ArticleEmbedding {
   id          String                 @id @default(cuid())
   articleId   String                 @unique
-  embedding   Unsupported("vector")?
+  embedding   Json?
   model       String
   version     String                 @default("1")
   contentHash String
@@ -212,7 +212,7 @@ model ImageEmbedding {
 model SearchQuery {
   id           String                 @id @default(cuid())
   query        String
-  queryVector  Unsupported("vector")?
+  queryVector  Json?
   resultsCount Int                    @default(0)
   clickedId    String?
   userId       String?
