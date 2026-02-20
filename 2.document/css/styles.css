@@ -1,0 +1,48 @@
+body{padding-top:30px;font-family:'Lora',serif;font-size:18px;}
+h1, .h1, h2, .h2, h3, .h3 {
+	margin-top: 40px;
+	margin-bottom: 15px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+#sidebar li a b{font-family: 'Cabin', sans-serif;}
+.wrap-all{margin:0 auto;max-width:1170px;}
+#masthead{border-bottom:1px solid #eee;margin-bottom:30px;}
+.navbar-default{-moz-border-bottom-colors:none;-moz-border-left-colors:none;-moz-border-right-colors:none;-moz-border-top-colors:none;background:#fff none repeat scroll 0 0;border-color:-moz-use-text-color;border-image:none;border-radius:0;border-style:none none solid;border-width:0 0 1px;margin:0;}
+.navbar-default .navbar-nav > li > a{color:#000;}
+#masthead h1{line-height:1;margin:30px 0;padding:0;}
+#masthead{text-align:center;}
+#leftCol{border-right:1px solid #ddd;}
+#leftCol .nav > li > a{display:block;padding:1px 15px;position:relative;}
+.col-md-9 img.feature{border:none;}
+.col-md-9 img{background:#fff none repeat scroll 0 0;max-width:100%;padding:10px;box-shadow: 0 0 15px rgba(0,0,0,0.1);}
+#sidebar li a{color:#888;}
+#sidebar li.active a{color:#1a1a1a;}
+.collapse .navbar-nav{float:right;margin:0;}
+.add-cart{background-color:#1a1a1a;border-bottom:2px solid #1a1a1a;border-radius:50px;color:#fff;float:right;font-size:12px;font-weight:bold;margin:7px 0 0;padding:8px 26px;}
+.add-cart:hover{background-color:#6f9a37;transition-duration:0.2s;color:#fff;text-decoration:none;}
+.navbar-collapse.collapse{float:left;}
+img.screenshot {margin: 20px 0 50px 0;}
+@media screen and (min-width:768px){
+  #masthead h1{font-size:50px;}
+}
+@media screen and (max-width:480px){
+  #masthead{margin:70px 0 0 0;}
+  .navbar-default{padding-bottom:20px;}
+}
+.navbar-bright{background-color:#111155;color:#fff;}
+.affix-top,
+.affix{position:static;}
+@media (min-width:979px){
+  #sidebar.affix-top{position:static;margin-top:30px;width:228px;}
+  #sidebar.affix{position:fixed;top:55px;width:228px;}
+}
+#sidebar li.active{-moz-border-bottom-colors:none;-moz-border-left-colors:none;-moz-border-right-colors:none;-moz-border-top-colors:none;border-color:#1a1a1a;border-image:none;border-style:solid;border-width:0 0 0 5px;}
+
+/**go to top**/
+.back-to-top{background:#fff none repeat scroll 0 0;border:2px solid;bottom:-2px;color:#333;cursor:pointer;display:none;font-size:12px;height:55px;line-height:20px;padding:10px 0;position:fixed;right:20px;text-align:center;text-transform:uppercase;width:53px;z-index:99;}
+.back-to-top em{display:block;font-size:18px;font-style:normal;font-weight:700;line-height:20px;}

@@ -1,0 +1,77 @@
+# Deep Analysis of `nucmed-modern` Architecture
+
+## 1. System Overview
+The service is a monolithic **Next.js 14+ application** using the App Router, integrating frontend, backend, and background workers.
+- **Framework**: Next.js 16 (React 19)
+- **Database**: PostgreSQL with `pgvector` for semantic search/deduplication.
+- **ORM**: Prisma.
+- **Styling**: Tailwind CSS v4.
+- **AI/ML**: OpenAI/Replicate integration for article processing and summarization.
+- **Scraping**: A custom adapter-based system (`RSS`, `Playwright`) handling raw ingestion.
+
+## 2. Key Refactoring Points
+To adapt this system to a new niche (e.g., "Crypto", "Space", "Sports"), specific layers need modification. The core infrastructure (Auth, Database, Admin Panel, Deployment) remains identical.
+
+### A. Branding Layer (The "Skin")
+- **Colors**: Defined in [app/globals.css](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/globals.css) using HSL variables (`--primary`, `--accent`, etc.).
+- **Typography & Layout**: Standard Tailwind classes in [app/layout.tsx](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/layout.tsx) and components.
+- **Metadata**: Site title and description in [app/layout.tsx](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/layout.tsx).
+
+### B. Logic Layer (The "Brain")
+- **AI Persona**: Hardcoded in [lib/ai/index.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/lib/ai/index.ts). The `SYSTEM_PROMPT` defines the role ("Medical Editor"), audience ("Doctors"), and categories.
+- **Scraping**: The logic in `lib/scraper/` is generic, but the *instances* of sources in the DB are specific.
+
+### C. Data Layer (The "Feeds")
+- **Sources**: Currently seeded via [prisma/seed.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/prisma/seed.ts) with hardcoded nuclear medicine feeds (MedicalXpress, SNMMI, etc.).
+
+---
+
+# Pro Refactoring Prompt
+
+Below is the "Master Prompt" designed to be fed into an AI agent (or followed by a developer) to execute the conversion.
+
+***
+
+**ACT**: You are a Senior Full Stack Architect acting as a "Refactoring Specialist".
+
+**CONTEXT**: We have a fully functional news aggregation platform (`nucmed-modern`) currently built for **Nuclear Medicine**.
+**GOAL**: Re-engineer this codebase to serve a **[NEW TOPIC]** audience (e.g., Cryptocurrency, Startups, Gaming) while preserving the underlying engine.
+
+**INSTRUCTIONS**:
+
+### Phase 1: Visual Identity & Branding
+**Target Files**: [app/globals.css](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/globals.css), [app/layout.tsx](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/layout.tsx), `components/*`
+1.  **Theme overhaul**:
+    *   Open [app/globals.css](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/globals.css).
+    *   Replace the medical teal (`--primary`) with a color code suitable for **[NEW TOPIC]**.
+    *   Update the `--accent` color to match.
+2.  **Metadata Update**:
+    *   Open [app/layout.tsx](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/layout.tsx).
+    *   Update `export const metadata` with the new Site Title and Description.
+3.  **Terminology Scan**:
+    *   Search the entire codebase for user-facing strings: "Nuclear", "Medicine", "Diagnosis", "Therapy".
+    *   Replace them with domain-specific terms for **[NEW TOPIC]** (e.g., "Block", "Chain", "Transaction" or "Launch", "Orbit", "Rocket").
+
+### Phase 2: AI Brain Transplant
+**Target File**: [lib/ai/index.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/lib/ai/index.ts)
+1.  **System Prompt Re-write**:
+    *   Locate the `SYSTEM_PROMPT` constant.
+    *   Change the Persona from "Medical Editor" to "**[NEW TOPIC] Expert**".
+    *   **Categories**: Replace the 6 medical categories (Theranostics, Imaging...) with 5-6 categories relevant to the new niche.
+    *   **Significance Scoring**: Redefine the 1-10 numbering scale logic to reflect what is considered "important" news in this new sector.
+
+### Phase 3: Source Configuration
+**Target File**: [prisma/seed.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/prisma/seed.ts)
+1.  **Decommission Old Sources**:
+    *   Comment out or remove the existing blocks for `MedicalXpress`, `JNM`, `SNMMI`.
+2.  **Commission New Sources**:
+    *   Add 3-5 new `prisma.source.upsert` blocks for top **[NEW TOPIC]** news sites.
+    *   Use `adapterType: 'rss'` for RSS feeds (preferred).
+    *   Use `adapterType: 'playwright'` for complex JS-sites (requires defining CSS selectors).
+
+### Phase 4: Data Reset
+1.  Propose the command `npx prisma db push --force-reset` to wipe the old medical news.
+2.  Propose the command `npx prisma db seed` to initialize the new sources.
+
+**EXECUTION**:
+Please start by asking me: **"What is the [NEW TOPIC] you wish to build?"** and I will provide the specific domain so we can begin the transformation.

@@ -1,0 +1,167 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "Н Неврология Сегодня Панель управления" [ref=e5] [cursor=pointer]:
+        - /url: /admin
+        - generic [ref=e7]: Н
+        - generic [ref=e8]:
+          - generic [ref=e9]: Неврология Сегодня
+          - generic [ref=e10]: Панель управления
+      - generic [ref=e12]:
+        - img [ref=e14]
+        - generic [ref=e17]:
+          - generic [ref=e18]: Super Admin
+          - generic [ref=e19]: superadmin@neurology.today
+      - navigation [ref=e20]:
+        - link "Обзор" [ref=e21] [cursor=pointer]:
+          - /url: /admin
+          - img [ref=e22]
+          - generic [ref=e27]: Обзор
+        - link "Очередь 99+" [ref=e28] [cursor=pointer]:
+          - /url: /admin/queue
+          - img [ref=e29]
+          - generic [ref=e32]: Очередь
+          - generic [ref=e33]: 99+
+        - link "Новая статья" [ref=e34] [cursor=pointer]:
+          - /url: /admin/articles/new
+          - img [ref=e35]
+          - generic [ref=e38]: Новая статья
+        - link "Источники" [ref=e39] [cursor=pointer]:
+          - /url: /admin/sources
+          - img [ref=e40]
+          - generic [ref=e44]: Источники
+        - link "Изображения" [ref=e45] [cursor=pointer]:
+          - /url: /admin/images
+          - img [ref=e46]
+          - generic [ref=e50]: Изображения
+        - link "Рассылка" [ref=e51] [cursor=pointer]:
+          - /url: /admin/newsletter
+          - img [ref=e52]
+          - generic [ref=e55]: Рассылка
+        - link "Календарь" [ref=e56] [cursor=pointer]:
+          - /url: /admin/calendar
+          - img [ref=e57]
+          - generic [ref=e59]: Календарь
+        - link "Настройки" [ref=e60] [cursor=pointer]:
+          - /url: /admin/settings
+          - img [ref=e61]
+          - generic [ref=e64]: Настройки
+      - generic [ref=e65]:
+        - link "На сайт" [ref=e66] [cursor=pointer]:
+          - /url: /
+          - img [ref=e67]
+          - text: На сайт
+        - button "Выйти" [ref=e70]:
+          - img [ref=e71]
+          - text: Выйти
+    - main [ref=e74]:
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - link [ref=e77] [cursor=pointer]:
+            - /url: /admin/queue
+            - button [ref=e78]:
+              - img [ref=e79]
+          - generic [ref=e81]:
+            - heading "Рекомендации EAN 2024 по диагностическому подходу к олиго-/асимптоматической гиперCKемии" [level=1] [ref=e82]
+            - generic [ref=e83]:
+              - generic [ref=e84]: Опубликована
+              - generic [ref=e85]: Euro J of Neurology (Wiley)
+          - button "Превью" [ref=e86]:
+            - img [ref=e87]
+            - text: Превью
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - heading "Оригинал (EN)" [level=3] [ref=e94]
+                - link [ref=e95] [cursor=pointer]:
+                  - /url: https://onlinelibrary.wiley.com/doi/10.1111/ene.70493?af=R
+                  - img [ref=e96]
+              - generic [ref=e100]:
+                - paragraph [ref=e101]: EAN 2024 Guideline on the Diagnostic Approach to Oligo/Asymptomatic HyperCKemia
+                - paragraph [ref=e102]: European Journal of Neurology, Volume 33, Issue 2, February 2026....
+            - generic [ref=e103]:
+              - heading "Контент (RU)" [level=3] [ref=e105]
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - generic [ref=e108]: Заголовок
+                  - textbox "Заголовок статьи на русском" [ref=e109]: Рекомендации EAN 2024 по диагностическому подходу к олиго-/асимптоматической гиперCKемии
+                - generic [ref=e110]:
+                  - generic [ref=e111]: Лид (краткое описание)
+                  - textbox "2-3 предложения о сути статьи" [ref=e112]: Европейская академия неврологии (EAN) опубликовала новые рекомендации по диагностике олиго-/асимптоматической гиперCKемии. Новый гайдлайн поможет врачам-неврологам улучшить диагностику и лечение пациентов с этим заболеванием.
+                - generic [ref=e113]:
+                  - generic [ref=e114]: Текст статьи (Markdown)
+                  - textbox "Полный текст статьи в формате Markdown" [ref=e115]: "## Контекст Олиго-/асимптоматическая гиперCKемия - это состояние, при котором уровень креатинкиназы (CK) в крови превышает нормальный уровень, но не сопровождается выраженными симптомами. Диагностика этого состояния может быть сложной, и врачи-неврологи часто сталкиваются с трудностями в интерпретации результатов лабораторных исследований. ## Суть Европейская академия неврологии (EAN) опубликовала новые рекомендации по диагностическому подходу к олиго-/асимптоматической гиперCKемии. Новый гайдлайн основан на анализе данных из numerous studies и предназначен для врачей-неврологов, занимающихся диагностикой и лечением пациентов с этим заболеванием. ## Данные Рекомендации EAN 2024 включают в себя алгоритм диагностики, который учитывает клинические и лабораторные данные, а также результаты инструментальных исследований. Новый гайдлайн подчеркивает важность дифференциальной диагностики олиго-/асимптоматической гиперCKемии с другими заболеваниями, которые могут иметь схожие симптомы. ## Значение Новый гайдлайн EAN 2024 по диагностическому подходу к олиго-/асимптоматической гиперCKемии поможет врачам-неврологам улучшить диагностику и лечение пациентов с этим заболеванием. Это особенно важно, учитывая, что олиго-/асимптоматическая гиперCKемия может быть симптомом более серьезных заболеваний, таких как миопатии и нейромускульные заболевания."
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - heading "Действия" [level=3] [ref=e119]
+              - generic [ref=e120]:
+                - button "Сохранить" [ref=e121]:
+                  - img [ref=e122]
+                  - text: Сохранить
+                - button "Удалить" [ref=e126]:
+                  - img [ref=e127]
+                  - text: Удалить
+            - generic [ref=e130]:
+              - heading "Метаданные" [level=3] [ref=e132]
+              - generic [ref=e133]:
+                - generic [ref=e134]:
+                  - generic [ref=e135]: Категория
+                  - combobox [ref=e136]:
+                    - option "Выберите категорию"
+                    - option "Инсульт" [selected]
+                    - option "Эпилепсия"
+                    - option "Нейродегенеративные"
+                    - option "Рассеянный склероз"
+                    - option "Головная боль"
+                    - option "Общая неврология"
+                - generic [ref=e137]:
+                  - generic [ref=e138]: Теги
+                  - generic [ref=e139]:
+                    - textbox "Добавить тег" [ref=e140]
+                    - button "+" [ref=e141]
+                  - generic [ref=e142]:
+                    - generic [ref=e143] [cursor=pointer]: гиперCKемия ×
+                    - generic [ref=e144] [cursor=pointer]: диагностика ×
+                    - generic [ref=e145] [cursor=pointer]: EAN ×
+                - generic [ref=e146]:
+                  - generic [ref=e147]:
+                    - img [ref=e148]
+                    - text: Значимость
+                  - generic [ref=e151]:
+                    - generic [ref=e152]: "8"
+                    - generic [ref=e153]: /10
+                  - paragraph [ref=e156]: Высокая значимость
+                - generic [ref=e157]:
+                  - generic [ref=e158]: AI модель
+                  - paragraph [ref=e159]: meta/meta-llama-3-70b-instruct
+            - generic [ref=e160]:
+              - generic [ref=e161]:
+                - generic [ref=e162]:
+                  - img [ref=e163]
+                  - heading "Обложка" [level=3] [ref=e167]
+                - generic [ref=e168]:
+                  - button "Загрузить" [ref=e169]:
+                    - img [ref=e170]
+                    - text: Загрузить
+                  - button "AI" [ref=e173]:
+                    - img [ref=e174]
+                    - text: AI
+              - generic [ref=e178]:
+                - img "Обложка статьи" [ref=e180]
+                - paragraph [ref=e181]: data:image/webp;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...
+            - generic [ref=e182]:
+              - generic [ref=e183]:
+                - img [ref=e184]
+                - heading "Изображения" [level=3] [ref=e188]
+              - generic [ref=e191]:
+                - img "AI-сгенерированная обложка" [ref=e192]
+                - generic [ref=e193]: Обложка
+    - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e199] [cursor=pointer]:
+    - img [ref=e200]
+  - alert [ref=e203]
+```

@@ -1,0 +1,400 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pg_trgm, vector]
+}
+
+model Source {
+  id                    String    @id @default(cuid())
+  name                  String
+  slug                  String    @unique
+  url                   String
+  adapterType           String
+  adapterConfig         Json      @default("{}")
+  isActive              Boolean   @default(true)
+  scrapeIntervalMinutes Int       @default(1440)
+  lastScrapedAt         DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  articles              Article[]
+
+  @@map("sources")
+}
+
+model JournalIssue {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  issueNumber     String?
+  publicationDate DateTime
+  description     String?
+  coverImageUrl   String
+  coverAlt        String?
+  landingUrl      String?
+  pdfUrl          String?
+  isPublished     Boolean  @default(false)
+  isFeatured      Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isPublished, publicationDate])
+  @@index([isFeatured, publicationDate])
+  @@map("journal_issues")
+}
+
+model Article {
+  id                  String            @id @default(cuid())
+  slug                String?           @unique
+  sourceId            String
+  externalId          String
+  externalUrl         String
+  titleOriginal       String
+  contentOriginal     String
+  excerptOriginal     String?
+  title               String?
+  content             String?
+  excerpt             String?
+  category            String?
+  tags                String[]          @default([])
+  significanceScore   Int?
+  language            String            @default("en")
+  authors             String[]          @default([])
+  coverImageUrl       String?
+  viewCount           Int               @default(0)
+  status              ArticleStatus     @default(INGESTED)
+  scheduledAt         DateTime?
+  publishedAt         DateTime?
+  aiModel             String?
+  aiPromptVersion     String?
+  processingCostUsd   Float?
+  processingError     String?
+  originalPublishedAt DateTime?
+  viewedAt            DateTime?
+  scrapedAt           DateTime          @default(now())
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  contentHash         String?
+  embedding           ArticleEmbedding?
+  source              Source            @relation(fields: [sourceId], references: [id])
+  images              Image[]
+
+  @@unique([sourceId, externalId])
+  @@index([sourceId])
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([scheduledAt])
+  @@index([contentHash])
+  @@index([createdAt])
+  @@map("articles")
+}
+
+model Image {
+  id             String   @id @default(cuid())
+  articleId      String
+  originalUrl    String
+  storedUrl      String?
+  thumbnailSmUrl String?
+  thumbnailMdUrl String?
+  thumbnailLgUrl String?
+  caption        String?
+  isCover        Boolean  @default(false)
+  width          Int?
+  height         Int?
+  createdAt      DateTime @default(now())
+  article        Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("images")
+}
+
+model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  passwordHash     String
+  name             String?
+  avatar           String?
+  bio              String?
+  role             UserRole      @default(EDITOR)
+  status           UserStatus    @default(PENDING_VERIFICATION)
+  permissions      String[]      @default([])
+  emailVerified    Boolean       @default(false)
+  twoFactorEnabled Boolean       @default(false)
+  twoFactorSecret  String?
+  lastLoginAt      DateTime?
+  lastActiveAt     DateTime?
+  loginCount       Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  activityLogs     ActivityLog[]
+  apiKeys          ApiKey[]
+  articleEdits     ArticleEdit[]
+  sessions         Session[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  refreshToken String?  @unique
+  userAgent    String?
+  ipAddress    String?
+  deviceType   String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String
+  permissions String[]  @default([])
+  rateLimit   Int       @default(1000)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model ArticleEmbedding {
+  id          String                 @id @default(cuid())
+  articleId   String                 @unique
+  embedding   Unsupported("vector")?
+  model       String
+  version     String                 @default("1")
+  contentHash String
+  tokens      Int?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  article     Article                @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@map("article_embeddings")
+}
+
+model ImageEmbedding {
+  id        String                 @id @default(cuid())
+  imageId   String                 @unique
+  embedding Unsupported("vector")?
+  model     String
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@index([imageId])
+  @@map("image_embeddings")
+}
+
+model SearchQuery {
+  id           String                 @id @default(cuid())
+  query        String
+  queryVector  Unsupported("vector")?
+  resultsCount Int                    @default(0)
+  clickedId    String?
+  userId       String?
+  sessionId    String?
+  ipAddress    String?
+  latencyMs    Int?
+  createdAt    DateTime               @default(now())
+
+  @@index([query])
+  @@index([createdAt])
+  @@map("search_queries")
+}
+
+model ArticleView {
+  id          String   @id @default(cuid())
+  articleId   String
+  userId      String?
+  sessionId   String?
+  ipAddress   String?
+  userAgent   String?
+  readTime    Int?
+  scrollDepth Int?
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  createdAt   DateTime @default(now())
+
+  @@index([articleId])
+  @@index([createdAt])
+  @@index([userId])
+  @@map("article_views")
+}
+
+model ArticleEdit {
+  id        String   @id @default(cuid())
+  articleId String
+  userId    String
+  fieldName String
+  oldValue  String?
+  newValue  String?
+  editType  String
+  comment   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("article_edits")
+}
+
+model ActivityLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  actorType    String   @default("user")
+  action       String
+  entityType   String
+  entityId     String?
+  metadata     Json     @default("{}")
+  ipAddress    String?
+  userAgent    String?
+  success      Boolean  @default(true)
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model ScheduledJob {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  cronExpr    String
+  handler     String
+  config      Json      @default("{}")
+  isActive    Boolean   @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  lastStatus  String?
+  lastError   String?
+  runCount    Int       @default(0)
+  failCount   Int       @default(0)
+  avgDuration Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("scheduled_jobs")
+}
+
+enum ArticleStatus {
+  INGESTED
+  PROCESSING
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  FAILED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  MODERATOR
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model Subscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  categories       String[]  @default([])
+  digestEnabled    Boolean   @default(true)
+  status           String    @default("active") // active, unsubscribed, bounced
+  unsubscribeToken String    @unique @default(cuid())
+  confirmedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("subscribers")
+}
+
+model SponsoredPost {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  coverImageUrl   String?
+  targetUrl       String
+  advertiserName  String?
+  advertiserLogo  String?
+  category        String?
+  priority        Int       @default(0)
+  isActive        Boolean   @default(true)
+  startDate       DateTime  @default(now())
+  endDate         DateTime?
+  impressions     Int       @default(0)
+  clicks          Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([category])
+  @@index([priority])
+  @@map("sponsored_posts")
+}
+
+model NewsletterCampaign {
+  id              String   @id @default(cuid())
+  externalId      String?  // Unisender Campaign ID
+  subject         String
+  type            String   // 'DIGEST', 'NOTIFICATION'
+  status          String   // 'DRAFT', 'SENT', 'SCHEDULED', 'FAILED'
+  recipientCount  Int      @default(0)
+  sentAt          DateTime?
+  stats           Json?    // Open rate, clicks, etc.
+  content         String?  // HTML content
+  metadata        Json     @default("{}") // Date range for digests, article ID for notifications
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("newsletter_campaigns")
+}

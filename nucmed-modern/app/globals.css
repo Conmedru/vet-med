@@ -1,0 +1,160 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0
+    }
+
+    to {
+      height: var(--radix-accordion-content-height)
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height)
+    }
+
+    to {
+      height: 0
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @media (width >=--theme-breakpoint-sm) {
+    max-width: none;
+  }
+
+  @media (width >=--theme-breakpoint-md) {
+    max-width: 61rem;
+  }
+
+  @media (width >=--theme-breakpoint-lg) {
+    max-width: 65rem;
+  }
+
+  @media (width >=--theme-breakpoint-xl) {
+    max-width: 73rem;
+  }
+
+  @media (width >=--theme-breakpoint-2xl) {
+    max-width: 80rem;
+  }
+}
+
+:root {
+  /* Clean veterinary healthcare background */
+  --background: hsl(187 71% 97%);
+  --foreground: hsl(196 69% 16%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(196 69% 16%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(196 69% 16%);
+
+  /* Veterinary Teal — #0891B2 */
+  --primary: hsl(189 93% 37%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(187 71% 93%);
+  --secondary-foreground: hsl(196 69% 16%);
+
+  --muted: hsl(187 30% 95%);
+  --muted-foreground: hsl(200 15% 42%);
+
+  /* Health green accent — #059669 */
+  --accent: hsl(160 96% 30%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(190 20% 88%);
+  --input: hsl(190 20% 88%);
+  --ring: hsl(189 93% 37%);
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Search highlight styling */
+  mark {
+    background-color: hsl(48 96% 76%);
+    color: inherit;
+    padding: 0.1em 0.2em;
+    border-radius: 0.15em;
+    font-weight: 600;
+  }
+}
