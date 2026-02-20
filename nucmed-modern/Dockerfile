@@ -40,6 +40,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+# Install Prisma CLI at project version for running migrations
+RUN npm install --no-save prisma@5.22.0 @prisma/client@5.22.0
+
 USER nextjs
 
 EXPOSE 3000
