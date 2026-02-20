@@ -200,7 +200,7 @@ model ArticleEmbedding {
 model ImageEmbedding {
   id        String                 @id @default(cuid())
   imageId   String                 @unique
-  embedding Unsupported("vector")?
+  embedding Json?
   model     String
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
