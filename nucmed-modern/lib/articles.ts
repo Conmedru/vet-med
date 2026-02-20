@@ -10,7 +10,6 @@ export interface DBArticle {
   title: string | null;
   titleOriginal: string;
   excerpt: string | null;
-  content: string | null;
   category: string | null;
   tags: string[];
   coverImageUrl: string | null;
@@ -30,7 +29,6 @@ const articleSelect = {
   title: true,
   titleOriginal: true,
   excerpt: true,
-  content: true,
   category: true,
   tags: true,
   coverImageUrl: true,
@@ -56,7 +54,6 @@ export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_AR
         a."title",
         a."titleOriginal",
         a."excerpt",
-        a."content",
         a."category",
         a."tags",
         a."coverImageUrl",
@@ -87,7 +84,6 @@ export const getArticlesByCategory = async (category: string, limit = 50) => {
         a."title",
         a."titleOriginal",
         a."excerpt",
-        a."content",
         a."category",
         a."tags",
         a."coverImageUrl",
@@ -119,7 +115,6 @@ export const getFeaturedArticles = async (limit = PAGINATION.FEATURED_ARTICLES) 
         a."title",
         a."titleOriginal",
         a."excerpt",
-        a."content",
         a."category",
         a."tags",
         a."coverImageUrl",
@@ -150,7 +145,6 @@ export const getTrendingArticles = async (limit = PAGINATION.TRENDING_ARTICLES) 
         a."title",
         a."titleOriginal",
         a."excerpt",
-        a."content",
         a."category",
         a."tags",
         a."coverImageUrl",
