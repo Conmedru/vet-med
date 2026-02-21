@@ -6,7 +6,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export default async function JournalPage() {
-  const issues = await listPublishedJournalIssues();
+  let issues: Awaited<ReturnType<typeof listPublishedJournalIssues>> = [];
+  try {
+    issues = await listPublishedJournalIssues();
+  } catch (error) {
+    console.error("[JournalPage] Failed to fetch issues:", error);
+  }
 
   return (
     <div className="container py-8 md:py-12">

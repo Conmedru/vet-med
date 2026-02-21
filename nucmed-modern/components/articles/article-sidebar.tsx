@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { formatDateUTC } from "@/lib/utils/date";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowRight } from "lucide-react";
@@ -59,7 +58,7 @@ export function DBArticleSidebar({ articles, className, currentArticleId }: DBAr
                     </span>
                     <span className="text-muted-foreground/50 shrink-0">·</span>
                     <span className="text-muted-foreground/70 shrink-0 whitespace-nowrap">
-                      {format(new Date(date), "d MMM", { locale: ru }).toUpperCase()}
+                      {formatDateUTC(date, "d MMM").toUpperCase()}
                     </span>
                   </div>
                   

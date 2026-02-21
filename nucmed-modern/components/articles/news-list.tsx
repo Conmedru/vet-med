@@ -5,8 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ToggleLeft, ToggleRight, ArrowRight, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { formatDateUTC } from "@/lib/utils/date";
 import type { DBArticle } from "@/lib/articles";
 
 interface NewsListProps {
@@ -104,7 +103,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
               </>
             )}
             <span>
-              {format(new Date(date), "d MMM yyyy", { locale: ru })}
+              {formatDateUTC(date, "d MMM yyyy")}
             </span>
           </div>
         </div>
@@ -143,7 +142,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
               {article.source?.name}
             </span>
             <span className="text-muted-foreground">
-              {format(new Date(date), "d MMMM yyyy", { locale: ru })}
+              {formatDateUTC(date, "d MMMM yyyy")}
             </span>
           </div>
 

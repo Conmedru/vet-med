@@ -5,8 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ToggleLeft, ToggleRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { formatDateUTC } from "@/lib/utils/date";
 import type { DBArticle } from "@/lib/articles";
 import { SponsoredPostCard } from "./sponsored-post-card";
 import type { SponsoredPostData } from "./sponsored-post-card";
@@ -177,7 +176,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
               </>
             )}
             <span>
-              {format(new Date(date), "d MMM yyyy", { locale: ru })}
+              {formatDateUTC(date, "d MMM yyyy")}
             </span>
           </div>
         </div>
@@ -228,7 +227,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
             )}
             {article.source && <span className="text-muted-foreground/50">–</span>}
             <span>
-              {format(new Date(date), "d MMMM yyyy, HH:mm", { locale: ru })}
+              {formatDateUTC(date, "d MMMM yyyy")}
             </span>
           </div>
         </div>

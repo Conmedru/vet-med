@@ -3,8 +3,7 @@ import Image from "next/image";
 import { Calendar, Clock, User } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ru } from "date-fns/locale";
+import { formatDateUTC } from "@/lib/utils/date";
 import type { DBArticle } from "@/lib/articles";
 
 interface DBArticleCardProps {
@@ -24,7 +23,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
   const title = article.title || article.titleOriginal;
   // Use original source date if available, otherwise our publication date
   const date = article.originalPublishedAt || article.publishedAt || article.createdAt;
-  const readTime = estimateReadingTime(article.content);
+  const readTime = "1 мин";
   // Use slug if available, fallback to id for backward compatibility
   const articleUrl = `/news/${article.slug || article.id}`;
 
@@ -52,7 +51,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             <span>•</span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              {format(new Date(date), "d MMM yyyy", { locale: ru })}
+              {formatDateUTC(date, "d MMM yyyy")}
             </span>
           </div>
           <Link href={articleUrl} className="group">
@@ -109,7 +108,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             </h4>
           </Link>
           <span className="text-xs text-muted-foreground mt-auto flex items-center gap-1">
-            {format(new Date(date), "d MMM", { locale: ru })} • {readTime}
+            {formatDateUTC(date, "d MMM")} • {readTime}
           </span>
         </div>
       </div>
@@ -144,7 +143,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
         <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {format(new Date(date), "d MMMM yyyy", { locale: ru })}
+            {formatDateUTC(date, "d MMMM yyyy")}
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
