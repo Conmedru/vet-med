@@ -12,16 +12,15 @@
 | `DIRECT_URL` | `postgresql://gen_user:v*e)1.kVIoz9np@02adb95ad871d548d0d754d4.twc1.net:5432/default_db?sslmode=require` |
 
 ## 2. S3 Хранилище (Обложки)
-Используем указанный вами бакет.
-*Внимание: Вам нужно найти `Access Key` и `Secret Key` в панели Timeweb -> Облачное хранилище -> Доступы.*
 
 | Ключ | Значение |
 | :--- | :--- |
 | `S3_ENDPOINT` | `https://s3.twcstorage.ru` |
 | `S3_BUCKET` | `1873f82d-617b-4505-a1ec-3fe47ebe0e64` |
 | `S3_REGION` | `ru-1` |
-| `S3_ACCESS_KEY` | *(Вставьте ваш Access Key)* |
-| `S3_SECRET_KEY` | *(Вставьте ваш Secret Key)* |
+| `S3_ACCESS_KEY` | `CD6XLQJ96B3QNQQPYJC6` |
+| `S3_SECRET_KEY` | `JSw4o9HtBwsLBiSvIMvmNm3I4jrRmjf4BfZqmN2s` |
+| `S3_PREFIX` | `vetmed` |
 
 ## 3. Настройки Приложения
 

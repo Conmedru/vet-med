@@ -11,7 +11,7 @@ const s3Client = new S3Client({
 });
 
 const BUCKET = process.env.S3_BUCKET || '1873f82d-617b-4505-a1ec-3fe47ebe0e64';
-const PREFIX = process.env.S3_PREFIX || 'neurology';
+const PREFIX = process.env.S3_PREFIX || 'vetmed';
 
 export function isS3Configured(): boolean {
   return !!(process.env.S3_ACCESS_KEY && process.env.S3_SECRET_KEY && process.env.S3_BUCKET);
