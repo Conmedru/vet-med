@@ -12,8 +12,6 @@ import { ru } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
 import type { Metadata } from "next";
 import type { Image as PrismaImage } from "@prisma/client";
-import { findSimilarImages } from "@/lib/ai/clip-embeddings";
-import { findSimilarArticles } from "@/lib/ai/embeddings";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -49,28 +47,32 @@ async function getArticle(slugOrId: string) {
   return article;
 }
 
-async function getRelatedArticles(articleId: string) {
+async function getRelatedArticles(articleId: string, category: string | null) {
   try {
-    // Use vector similarity to find related articles
-    const similar = await findSimilarArticles(articleId, 5);
-    return similar.map(s => ({
-      id: s.id,
-      title: s.title,
-      excerpt: s.excerpt,
-      similarity: s.similarity,
+    const related = await prisma.article.findMany({
+      where: {
+        id: { not: articleId },
+        status: "PUBLISHED",
+        ...(category ? { category } : {}),
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        titleOriginal: true,
+        excerpt: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 5,
+    });
+    return related.map(a => ({
+      id: a.id,
+      slug: a.slug,
+      title: a.title || a.titleOriginal,
+      excerpt: a.excerpt,
     }));
   } catch (error) {
-    console.error("Failed to fetch similar articles:", error);
-    return [];
-  }
-}
-
-async function getSimilarImagesForArticle(imageId: string | undefined) {
-  if (!imageId) return [];
-  try {
-    return await findSimilarImages(imageId, 4, 0.6);
-  } catch (error) {
-    console.error("Failed to fetch similar images:", error);
+    console.error("Failed to fetch related articles:", error);
     return [];
   }
 }
@@ -250,7 +252,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
 
   const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
 
-  const relatedArticles = await getRelatedArticles(article.id);
+  const relatedArticles = await getRelatedArticles(article.id, article.category);
   const readingTime = estimateReadingTime(article.content);
   const articleJsonLd = generateArticleJsonLd(article);
   const breadcrumbJsonLd = generateBreadcrumbJsonLd(article);
@@ -453,7 +455,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
               {relatedArticles.map((related) => (
                 <Link
                   key={related.id}
-                  href={`/news/${related.id}`}
+                  href={`/news/${related.slug || related.id}`}
                   className="group block"
                 >
                   <h3 className="font-medium group-hover:text-primary transition-colors">

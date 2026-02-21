@@ -59,10 +59,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const displayTitle = slug === "all" ? "Все материалы" : categoryName
 
-  const allArticles = await getPublishedArticles(50)
-  const filteredArticles = slug === "all" 
-    ? allArticles 
-    : await getArticlesByCategory(categoryName || slug, 50)
+  const [sidebarArticles, filteredArticles] = await Promise.all([
+    getPublishedArticles(15),
+    slug === "all"
+      ? getPublishedArticles(50)
+      : getArticlesByCategory(categoryName || slug, 50),
+  ])
+  const allArticles = sidebarArticles
 
   return (
     <div className="container py-8 md:py-12 min-h-screen">

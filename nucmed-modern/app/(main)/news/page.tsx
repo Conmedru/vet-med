@@ -161,36 +161,25 @@ async function getPublishedArticles(
   return { articles, total };
 }
 
-// Fetch filter options
+// Fetch filter options using efficient SQL aggregation
 async function getFilterOptions() {
-    const [categories, tagsResult] = await Promise.all([
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        select: { category: true },
-        distinct: ["category"],
-      }),
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        select: { tags: true },
-      })
+    const [categories, popularTags] = await Promise.all([
+      prisma.$queryRaw<{ category: string }[]>`
+        SELECT DISTINCT "category" FROM "articles"
+        WHERE "status" = 'PUBLISHED' AND "category" IS NOT NULL
+        ORDER BY "category"
+      `,
+      prisma.$queryRaw<{ tag: string; cnt: bigint }[]>`
+        SELECT tag, COUNT(*) as cnt
+        FROM "articles", unnest("tags") AS tag
+        WHERE "status" = 'PUBLISHED'
+        GROUP BY tag ORDER BY cnt DESC LIMIT 20
+      `,
     ]);
 
-    // Count tag frequency and get top 20 popular tags
-    const tagCounts = new Map<string, number>();
-    tagsResult.forEach(article => {
-      article.tags?.forEach(tag => {
-        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      });
-    });
-
-    const popularTags = Array.from(tagCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 20)
-      .map(([tag]) => tag);
-
     return {
-      categories: categories.map(c => c.category).filter(Boolean) as string[],
-      popularTags
+      categories: categories.map(c => c.category),
+      popularTags: popularTags.map(t => t.tag),
     };
 }
 
