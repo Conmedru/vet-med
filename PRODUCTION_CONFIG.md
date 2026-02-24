@@ -1,0 +1,51 @@
+# 🚀 Production Configuration for Timeweb Cloud
+
+Скопируйте эти значения в раздел **"Переменные"** (Environment Variables) в настройках вашего приложения Vet Umbriel.
+
+## 1. База данных (Managed PostgreSQL)
+Мы используем вашу новую базу данных. Я сформировал строку подключения с паролем.
+*Обратите внимание: я изменил `sslmode=verify-full` на `sslmode=require`, чтобы оно работало внутри Docker-контейнера без необходимости монтировать файлы сертификатов.*
+
+| Ключ | Значение |
+| :--- | :--- |
+| `DATABASE_URL` | `postgresql://gen_user:v*e)1.kVIoz9np@02adb95ad871d548d0d754d4.twc1.net:5432/default_db?sslmode=require` |
+| `DIRECT_URL` | `postgresql://gen_user:v*e)1.kVIoz9np@02adb95ad871d548d0d754d4.twc1.net:5432/default_db?sslmode=require` |
+
+## 2. S3 Хранилище (Обложки)
+
+| Ключ | Значение |
+| :--- | :--- |
+| `S3_ENDPOINT` | `https://s3.twcstorage.ru` |
+| `S3_BUCKET` | `1873f82d-617b-4505-a1ec-3fe47ebe0e64` |
+| `S3_REGION` | `ru-1` |
+| `S3_ACCESS_KEY` | `CD6XLQJ96B3QNQQPYJC6` |
+| `S3_SECRET_KEY` | `JSw4o9HtBwsLBiSvIMvmNm3I4jrRmjf4BfZqmN2s` |
+| `S3_PREFIX` | `vetmed` |
+
+## 3. Настройки Приложения
+
+| Ключ | Значение |
+| :--- | :--- |
+| `NEXT_PUBLIC_SITE_URL` | `https://vet-umbriel.tw1.ru` (или ваш привязанный домен) |
+| `NODE_ENV` | `production` |
+| `REPLICATE_API_TOKEN` | `r8_****************************************` (See your local .env or Replicate dashboard) |
+| `AI_MODEL` | `gpt-4o-mini` |
+| `ADMIN_PASSWORD` | *(Придумайте сложный пароль для входа в админку)* |
+| `ADMIN_API_KEY` | *(Придумайте ключ, например `my-secret-admin-key-2024`)* |
+
+---
+
+## 🛡 Как не потерять данные (Важно!)
+
+После того как приложение запустится (статус станет "Running"), вам нужно **один раз** инициализировать структуру базы данных.
+
+1. Перейдите на вкладку **"Консоль"** (Console) внутри приложения в Timeweb.
+2. Выполните команду:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+**Почему это безопасно:**
+*   Команда `migrate deploy` **только добавляет** новые таблицы и колонки.
+*   Она **НИКОГДА** не удаляет данные (в отличие от `db push` или `migrate reset`).
+*   Если база пустая (как сейчас), она создаст всю структуру с нуля.

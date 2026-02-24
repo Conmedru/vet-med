@@ -1,0 +1,210 @@
+# Timeweb Cloud Migration & Refactoring Guide (Neuro Project)
+
+> **Context**: This guide captures the "Battle Scars" from the Nucmed-2 migration. It documents specific, non-obvious configurations required for Timeweb Cloud's architecture (Nginx Load Balancers + Docker) and Supabase's connection limits.
+
+---
+
+## 🛑 The "Why" behind the "What" (Technical Deep Dive)
+
+### 1. The "Build-Time Database" Crash
+*   **Symptom**: The build `npm run build` fails in CI/CD or Docker with database connection errors, even if you provided env vars.
+*   **Root Cause**: Next.js tries to statically generate [sitemap.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/sitemap.ts) or [generateStaticParams](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/%28main%29/news/%5Bslug%5D/page.tsx#26-44) during build. If `DATABASE_URL` isn't reachable from the build container (common in secure CI), it crashes.
+*   **Fix**: Force dynamic generation for sitemaps.
+    *   *Commit `6abcb35`*: Changed [sitemap.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/sitemap.ts) to `export const dynamic = 'force-dynamic'`.
+
+### 2. The "404 Asset" & "White Screen" Loop
+*   **Symptom**: App starts, but all styles/JS fail with 404 (Loading chunk failed).
+*   **Root Cause**: The standalone build folder (`.next/standalone`) does NOT include the `public` or `.next/static` folders by default.
+*   **Fix**: You must manually `COPY` them in the Dockerfile.
+    *   *Commit `a9dc650`*: Added `COPY ... /public` and `COPY ... /.next/static`.
+
+### 3. The "Timeweb 404/502" Proxy Error
+*   **Symptom**: App is running (logs say "Ready on 3000"), but Timeweb URL shows 404 or 502 Bad Gateway.
+*   **Root Cause**: Docker containers bind to `localhost` (127.0.0.1) by default. Timeweb's load balancer tries to connect to the container's IP, but `localhost` inside the container is private.
+*   **Fix**: Bind to `0.0.0.0`.
+    *   *Commit `68df2a4`*: Changed CMD to `npx next start -H 0.0.0.0`.
+
+---
+
+## Phase 1: Code Refactoring (Pre-Migration)
+
+### 1. [next.config.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/next.config.ts): Image Handling
+*Commit `8cdfb7a`*
+Timeweb (and many self-hosted setups) doesn't have a built-in Image Optimization Service like Vercel.
+*   **Configuration**:
+    ```typescript
+    images: {
+      unoptimized: true, // PREVENTS 400 Bad Request on images
+      remotePatterns: [
+        { protocol: 'https', hostname: 's3.twcstorage.ru' }
+      ]
+    }
+    ```
+
+### 2. [app/sitemap.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/sitemap.ts): Build Safety
+*Commit `6abcb35`*
+Prevent build-time database access which breaks CI pipelines.
+
+```typescript
+// app/sitemap.ts
+// FORCE dynamic to skip build-time execution
+export const dynamic = 'force-dynamic'; 
+
+export default async function sitemap() { 
+  // ... database queries 
+}
+```
+
+### 3. [app/loading.tsx](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/app/loading.tsx): User Experience
+**DELETE THIS FILE**.
+*   *Why*: Next.js uses this for **every** async server component. If your database is slow (even 1s), the entire page is replaced by this loader, making the app feel broken.
+*   *Replace with*: `<Suspense fallback={<Skeleton />}>` inside your page components.
+
+---
+
+## Phase 2: Docker Configuration (Copy-Paste Ready)
+
+This [Dockerfile](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/Dockerfile) is the result of 10+ failed iterations. It handles the "Asset 404" and "Prisma" issues.
+
+**path: [/Dockerfile](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/Dockerfile)**
+
+```dockerfile
+FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+# 1. Install Dependencies
+FROM base AS deps
+COPY package.json package-lock.json* ./
+# 'npm ci' ensures clean install from lockfile
+RUN npm ci
+
+# 2. Build Stage
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# CRITICAL: Generate Prisma Client BEFORE build
+RUN npx prisma generate
+
+ENV NEXT_TELEMETRY_DISABLED 1
+# This respects output: 'standalone' in next.config.ts
+RUN npm run build
+
+# 3. Production Runner
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV PORT 3000
+# CRITICAL: Bind to all interfaces for Timeweb Proxy
+ENV HOSTNAME "0.0.0.0"
+
+# Non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# CRITICAL: Copy Assets for Standalone Build
+# 1. Public assets (favicon, etc)
+COPY --from=builder /app/public ./public
+# 2. Standalone server
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# 3. Static assets (CSS/JS chunks) - MISSING THIS CAUSES 404s
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+# Start command with explicit host binding
+CMD ["node", "server.js"]
+```
+
+---
+
+## Phase 3: Database & S3 (The bottlenecks)
+
+### 1. Connection Pooling (Supabase)
+Next.js Server Components are "Serverless-like". They open a new DB connection for every request.
+*   **Crash**: `P1001: Can't reach database server`.
+*   **Fix**: Use Supabase **Transaction Mode** (Port 6543) or **Session Mode** (Port 5432 with pgbouncer).
+    *   *Env Var*: `DATABASE_URL="postgres://...@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true"`
+
+### 2. S3 Migration (Base64 is Poison)
+If your legacy DB has images stored as Base64 strings:
+*   **Impact**: Querying 10 articles fetches ~50MB of data. JSON serialization hangs.
+*   **Action**: Run the migration script ([scripts/migrate-base64-to-s3.ts](file:///Users/me/Documents/codebase/Nucmed-2/nucmed-modern/scripts/migrate-base64-to-s3.ts)) **before** scaling traffic.
+
+---
+
+## Phase 4: CI/CD & Deploy
+
+**Timeweb App Settings**:
+1.  **Build Method**: Dockerfile.
+2.  **Service Port**: 3000.
+3.  **Environment Variables**:
+    *   `DATABASE_URL` (Pool URL)
+    *   `NEXT_PUBLIC_SITE_URL`
+    *   `S3_*` keys.
+
+**Troubleshooting Checklist**:
+*   **App Deploys but shows 502**: Did you set `HOSTNAME "0.0.0.0"` in Dockerfile?
+*   **App Deploys but styles missing**: Did you `COPY .next/static` in Dockerfile?
+*   **Build fails on "Prisma Client"**: Did you run `npx prisma generate` in the `builder` stage?
+*   **Build fails on "Database Error"**: Did you set `export const dynamic = 'force-dynamic'` in sitemap?
+
+---
+
+By following this guide, you skip the "Discovery Phase" of errors we went through and jump straight to a stable production setup. 🚀
+
+---
+
+## 🤖 IDE Prompt: Prepare Project for Timeweb
+
+Copy and paste the following prompt into your IDE assistant (Cursor, VS Code Copilot, Claude, etc.) to automate the migration:
+
+---
+
+```
+Подготовь этот Next.js проект к деплою на Timeweb Cloud (Docker).
+
+**Задачи:**
+
+1. **Dockerfile**: Создай или обнови `Dockerfile` в корне проекта:
+   - Базовый образ: `node:22-alpine`
+   - Установи `libc6-compat` и `openssl` (для Prisma)
+   - Многоэтапная сборка: `deps` → `builder` → `runner`
+   - В `builder`: выполни `npx prisma generate` ПЕРЕД `npm run build`
+   - В `runner`: скопируй `public`, `.next/standalone`, и `.next/static`
+   - Установи `ENV HOSTNAME "0.0.0.0"` и `ENV PORT 3000`
+   - CMD: `["node", "server.js"]`
+
+2. **next.config.ts**: Обнови конфигурацию:
+   - Добавь `output: "standalone"` (если нет)
+   - Добавь `images: { unoptimized: true }` для отключения Image Optimization
+   - Добавь `remotePatterns` для `s3.twcstorage.ru`
+
+3. **app/sitemap.ts** (если есть): Добавь `export const dynamic = 'force-dynamic'` в начало файла, чтобы предотвратить обращение к БД во время билда.
+
+4. **app/loading.tsx**: Удали этот файл если он существует. Вместо него используй `<Suspense fallback={<Skeleton />}>` в конкретных местах страниц.
+
+5. **prisma/schema.prisma**: Убедись что в `generator client` указано:
+   ```
+   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+   ```
+
+6. **package.json**: Убедись что `engines.node` указывает `">=22.0.0"`.
+
+7. **Переменные окружения** (не изменяй код, просто создай список):
+   - `DATABASE_URL` — используй Connection Pool URL (порт 6543 для Supabase)
+   - `NEXT_PUBLIC_SITE_URL` — полный домен сайта
+   - `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_ENDPOINT`
+
+После выполнения покажи список изменённых файлов и краткое описание каждого изменения.
+```
+
+---
+
+Этот промпт можно использовать для любого Next.js + Prisma проекта, чтобы мгновенно подготовить его к деплою на Timeweb.

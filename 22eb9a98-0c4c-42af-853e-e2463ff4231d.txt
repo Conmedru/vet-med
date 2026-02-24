@@ -1,0 +1,449 @@
+20:33:46 | DEBUG | #5 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 2.10MB / 3.86MB 0.9s
+20:33:46 | DEBUG | #5 extracting sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 0.1s done
+20:33:46 | DEBUG | #5 sha256:589002ba0eaed121a1dbf42f6648f29e5be55d5c8a6ee0f8eaa0285cc21ac153 3.86MB / 3.86MB 1.0s done
+20:33:46 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 12.58MB / 51.60MB 1.4s
+20:33:46 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 15.73MB / 51.60MB 1.5s
+20:33:46 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 18.87MB / 51.60MB 1.7s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 22.02MB / 51.60MB 1.8s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 26.21MB / 51.60MB 2.0s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 29.36MB / 51.60MB 2.1s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 32.51MB / 51.60MB 2.3s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 35.65MB / 51.60MB 2.4s
+20:33:47 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 38.80MB / 51.60MB 2.6s
+20:33:48 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 44.04MB / 51.60MB 2.9s
+20:33:48 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 47.19MB / 51.60MB 3.0s
+20:33:48 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 50.33MB / 51.60MB 3.2s
+20:33:48 | DEBUG | #5 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 51.60MB / 51.60MB 3.3s done
+20:33:48 | DEBUG | #5 extracting sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf
+20:33:50 | DEBUG | #5 extracting sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 1.9s done
+20:33:50 | DEBUG | #5 DONE 5.4s
+20:33:50 | DEBUG | #5 extracting sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778
+20:33:50 | DEBUG | #5 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34
+20:33:50 | DEBUG | #5 DONE 5.8s
+20:33:50 | DEBUG | #5 extracting sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778 0.3s done
+20:33:51 | DEBUG | #6 [base 2/3] RUN apk add --no-cache libc6-compat openssl
+20:33:51 | DEBUG | #5 DONE 5.8s
+20:33:51 | DEBUG | #5 extracting sha256:fc1c5222d85fe45cd255019912158424888b168c8413fb42c8e166c37f1833eb 0.1s done
+20:33:51 | DEBUG | #5 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34
+20:33:51 | DEBUG | #6 0.873 (1/4) Installing musl-obstack (1.2.3-r2)
+20:33:51 | DEBUG | #6 0.981 (4/4) Installing openssl (3.5.5-r0)
+20:33:51 | DEBUG | #6 0.944 (3/4) Installing gcompat (1.1.0-r4)
+20:33:51 | DEBUG | #6 0.908 (2/4) Installing libucontext (1.3.3-r0)
+20:33:52 | DEBUG | #6 1.045 OK: 11.8 MiB in 22 packages
+20:33:52 | DEBUG | #6 1.038 Executing busybox-1.37.0-r30.trigger
+20:33:52 | DEBUG | #6 DONE 1.3s
+20:33:52 | DEBUG | #9 [builder 1/5] WORKDIR /app
+20:33:52 | DEBUG | #8 DONE 0.1s
+20:33:52 | DEBUG | #8 [deps 1/2] COPY package.json ./
+20:33:52 | DEBUG | #7 DONE 0.0s
+20:33:52 | DEBUG | #7 [base 3/3] WORKDIR /app
+20:33:52 | DEBUG | #10 [runner 2/6] RUN addgroup --system --gid 1001 nodejs
+20:33:52 | DEBUG | #9 DONE 0.1s
+20:33:52 | DEBUG | #11 [deps 2/2] RUN npm install --package-lock-only && npm ci
+20:33:52 | DEBUG | #10 DONE 0.2s
+20:33:52 | DEBUG | #12 DONE 0.4s
+20:33:52 | DEBUG | #12 [runner 3/6] RUN adduser --system --uid 1001 nextjs
+20:33:52 | DEBUG | #11 ...
+20:33:53 | DEBUG | #11 [deps 2/2] RUN npm install --package-lock-only && npm ci
+20:35:17 | DEBUG | #11 85.53 up to date, audited 859 packages in 1m
+20:35:17 | DEBUG | #11 85.53
+20:35:17 | DEBUG | #11 85.53   run `npm fund` for details
+20:35:17 | DEBUG | #11 85.53 326 packages are looking for funding
+20:35:17 | DEBUG | #11 85.53
+20:35:18 | DEBUG | #11 85.96 Run `npm audit` for details.
+20:35:18 | DEBUG | #11 85.96
+20:35:18 | DEBUG | #11 85.96   npm audit fix --force
+20:35:18 | DEBUG | #11 85.96 To address all issues (including breaking changes), run:
+20:35:18 | DEBUG | #11 85.96
+20:35:18 | DEBUG | #11 85.96   npm audit fix
+20:35:18 | DEBUG | #11 85.96 To address issues that do not require attention, run:
+20:35:18 | DEBUG | #11 85.96
+20:35:18 | DEBUG | #11 85.96 17 vulnerabilities (3 moderate, 14 high)
+20:35:18 | DEBUG | #11 85.96
+20:35:18 | DEBUG | #11 85.99 npm notice
+20:35:18 | DEBUG | #11 85.99 npm notice To update run: npm install -g npm@11.10.1
+20:35:18 | DEBUG | #11 85.99 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+20:35:18 | DEBUG | #11 85.99 npm notice New major version of npm available! 10.9.4 -> 11.10.1
+20:35:18 | DEBUG | #11 85.99 npm notice
+20:35:21 | DEBUG | #11 89.43 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+20:36:14 | DEBUG | #11 142.1   run `npm fund` for details
+20:36:14 | DEBUG | #11 142.1 296 packages are looking for funding
+20:36:14 | DEBUG | #11 142.1
+20:36:14 | DEBUG | #11 142.1 added 758 packages, and audited 759 packages in 55s
+20:36:14 | DEBUG | #11 142.1
+20:36:14 | DEBUG | #11 142.4 16 vulnerabilities (1 moderate, 15 high)
+20:36:14 | DEBUG | #11 142.4
+20:36:14 | DEBUG | #11 142.4 Run `npm audit` for details.
+20:36:14 | DEBUG | #11 142.4
+20:36:14 | DEBUG | #11 142.4   npm audit fix --force
+20:36:14 | DEBUG | #11 142.4 To address all issues (including breaking changes), run:
+20:36:14 | DEBUG | #11 142.4
+20:36:14 | DEBUG | #11 142.4   npm audit fix
+20:36:14 | DEBUG | #11 142.4 To address issues that do not require attention, run:
+20:36:14 | DEBUG | #11 142.4
+20:36:15 | DEBUG | #11 DONE 142.9s
+20:36:29 | DEBUG | #13 [builder 2/5] COPY --from=deps /app/node_modules ./node_modules
+20:36:42 | DEBUG | #13 DONE 13.0s
+20:36:42 | DEBUG | #14 [builder 3/5] COPY . .
+20:36:43 | DEBUG | #14 DONE 0.8s
+20:36:43 | DEBUG | #15 [builder 4/5] RUN npx prisma generate
+20:36:44 | DEBUG | #15 1.258 Prisma schema loaded from prisma/schema.prisma
+20:36:46 | DEBUG | #15 2.824
+20:36:46 | DEBUG | #15 2.824 Tip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse
+20:36:46 | DEBUG | #15 2.824
+20:36:46 | DEBUG | #15 2.824 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+20:36:46 | DEBUG | #15 2.824
+20:36:46 | DEBUG | #15 2.824 ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 293ms
+20:36:46 | DEBUG | #15 2.824
+20:36:46 | DEBUG | #15 3.023 npm notice
+20:36:46 | DEBUG | #15 3.023 npm notice To update run: npm install -g npm@11.10.1
+20:36:46 | DEBUG | #15 3.023 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+20:36:46 | DEBUG | #15 3.023 npm notice New major version of npm available! 10.9.4 -> 11.10.1
+20:36:46 | DEBUG | #15 3.023 npm notice
+20:36:46 | DEBUG | #15 DONE 3.3s
+20:36:46 | DEBUG | #16 [builder 5/5] RUN npm run build
+20:36:46 | DEBUG | #16 0.261
+20:36:46 | DEBUG | #16 0.261 > next build
+20:36:46 | DEBUG | #16 0.261 > nucmed-modern@0.1.0 build
+20:36:46 | DEBUG | #16 0.261
+20:36:47 | DEBUG | #16 1.297 ▲ Next.js 16.1.1 (Turbopack)
+20:36:48 | DEBUG | #16 1.381   Creating an optimized production build ...
+20:36:48 | DEBUG | #16 1.302 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+20:36:48 | DEBUG | #16 1.298
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: none;[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+20:37:08 | DEBUG | #16 21.72 [2m│[22m     @media (width >=--theme-breakpoint-sm) {
+20:37:08 | DEBUG | #16 21.72 [2m│     padding-inline: 2rem;[22m
+20:37:08 | DEBUG | #16 21.72 [2m│     margin-inline: auto;[22m
+20:37:08 | DEBUG | #16 21.72 Issue #1:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 Found 5 warnings while optimizing generated CSS:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 80rem;[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m                                           [33m[2m^--[22m Invalid media query[39m
+20:37:08 | DEBUG | #16 21.72 [2m│[22m     @media (width >=--theme-breakpoint-2xl) {
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 73rem;[22m
+20:37:08 | DEBUG | #16 21.72 Issue #5:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 73rem;[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+20:37:08 | DEBUG | #16 21.72 [2m│[22m     @media (width >=--theme-breakpoint-xl) {
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 65rem;[22m
+20:37:08 | DEBUG | #16 21.72 Issue #4:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 65rem;[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+20:37:08 | DEBUG | #16 21.72 [2m│[22m     @media (width >=--theme-breakpoint-lg) {
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 61rem;[22m
+20:37:08 | DEBUG | #16 21.72 Issue #3:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: 61rem;[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m
+20:37:08 | DEBUG | #16 21.72 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+20:37:08 | DEBUG | #16 21.72 [2m│[22m     @media (width >=--theme-breakpoint-md) {
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:08 | DEBUG | #16 21.72 [2m│       max-width: none;[22m
+20:37:08 | DEBUG | #16 21.72 Issue #2:
+20:37:08 | DEBUG | #16 21.72
+20:37:08 | DEBUG | #16 21.72 [2m│     }[22m
+20:37:40 | DEBUG | #16 53.54 ✓ Compiled successfully in 51s
+20:37:40 | DEBUG | #16 53.55   Running TypeScript ...
+20:37:53 | DEBUG | #16 66.80   Collecting page data using 11 workers ...
+20:37:54 | DEBUG | #16 67.60 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:54 | DEBUG | #16 67.75 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:54 | DEBUG | #16 67.64 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:54 | DEBUG | #16 67.93 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:54 | DEBUG | #16 67.82 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:55 | DEBUG | #16 68.94   Generating static pages using 11 workers (0/41) ...
+20:37:55 | DEBUG | #16 69.22   Generating static pages using 11 workers (10/41)
+20:37:55 | DEBUG | #16 69.33 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:56 | DEBUG | #16 69.38   Generating static pages using 11 workers (20/41)
+20:37:56 | DEBUG | #16 69.73 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.73  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.73 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.73 prisma:error
+20:37:56 | DEBUG | #16 69.73  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.73  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.73 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.73 prisma:error
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.73 prisma:error
+20:37:56 | DEBUG | #16 69.73 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.73  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.73 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.73 prisma:error
+20:37:56 | DEBUG | #16 69.73 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.73  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.73 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.73 prisma:error
+20:37:56 | DEBUG | #16 69.73 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.75 }
+20:37:56 | DEBUG | #16 69.75   errorCode: undefined
+20:37:56 | DEBUG | #16 69.75   clientVersion: '5.22.0',
+20:37:56 | DEBUG | #16 69.75     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+20:37:56 | DEBUG | #16 69.75     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+20:37:56 | DEBUG | #16 69.75     at <unknown> (-->  schema.prisma:9)
+20:37:56 | DEBUG | #16 69.75 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75    |
+20:37:56 | DEBUG | #16 69.75  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.75  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.75    |
+20:37:56 | DEBUG | #16 69.75   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.75 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.75 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+20:37:56 | DEBUG | #16 69.75 }
+20:37:56 | DEBUG | #16 69.75   errorCode: undefined
+20:37:56 | DEBUG | #16 69.75   clientVersion: '5.22.0',
+20:37:56 | DEBUG | #16 69.75     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+20:37:56 | DEBUG | #16 69.75     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+20:37:56 | DEBUG | #16 69.75     at <unknown> (-->  schema.prisma:9)
+20:37:56 | DEBUG | #16 69.75 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75    |
+20:37:56 | DEBUG | #16 69.75  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.75  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.75    |
+20:37:56 | DEBUG | #16 69.75   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.75 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75
+20:37:56 | DEBUG | #16 69.75 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.75 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+20:37:56 | DEBUG | #16 69.74 }
+20:37:56 | DEBUG | #16 69.74   errorCode: undefined
+20:37:56 | DEBUG | #16 69.74   clientVersion: '5.22.0',
+20:37:56 | DEBUG | #16 69.74     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+20:37:56 | DEBUG | #16 69.74     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+20:37:56 | DEBUG | #16 69.74     at <unknown> (-->  schema.prisma:9)
+20:37:56 | DEBUG | #16 69.74 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.74  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.74 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.74 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+20:37:56 | DEBUG | #16 69.74 }
+20:37:56 | DEBUG | #16 69.74   errorCode: undefined
+20:37:56 | DEBUG | #16 69.74   clientVersion: '5.22.0',
+20:37:56 | DEBUG | #16 69.74     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+20:37:56 | DEBUG | #16 69.74     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+20:37:56 | DEBUG | #16 69.74     at <unknown> (-->  schema.prisma:9)
+20:37:56 | DEBUG | #16 69.74 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.74  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.74 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.74 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+20:37:56 | DEBUG | #16 69.74 }
+20:37:56 | DEBUG | #16 69.74   errorCode: undefined
+20:37:56 | DEBUG | #16 69.74   clientVersion: '5.22.0',
+20:37:56 | DEBUG | #16 69.74     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+20:37:56 | DEBUG | #16 69.74     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+20:37:56 | DEBUG | #16 69.74     at <unknown> (-->  schema.prisma:9)
+20:37:56 | DEBUG | #16 69.74 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.74  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.74    |
+20:37:56 | DEBUG | #16 69.74   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.74 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74
+20:37:56 | DEBUG | #16 69.74 Invalid `prisma.article.findMany()` invocation:
+20:37:56 | DEBUG | #16 69.74 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+20:37:56 | DEBUG | #16 69.73 Validation Error Count: 1
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73  9 |   url        = env("DATABASE_URL")
+20:37:56 | DEBUG | #16 69.73  8 |   provider   = "postgresql"
+20:37:56 | DEBUG | #16 69.73    |
+20:37:56 | DEBUG | #16 69.73   -->  schema.prisma:9
+20:37:56 | DEBUG | #16 69.73 error: Environment variable not found: DATABASE_URL.
+20:37:56 | DEBUG | #16 69.73
+20:37:56 | DEBUG | #16 69.95   Generating static pages using 11 workers (30/41)
+20:37:56 | DEBUG | #16 70.01   Finalizing page optimization ...
+20:37:56 | DEBUG | #16 69.99 ✓ Generating static pages using 11 workers (41/41) in 1056.8ms
+20:37:56 | DEBUG | #16 69.99 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+20:37:58 | DEBUG | #16 71.97
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/articles/new
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /admin/articles/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin
+20:37:58 | DEBUG | #16 71.97 ├ ○ /about                                          1h      1y
+20:37:58 | DEBUG | #16 71.97 ├ ○ /_not-found
+20:37:58 | DEBUG | #16 71.97 ┌ ƒ /
+20:37:58 | DEBUG | #16 71.97 Route (app)                                 Revalidate  Expire
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/journal
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/images/embed-all
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/images/[id]/embed
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/images/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/images
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/auth
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/sponsored
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /admin/sources/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/sources
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/settings
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /admin/queue
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/newsletter
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/journal
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/images
+20:37:58 | DEBUG | #16 71.97 ├ ○ /admin/calendar
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /admin/auth
+20:37:58 | DEBUG | #16 71.97
+20:37:58 | DEBUG | #16 71.97 ƒ Proxy (Middleware)
+20:37:58 | DEBUG | #16 71.97
+20:37:58 | DEBUG | #16 71.97
+20:37:58 | DEBUG | #16 71.97 └ ○ /terms                                          1h      1y
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /sitemap.xml
+20:37:58 | DEBUG | #16 71.97 ├ ○ /search                                         1h      1y
+20:37:58 | DEBUG | #16 71.97 ├ ○ /robots.txt
+20:37:58 | DEBUG | #16 71.97 ├ ○ /privacy                                        1h      1y
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /newsletter/preferences
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /news/[slug]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /news
+20:37:58 | DEBUG | #16 71.97 ├ ○ /manifest.webmanifest
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /journal
+20:37:58 | DEBUG | #16 71.97 ├ ○ /contact                                        1h      1y
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /category/[slug]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sponsored/feed
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sponsored/[id]/impression
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sponsored/[id]/click
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sources/[id]/preview
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sources/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/sources
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/search/fast
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/search
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/newsletter/unsubscribe
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/newsletter/subscribe
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/newsletter/preferences
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/migrate/slugs
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/journal
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/ingest/scrape
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/ingest
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/images/search
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/health
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/generate-cover
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/cron/scrape
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/cron/publish
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/cron/process
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/cron/digest
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/unread-count
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/process-bulk
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/mark-read
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/[id]/upload-cover
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/[id]/process
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/[id]/generate-cover
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/articles
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/users/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/users
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/stats
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/sponsored/[id]/upload-cover
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/sponsored/[id]
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/sponsored
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/settings
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter/subscribers
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter/stats
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter/settings
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter/preview
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter/campaigns
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/newsletter
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/journal/[id]/upload-pdf
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/journal/[id]/upload-cover
+20:37:58 | DEBUG | #16 71.97 ├ ƒ /api/admin/journal/[id]
+20:37:58 | DEBUG | #16 71.97
+20:37:58 | DEBUG | #16 71.97 ƒ  (Dynamic)  server-rendered on demand
+20:37:58 | DEBUG | #16 71.97 ○  (Static)   prerendered as static content
+20:37:59 | DEBUG | #16 DONE 73.3s
+20:38:00 | DEBUG | #17 [runner 4/6] COPY --from=builder /app/public ./public
+20:38:01 | DEBUG | #17 DONE 0.1s
+20:38:01 | DEBUG | #18 [runner 5/6] COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+20:38:03 | DEBUG | #18 DONE 2.3s
+20:38:03 | DEBUG | #19 [runner 6/6] COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+20:38:04 | DEBUG | #19 DONE 0.3s
+20:38:04 | DEBUG | #20 exporting layers
+20:38:04 | DEBUG | #20 exporting to image
+20:38:09 | DEBUG | #20 exporting layers 5.5s done
+20:38:09 | DEBUG | #20 exporting manifest sha256:c03c07758e0dc77e7f5bb16a1ee46a8834982b7472b027a03038145d7499d4b2 0.1s done
+20:38:09 | DEBUG | #20 ...
+20:38:09 | DEBUG | #20 pushing layers
+20:38:09 | DEBUG | #20 exporting config sha256:ee429e5a73e19762757629a102680bf927a628da4740937b4532b7ea396b3e9b 0.0s done
+20:38:09 | DEBUG | #20 exporting to image
+20:38:09 | DEBUG | #21 DONE 0.0s
+20:38:25 | DEBUG | #20 ...
+20:38:25 | DEBUG | #20 exporting to image
+20:38:25 | DEBUG | #22 DONE 0.0s
+20:38:32 | DEBUG | #20 pushing layers 22.7s done
+20:38:32 | DEBUG | #20 DONE 28.6s
+20:38:32 | INFO | Build succeeded
+20:38:39 | INFO | Pulling image from registry
+20:38:46 | INFO | Successfully pulled
+20:38:46 | INFO | Starting container
+20:38:47 | INFO | Scanning for exposed ports
+20:38:47 | INFO | Container started
+20:38:47 | INFO | Found 1 HTTP ports: ['3000/tcp']
+20:38:47 | INFO | Checking app's health
+20:38:47 | INFO | Checking container status
+20:39:02 | INFO | App is healthy
+20:39:02 | INFO | Configuring web server for deploy
+20:39:02 | INFO | Web server Configured
+20:39:02 | INFO | Deploy succeeded
+20:39:02 | INFO | Cleaning up old containers

@@ -1,0 +1,9 @@
+node_modules
+.git
+.env
+.env.*
+*.md
+nuclear-news
+nucmed-modern/node_modules
+nucmed-modern/.next
+nucmed-modern/.env

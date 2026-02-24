@@ -1,0 +1,448 @@
+21:33:07 | DEBUG | Dockerfile:17
+21:33:07 | INFO | Build failed
+21:33:30 | DEBUG | Cloning into '/workspace'...
+21:33:31 | DEBUG | HEAD is now at 04eca6f Fix: install Prisma CLI 5.22.0 in runner stage for migrations
+21:33:31 | DEBUG | Turn off this advice by setting config variable advice.detachedHead to false
+21:33:31 | DEBUG | git switch -
+21:33:31 | DEBUG | Or undo this operation with:
+21:33:31 | DEBUG | git switch -c <new-branch-name>
+21:33:31 | DEBUG | do so (now or later) by using -c with the switch command. Example:
+21:33:31 | DEBUG | If you want to create a new branch to retain commits you create, you may
+21:33:31 | DEBUG | state without impacting any branches by switching back to a branch.
+21:33:31 | DEBUG | changes and commit them, and you can discard any commits you make in this
+21:33:31 | DEBUG | You are in 'detached HEAD' state. You can look around, make experimental
+21:33:31 | DEBUG | Note: switching to '04eca6f4933dbf91e9b8510722db1bbf8e63dd84'.
+21:33:35 | DEBUG | #2 [internal] load metadata for docker.io/library/node:22-alpine
+21:33:35 | DEBUG | #1 DONE 0.0s
+21:33:35 | DEBUG | #1 transferring dockerfile: 1.33kB done
+21:33:35 | DEBUG | #1 [internal] load build definition from Dockerfile
+21:33:35 | DEBUG | Build context directory: /workspace/nucmed-modern
+21:33:35 | DEBUG | Dockerfile directory: /workspace/nucmed-modern
+21:33:35 | INFO | Build started
+21:33:35 | DEBUG | Found Dockerfile in subdirectory: nucmed-modern/Dockerfile
+21:33:36 | DEBUG | #2 DONE 1.1s
+21:33:36 | DEBUG | #4 resolve docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34 0.0s done
+21:33:36 | DEBUG | #4 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34
+21:33:36 | DEBUG | #3 DONE 0.0s
+21:33:36 | DEBUG | #3 transferring context: 142B done
+21:33:36 | DEBUG | #3 [internal] load .dockerignore
+21:33:36 | DEBUG | #4 sha256:fc1c5222d85fe45cd255019912158424888b168c8413fb42c8e166c37f1833eb 0B / 447B 0.2s
+21:33:36 | DEBUG | #4 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34
+21:33:36 | DEBUG | #5 DONE 0.1s
+21:33:36 | DEBUG | #5 transferring context: 3.21MB 0.1s done
+21:33:36 | DEBUG | #5 [internal] load build context
+21:33:36 | DEBUG | #4 ...
+21:33:36 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 0B / 51.60MB 0.2s
+21:33:36 | DEBUG | #4 sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778 0B / 1.26MB 0.2s
+21:33:36 | DEBUG | #4 sha256:fc1c5222d85fe45cd255019912158424888b168c8413fb42c8e166c37f1833eb 447B / 447B 0.4s done
+21:33:37 | DEBUG | #4 sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778 1.26MB / 1.26MB 0.6s
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 3.15MB / 51.60MB 0.8s
+21:33:37 | DEBUG | #4 sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778 1.26MB / 1.26MB 0.6s done
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 6.32MB / 51.60MB 0.9s
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 10.49MB / 51.60MB 1.1s
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 13.63MB / 51.60MB 1.2s
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 16.78MB / 51.60MB 1.4s
+21:33:37 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 20.97MB / 51.60MB 1.5s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 24.12MB / 51.60MB 1.7s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 27.26MB / 51.60MB 1.8s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 31.46MB / 51.60MB 2.0s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 34.60MB / 51.60MB 2.1s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 37.75MB / 51.60MB 2.3s
+21:33:38 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 41.94MB / 51.60MB 2.4s
+21:33:39 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 45.09MB / 51.60MB 2.6s
+21:33:39 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 48.23MB / 51.60MB 2.7s
+21:33:39 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 51.60MB / 51.60MB 2.9s
+21:33:39 | DEBUG | #4 extracting sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf
+21:33:39 | DEBUG | #4 sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 51.60MB / 51.60MB 3.2s done
+21:33:41 | DEBUG | #4 DONE 5.2s
+21:33:41 | DEBUG | #4 extracting sha256:8d513d1f314d3646adaf156be912f8de408c740e43d90cad5ce06b9de27e7bdf 1.9s done
+21:33:41 | DEBUG | #6 [base 2/3] RUN apk add --no-cache libc6-compat openssl
+21:33:41 | DEBUG | #4 DONE 5.3s
+21:33:41 | DEBUG | #4 extracting sha256:fc1c5222d85fe45cd255019912158424888b168c8413fb42c8e166c37f1833eb 0.0s done
+21:33:41 | DEBUG | #4 extracting sha256:2b752f7c71fd1a08980fdf09b7379d8304c8ef2569526934a2089ed26d771778 0.1s done
+21:33:41 | DEBUG | #4 [base 1/3] FROM docker.io/library/node:22-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34
+21:33:42 | DEBUG | #6 1.212 (1/4) Installing musl-obstack (1.2.3-r2)
+21:33:43 | DEBUG | #6 1.320 (4/4) Installing openssl (3.5.5-r0)
+21:33:43 | DEBUG | #6 1.282 (3/4) Installing gcompat (1.1.0-r4)
+21:33:43 | DEBUG | #6 1.247 (2/4) Installing libucontext (1.3.3-r0)
+21:33:43 | DEBUG | #6 1.421 OK: 11.8 MiB in 22 packages
+21:33:43 | DEBUG | #6 1.371 Executing busybox-1.37.0-r30.trigger
+21:33:44 | DEBUG | #6 DONE 2.4s
+21:33:44 | DEBUG | #7 DONE 0.1s
+21:33:44 | DEBUG | #7 [base 3/3] WORKDIR /app
+21:33:44 | DEBUG | #9 [deps 1/2] COPY package.json ./
+21:33:44 | DEBUG | #8 DONE 0.1s
+21:33:44 | DEBUG | #8 [builder 1/5] WORKDIR /app
+21:33:44 | DEBUG | #10 [deps 2/2] RUN npm install --package-lock-only && npm ci
+21:33:44 | DEBUG | #9 DONE 0.1s
+21:33:44 | DEBUG | #11 DONE 0.2s
+21:33:44 | DEBUG | #11 [runner 2/8] RUN addgroup --system --gid 1001 nodejs
+21:33:44 | DEBUG | #10 ...
+21:33:44 | DEBUG | #10 [deps 2/2] RUN npm install --package-lock-only && npm ci
+21:33:44 | DEBUG | #12 DONE 0.2s
+21:33:44 | DEBUG | #12 [runner 3/8] RUN adduser --system --uid 1001 nextjs
+21:35:24 | DEBUG | #10 100.3   run `npm fund` for details
+21:35:24 | DEBUG | #10 100.3 326 packages are looking for funding
+21:35:24 | DEBUG | #10 100.3
+21:35:24 | DEBUG | #10 100.3 up to date, audited 859 packages in 2m
+21:35:24 | DEBUG | #10 100.3
+21:35:25 | DEBUG | #10 100.7
+21:35:25 | DEBUG | #10 100.7   npm audit fix --force
+21:35:25 | DEBUG | #10 100.7 To address all issues (including breaking changes), run:
+21:35:25 | DEBUG | #10 100.7
+21:35:25 | DEBUG | #10 100.7   npm audit fix
+21:35:25 | DEBUG | #10 100.7 To address issues that do not require attention, run:
+21:35:25 | DEBUG | #10 100.7
+21:35:25 | DEBUG | #10 100.7 17 vulnerabilities (3 moderate, 14 high)
+21:35:25 | DEBUG | #10 100.7
+21:35:25 | DEBUG | #10 100.7 Run `npm audit` for details.
+21:35:25 | DEBUG | #10 100.7 npm notice
+21:35:25 | DEBUG | #10 100.7 npm notice To update run: npm install -g npm@11.10.1
+21:35:25 | DEBUG | #10 100.7 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+21:35:25 | DEBUG | #10 100.7 npm notice New major version of npm available! 10.9.4 -> 11.10.1
+21:35:25 | DEBUG | #10 100.7 npm notice
+21:35:28 | DEBUG | #10 104.6 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+21:36:35 | DEBUG | #10 171.0   run `npm fund` for details
+21:36:35 | DEBUG | #10 171.0 296 packages are looking for funding
+21:36:35 | DEBUG | #10 171.0
+21:36:35 | DEBUG | #10 171.0 added 758 packages, and audited 759 packages in 1m
+21:36:35 | DEBUG | #10 171.0
+21:36:35 | DEBUG | #10 171.4 Run `npm audit` for details.
+21:36:35 | DEBUG | #10 171.4
+21:36:35 | DEBUG | #10 171.4   npm audit fix --force
+21:36:35 | DEBUG | #10 171.4 To address all issues (including breaking changes), run:
+21:36:35 | DEBUG | #10 171.4
+21:36:35 | DEBUG | #10 171.4   npm audit fix
+21:36:35 | DEBUG | #10 171.4 To address issues that do not require attention, run:
+21:36:35 | DEBUG | #10 171.4
+21:36:35 | DEBUG | #10 171.4 16 vulnerabilities (1 moderate, 15 high)
+21:36:35 | DEBUG | #10 171.4
+21:36:36 | DEBUG | #10 DONE 171.8s
+21:36:52 | DEBUG | #13 [builder 2/5] COPY --from=deps /app/node_modules ./node_modules
+21:37:10 | DEBUG | #13 DONE 17.7s
+21:37:10 | DEBUG | #14 [builder 3/5] COPY . .
+21:37:11 | DEBUG | #14 DONE 1.3s
+21:37:11 | DEBUG | #15 [builder 4/5] RUN npx prisma generate
+21:37:13 | DEBUG | #15 2.365 Prisma schema loaded from prisma/schema.prisma
+21:37:16 | DEBUG | #15 4.698
+21:37:16 | DEBUG | #15 4.698 Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+21:37:16 | DEBUG | #15 4.698
+21:37:16 | DEBUG | #15 4.698 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+21:37:16 | DEBUG | #15 4.698
+21:37:16 | DEBUG | #15 4.698 ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 442ms
+21:37:16 | DEBUG | #15 4.698
+21:37:16 | DEBUG | #15 4.895 npm notice
+21:37:16 | DEBUG | #15 4.895 npm notice To update run: npm install -g npm@11.10.1
+21:37:16 | DEBUG | #15 4.895 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+21:37:16 | DEBUG | #15 4.895 npm notice New major version of npm available! 10.9.4 -> 11.10.1
+21:37:16 | DEBUG | #15 4.895 npm notice
+21:37:16 | DEBUG | #15 DONE 5.2s
+21:37:16 | DEBUG | #16 [builder 5/5] RUN npm run build
+21:37:17 | DEBUG | #16 0.349
+21:37:17 | DEBUG | #16 0.349 > next build
+21:37:17 | DEBUG | #16 0.349 > nucmed-modern@0.1.0 build
+21:37:17 | DEBUG | #16 0.349
+21:37:18 | DEBUG | #16 1.995 ▲ Next.js 16.1.1 (Turbopack)
+21:37:18 | DEBUG | #16 2.088   Creating an optimized production build ...
+21:37:18 | DEBUG | #16 2.002 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+21:37:18 | DEBUG | #16 1.996
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 80rem;[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m                                           [33m[2m^--[22m Invalid media query[39m
+21:37:44 | DEBUG | #16 28.28 [2m│[22m     @media (width >=--theme-breakpoint-2xl) {
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 73rem;[22m
+21:37:44 | DEBUG | #16 28.28 Issue #5:
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 73rem;[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+21:37:44 | DEBUG | #16 28.28 [2m│[22m     @media (width >=--theme-breakpoint-xl) {
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 65rem;[22m
+21:37:44 | DEBUG | #16 28.28 Issue #4:
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 65rem;[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+21:37:44 | DEBUG | #16 28.28 [2m│[22m     @media (width >=--theme-breakpoint-lg) {
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 61rem;[22m
+21:37:44 | DEBUG | #16 28.28 Issue #3:
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: 61rem;[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+21:37:44 | DEBUG | #16 28.28 [2m│[22m     @media (width >=--theme-breakpoint-md) {
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: none;[22m
+21:37:44 | DEBUG | #16 28.28 Issue #2:
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 [2m│     }[22m
+21:37:44 | DEBUG | #16 28.28 [2m│       max-width: none;[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m
+21:37:44 | DEBUG | #16 28.28 [2m┆[22m                                          [33m[2m^--[22m Invalid media query[39m
+21:37:44 | DEBUG | #16 28.28 [2m│[22m     @media (width >=--theme-breakpoint-sm) {
+21:37:44 | DEBUG | #16 28.28 [2m│     padding-inline: 2rem;[22m
+21:37:44 | DEBUG | #16 28.28 [2m│     margin-inline: auto;[22m
+21:37:44 | DEBUG | #16 28.28 Issue #1:
+21:37:44 | DEBUG | #16 28.28
+21:37:44 | DEBUG | #16 28.28 Found 5 warnings while optimizing generated CSS:
+21:38:30 | DEBUG | #16 73.33 ✓ Compiled successfully in 70s
+21:38:30 | DEBUG | #16 73.34   Running TypeScript ...
+21:38:49 | DEBUG | #16 93.08   Collecting page data using 11 workers ...
+21:38:50 | DEBUG | #16 94.09 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+21:38:51 | DEBUG | #16 94.18 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+21:38:51 | DEBUG | #16 94.17 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+21:38:51 | DEBUG | #16 94.34 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+21:38:52 | DEBUG | #16 95.51   Generating static pages using 11 workers (0/41) ...
+21:38:52 | DEBUG | #16 95.58   Generating static pages using 11 workers (10/41)
+21:38:52 | DEBUG | #16 96.15   Generating static pages using 11 workers (20/41)
+21:38:53 | DEBUG | #16 96.45 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.45 prisma:error
+21:38:53 | DEBUG | #16 96.45 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.45 prisma:error
+21:38:53 | DEBUG | #16 96.45 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.45 prisma:error
+21:38:53 | DEBUG | #16 96.47 }
+21:38:53 | DEBUG | #16 96.47   errorCode: undefined
+21:38:53 | DEBUG | #16 96.47   clientVersion: '5.22.0',
+21:38:53 | DEBUG | #16 96.47     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+21:38:53 | DEBUG | #16 96.47     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+21:38:53 | DEBUG | #16 96.47 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.47
+21:38:53 | DEBUG | #16 96.47 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.47
+21:38:53 | DEBUG | #16 96.47
+21:38:53 | DEBUG | #16 96.47 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.47 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+21:38:53 | DEBUG | #16 96.46 }
+21:38:53 | DEBUG | #16 96.46   errorCode: undefined
+21:38:53 | DEBUG | #16 96.46   clientVersion: '5.22.0',
+21:38:53 | DEBUG | #16 96.46     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+21:38:53 | DEBUG | #16 96.46     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+21:38:53 | DEBUG | #16 96.46 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.46 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+21:38:53 | DEBUG | #16 96.46 }
+21:38:53 | DEBUG | #16 96.46   errorCode: undefined
+21:38:53 | DEBUG | #16 96.46   clientVersion: '5.22.0',
+21:38:53 | DEBUG | #16 96.46     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+21:38:53 | DEBUG | #16 96.46     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+21:38:53 | DEBUG | #16 96.46 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.46 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+21:38:53 | DEBUG | #16 96.46 }
+21:38:53 | DEBUG | #16 96.46   errorCode: undefined
+21:38:53 | DEBUG | #16 96.46   clientVersion: '5.22.0',
+21:38:53 | DEBUG | #16 96.46     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+21:38:53 | DEBUG | #16 96.46     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+21:38:53 | DEBUG | #16 96.46 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.46 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+21:38:53 | DEBUG | #16 96.46 }
+21:38:53 | DEBUG | #16 96.46   errorCode: undefined
+21:38:53 | DEBUG | #16 96.46   clientVersion: '5.22.0',
+21:38:53 | DEBUG | #16 96.46     at async j (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:10695) {
+21:38:53 | DEBUG | #16 96.46     at async j.revalidate (.next/server/chunks/ssr/[root-of-the-server]__fb3292d4._.js:64:817)
+21:38:53 | DEBUG | #16 96.46 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46
+21:38:53 | DEBUG | #16 96.46 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.46 Failed to fetch trending tags: Error [PrismaClientInitializationError]:
+21:38:53 | DEBUG | #16 96.45 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.45 prisma:error
+21:38:53 | DEBUG | #16 96.45 Please make sure your database server is running at `localhost:5432`.
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Can't reach database server at `localhost:5432`
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45
+21:38:53 | DEBUG | #16 96.45 Invalid `prisma.article.findMany()` invocation:
+21:38:53 | DEBUG | #16 96.45 prisma:error
+21:38:53 | DEBUG | #16 96.67   Generating static pages using 11 workers (30/41)
+21:38:53 | DEBUG | #16 96.72   Finalizing page optimization ...
+21:38:53 | DEBUG | #16 96.72 ✓ Generating static pages using 11 workers (41/41) in 1206.0ms
+21:38:53 | DEBUG | #16 96.70 WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)
+21:38:54 | DEBUG | #16 97.88
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/sources
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/settings
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /admin/queue
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/newsletter
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/journal
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/images
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/calendar
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /admin/auth
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/articles/new
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /admin/articles/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin
+21:38:54 | DEBUG | #16 97.88 ├ ○ /about                                          1h      1y
+21:38:54 | DEBUG | #16 97.88 ├ ○ /_not-found
+21:38:54 | DEBUG | #16 97.88 ┌ ƒ /
+21:38:54 | DEBUG | #16 97.88 Route (app)                                 Revalidate  Expire
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /category/[slug]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sponsored/feed
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sponsored/[id]/impression
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sponsored/[id]/click
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sources/[id]/preview
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sources/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/sources
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/search/fast
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/search
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/newsletter/unsubscribe
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/newsletter/subscribe
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/newsletter/preferences
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/migrate/slugs
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/journal
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/ingest/scrape
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/ingest
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/images/search
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/health
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/generate-cover
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/cron/scrape
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/cron/publish
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/cron/process
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/cron/digest
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/unread-count
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/process-bulk
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/mark-read
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/[id]/upload-cover
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/[id]/process
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/[id]/generate-cover
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/articles
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/users/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/users
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/stats
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/sponsored/[id]/upload-cover
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/sponsored/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/sponsored
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/settings
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter/subscribers
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter/stats
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter/settings
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter/preview
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter/campaigns
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/newsletter
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/journal/[id]/upload-pdf
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/journal/[id]/upload-cover
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/journal/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/journal
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/images/embed-all
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/images/[id]/embed
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/images/[id]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/images
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /api/admin/auth
+21:38:54 | DEBUG | #16 97.88 ├ ○ /admin/sponsored
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /admin/sources/[id]
+21:38:54 | DEBUG | #16 97.88
+21:38:54 | DEBUG | #16 97.88 ƒ  (Dynamic)  server-rendered on demand
+21:38:54 | DEBUG | #16 97.88 ○  (Static)   prerendered as static content
+21:38:54 | DEBUG | #16 97.88
+21:38:54 | DEBUG | #16 97.88 ƒ Proxy (Middleware)
+21:38:54 | DEBUG | #16 97.88
+21:38:54 | DEBUG | #16 97.88
+21:38:54 | DEBUG | #16 97.88 └ ○ /terms                                          1h      1y
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /sitemap.xml
+21:38:54 | DEBUG | #16 97.88 ├ ○ /search                                         1h      1y
+21:38:54 | DEBUG | #16 97.88 ├ ○ /robots.txt
+21:38:54 | DEBUG | #16 97.88 ├ ○ /privacy                                        1h      1y
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /newsletter/preferences
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /news/[slug]
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /news
+21:38:54 | DEBUG | #16 97.88 ├ ○ /manifest.webmanifest
+21:38:54 | DEBUG | #16 97.88 ├ ƒ /journal
+21:38:54 | DEBUG | #16 97.88 ├ ○ /contact                                        1h      1y
+21:38:54 | DEBUG | #16 DONE 98.2s
+21:38:57 | DEBUG | #17 [runner 4/8] COPY --from=builder /app/public ./public
+21:38:57 | DEBUG | #17 DONE 0.1s
+21:38:57 | DEBUG | #18 [runner 5/8] COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+21:38:58 | DEBUG | #18 DONE 1.1s
+21:38:58 | DEBUG | #19 DONE 0.1s
+21:38:58 | DEBUG | #19 [runner 6/8] COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+21:38:58 | DEBUG | #21 [runner 8/8] RUN npm install --no-save prisma@5.22.0 @prisma/client@5.22.0
+21:38:58 | DEBUG | #20 DONE 0.0s
+21:38:58 | DEBUG | #20 [runner 7/8] COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+21:39:50 | DEBUG | #21 52.34 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+21:40:10 | DEBUG | #21 72.50 153 packages are looking for funding
+21:40:10 | DEBUG | #21 72.50
+21:40:10 | DEBUG | #21 72.50 added 296 packages, changed 7 packages, and audited 400 packages in 1m
+21:40:10 | DEBUG | #21 72.50
+21:40:11 | DEBUG | #21 72.60 npm notice
+21:40:11 | DEBUG | #21 72.60 npm notice To update run: npm install -g npm@11.10.1
+21:40:11 | DEBUG | #21 72.60 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+21:40:11 | DEBUG | #21 72.60 npm notice New major version of npm available! 10.9.4 -> 11.10.1
+21:40:11 | DEBUG | #21 72.60 npm notice
+21:40:11 | DEBUG | #21 72.59 Run `npm audit` for details.
+21:40:11 | DEBUG | #21 72.59
+21:40:11 | DEBUG | #21 72.59   npm audit fix --force
+21:40:11 | DEBUG | #21 72.59 To address all issues, run:
+21:40:11 | DEBUG | #21 72.59
+21:40:11 | DEBUG | #21 72.59 1 high severity vulnerability
+21:40:11 | DEBUG | #21 72.59
+21:40:11 | DEBUG | #21 72.50   run `npm fund` for details
+21:40:11 | DEBUG | #21 DONE 73.2s
+21:40:11 | DEBUG | #22 exporting layers
+21:40:11 | DEBUG | #22 exporting to image
+21:41:15 | DEBUG | #22 exporting layers 63.8s done
+21:41:15 | DEBUG | #22 ...
+21:41:15 | DEBUG | #22 pushing layers
+21:41:15 | DEBUG | #22 exporting config sha256:d825af4da2f1663a8b840c8b74532010fb80e5687126df4b4278fe9f89e366cb 0.0s done
+21:41:15 | DEBUG | #22 exporting manifest sha256:526b7d039d807ce430a168fe17c20ff5c2480eb59a36f4639cd89cf9a131e972 0.0s done
+21:41:15 | DEBUG | #22 exporting to image
+21:41:15 | DEBUG | #23 DONE 0.0s
+21:41:15 | DEBUG | #22 ...
+21:41:16 | DEBUG | #22 exporting to image
+21:41:16 | DEBUG | #24 DONE 0.0s
+21:41:16 | DEBUG | #22 ...
+21:41:16 | DEBUG | #22 exporting to image
+21:41:16 | DEBUG | #25 DONE 0.0s
+21:42:08 | DEBUG | #22 pushing layers 52.9s done
+21:42:08 | DEBUG | #22 DONE 117.2s
+21:42:08 | INFO | Build succeeded
+21:42:16 | INFO | Pulling image from registry
+21:42:43 | INFO | Successfully pulled
+21:42:43 | INFO | Starting container
+21:42:44 | INFO | Scanning for exposed ports
+21:42:44 | INFO | Found 1 HTTP ports: ['3000/tcp']
+21:42:44 | INFO | Container started
+21:42:44 | INFO | Checking app's health
+21:42:44 | INFO | Checking container status
