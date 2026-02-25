@@ -167,18 +167,6 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
             })}
 
             <Link
-              href="/news"
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                pathname === "/news"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              Все новости
-            </Link>
-
-            <Link
               href="/journal"
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
@@ -283,17 +271,6 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
             <div className="pt-3 pb-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Навигация
             </div>
-
-            <Link
-              href="/news"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={cn(
-                "block px-3 py-2.5 text-sm rounded-md transition-colors",
-                pathname === "/news" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
-              )}
-            >
-              Все новости
-            </Link>
 
             <Link
               href="/journal"
