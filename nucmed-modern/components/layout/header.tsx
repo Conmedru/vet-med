@@ -53,36 +53,37 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-20 flex items-center justify-between">
+      <div className="container h-20 flex items-center justify-between gap-4">
         {/* Left: Logo + Nav */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 lg:gap-8">
           <a href="/" className="shrink-0 flex items-center">
             <img
               src="/con-vet-logo.png"
               alt="CON-VET.ru"
-              className="w-[220px] sm:w-[280px] md:w-[350px] lg:w-[400px] h-auto max-h-[60px] md:max-h-[72px] object-contain"
+              className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px] h-auto max-h-[50px] md:max-h-[64px] object-contain"
             />
           </a>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-0.5">
-            {/* Питомцы dropdown */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+            {/* Животные dropdown (grouped) */}
             <div className="relative" ref={petsRef}>
               <button
                 onClick={() => setIsPetsOpen(!isPetsOpen)}
                 className={cn(
                   "flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                  isPetsOpen || isPetsCategoryActive
+                  isPetsOpen || isPetsCategoryActive || pathname.includes('/category/exotics') || pathname.includes('/category/farm-animals')
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                Питомцы
+                Животные
                 <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isPetsOpen && "rotate-180")} />
               </button>
 
               {isPetsOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 rounded-lg border bg-popover p-2 shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-64 rounded-lg border bg-popover p-2 shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Питомцы</div>
                   <Link
                     href="/category/pets"
                     onClick={() => setIsPetsOpen(false)}
@@ -95,7 +96,6 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                   >
                     Все питомцы
                   </Link>
-                  <div className="my-1 border-t border-border/50" />
                   {petSubcategories.map((cat) => {
                     const href = `/category/${getCategorySlug(cat)}`
                     const isActive = pathname === href
@@ -106,7 +106,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                         href={href}
                         onClick={() => setIsPetsOpen(false)}
                         className={cn(
-                          "flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-md transition-colors",
+                          "flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors",
                           isActive
                             ? "bg-primary/10 text-primary font-medium"
                             : "text-foreground hover:bg-muted"
@@ -117,12 +117,37 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                       </Link>
                     )
                   })}
+                  
+                  <div className="my-2 border-t border-border/50" />
+                  <div className="px-2.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Другие</div>
+                  
+                  {topLevelSections.filter(s => s.name !== "Нутрициология").map((section) => {
+                    const href = `/category/${section.slug}`
+                    const isActive = pathname === href
+                    const Icon = section.icon
+                    return (
+                      <Link
+                        key={section.slug}
+                        href={href}
+                        onClick={() => setIsPetsOpen(false)}
+                        className={cn(
+                          "flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors",
+                          isActive
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                        {section.name}
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Top-level category links */}
-            {topLevelSections.map((section) => {
+            {/* Top-level category links (Only Nutrition remains) */}
+            {topLevelSections.filter(s => s.name === "Нутрициология").map((section) => {
               const href = `/category/${section.slug}`
               const isActive = pathname === href
               return (
@@ -136,7 +161,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
-                  {"shortName" in section ? section.shortName : section.name}
+                  {section.shortName || section.name}
                 </Link>
               )
             })}
@@ -168,7 +193,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         </div>
 
         {/* Right: Search + Subscribe + Mobile menu */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <SearchDialog />
 
           <SubscribeDialog />
@@ -176,7 +201,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Открыть меню"
           >
@@ -188,7 +213,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t bg-background">
+        <div className="lg:hidden border-t bg-background">
           <div className="container py-4 space-y-1">
             {/* Питомцы — expandable */}
             <button
