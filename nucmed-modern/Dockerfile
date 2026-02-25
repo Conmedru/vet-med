@@ -4,8 +4,8 @@ WORKDIR /app
 
 # 1. Install Dependencies
 FROM base AS deps
-COPY package.json ./
-RUN npm install --package-lock-only && npm ci
+COPY package.json package-lock.json ./
+RUN npm ci --prefer-offline --no-audit
 
 # 2. Build Stage
 FROM base AS builder
