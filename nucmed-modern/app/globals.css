@@ -82,26 +82,28 @@
 
 @utility container {
   margin-inline: auto;
-  padding-inline: 2rem;
+  padding-inline: 1rem;
+  width: 100%;
 
-  @media (min-width: var(--theme-breakpoint-sm)) {
-    max-width: none;
+  @media (min-width: 640px) {
+    max-width: 640px;
+    padding-inline: 2rem;
   }
 
-  @media (min-width: var(--theme-breakpoint-md)) {
-    max-width: 61rem;
+  @media (min-width: 768px) {
+    max-width: 768px;
   }
 
-  @media (min-width: var(--theme-breakpoint-lg)) {
-    max-width: 65rem;
+  @media (min-width: 1024px) {
+    max-width: 1024px;
   }
 
-  @media (min-width: var(--theme-breakpoint-xl)) {
-    max-width: 73rem;
+  @media (min-width: 1280px) {
+    max-width: 1280px;
   }
 
-  @media (min-width: var(--theme-breakpoint-2xl)) {
-    max-width: 80rem;
+  @media (min-width: 1536px) {
+    max-width: 1536px;
   }
 }
 
