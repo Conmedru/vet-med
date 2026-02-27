@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Script from "next/script"
 import { TrendingUp } from "lucide-react"
 import { DBArticleCard, DBArticleSidebar, LatestNews } from "@/components/articles"
 import { FadeIn } from "@/components/ui/fade-in"
@@ -86,15 +87,17 @@ export default async function Home() {
 
   return (
     <>
-      <script
+      <Script
+        id="organization-json-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <script
+      <Script
+        id="website-json-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-    <div className="container py-8 md:py-12" suppressHydrationWarning>
+    <div className="container py-8 md:py-12">
       {/* Full-width Journal Banner */}
       {latestJournalIssue && (
         <div className="mb-10">
@@ -102,7 +105,7 @@ export default async function Home() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10" suppressHydrationWarning>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
         {/* LEFT COLUMN: Text-only Sidebar (Sticky) */}
         <aside className="lg:col-span-3 hidden lg:block">
