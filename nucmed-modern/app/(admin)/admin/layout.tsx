@@ -210,17 +210,18 @@ export default function AdminLayout({
         <div className="p-4 border-t border-stone-100">
           <Link
             href="/"
+            target="_blank"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-stone-500 hover:bg-stone-100 transition-all mb-1"
           >
-            <Home className="h-5 w-5" />
-            На сайт
+            <Home className="h-5 w-5 shrink-0" />
+            <span className="flex-1">На сайт</span>
           </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-stone-500 hover:bg-red-50 hover:text-red-600 transition-all"
           >
-            <LogOut className="h-5 w-5" />
-            Выйти
+            <LogOut className="h-5 w-5 shrink-0" />
+            <span className="flex-1 text-left">Выйти</span>
           </button>
         </div>
       </aside>

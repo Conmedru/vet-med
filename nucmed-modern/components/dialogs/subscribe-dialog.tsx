@@ -111,9 +111,14 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {trigger || <Button>Подписаться</Button>}
+        {trigger || (
+          <Button className="hidden sm:flex px-3 md:px-4">
+            <span className="hidden md:inline">Подписаться</span>
+            <span className="md:hidden text-xs">Подписка</span>
+          </Button>
+        )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Подписка на новости</DialogTitle>
           <DialogDescription>

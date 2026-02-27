@@ -53,14 +53,14 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-20 flex items-center justify-between gap-4">
+      <div className="container h-20 flex items-center justify-between gap-2 md:gap-4">
         {/* Left: Logo + Nav */}
-        <div className="flex items-center gap-4 lg:gap-8">
-          <a href="/" className="shrink-0 flex items-center">
+        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
+          <a href="/" className="shrink min-w-0 flex items-center">
             <img
               src="/con-vet-logo.png"
               alt="CON-VET.ru"
-              className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px] h-auto max-h-[50px] md:max-h-[64px] object-contain"
+              className="w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-[320px] h-auto max-h-[40px] md:max-h-[50px] lg:max-h-[64px] object-contain"
             />
           </a>
 
