@@ -9,6 +9,7 @@ import { generateArticleCover } from "@/lib/ai/replicate";
 import { uploadImage, isS3Configured } from "@/lib/storage/s3";
 import { withRetry } from "@/lib/utils/retry";
 import { parsePartialJson } from "@/lib/utils/json";
+import { scheduleNewArticle } from "@/lib/articles/scheduler";
 
 export interface ProcessingResult {
   success: boolean;
@@ -68,7 +69,7 @@ export async function processAndGenerateCover(
 
     const processingTime = Date.now() - startTime;
 
-    // Step 3: Update article with AI results → DRAFT
+    // Step 3: Update article with AI results → TEMPORARY PROCESSING STATE
     await prisma.article.update({
       where: { id: articleId },
       data: {
@@ -78,7 +79,7 @@ export async function processAndGenerateCover(
         category: result.category,
         tags: result.tags || [],
         significanceScore: result.significanceScore,
-        status: "DRAFT",
+        status: "PROCESSING", // Keep as PROCESSING until cover is done and scheduled
         aiModel: aiResponse.model,
         aiPromptVersion: "v2.0",
         processingCostUsd: aiResponse.costUsd,
@@ -115,8 +116,16 @@ export async function processAndGenerateCover(
         );
       } catch (coverError) {
         console.error(`[Process] Cover failed for ${articleId}:`, coverError);
-        // Cover failure is non-fatal — article stays as DRAFT
+        // Cover failure is non-fatal — article status handling will proceed
       }
+    }
+
+    // Step 5: Schedule the article
+    const scheduled = await scheduleNewArticle(articleId);
+
+    if (!scheduled) {
+      // Fallback happened, it's a DRAFT now.
+      console.log(`[Process] Warning: Could not schedule ${articleId}, fell back to DRAFT.`);
     }
 
     return {

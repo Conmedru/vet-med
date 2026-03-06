@@ -45,7 +45,7 @@ export class RSSAdapter extends BaseAdapter {
       },
       timeout: 30000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NucmedBot/1.0; +https://nuclear.ru)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/rss+xml, application/xml, text/xml',
       },
     });
@@ -154,7 +154,7 @@ export class RSSAdapter extends BaseAdapter {
   private async parseWithCheerio(url: string): Promise<ScrapedArticle[]> {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NucmedBot/1.0; +https://nuclear.ru)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/rss+xml, application/xml, text/xml',
       },
     });
