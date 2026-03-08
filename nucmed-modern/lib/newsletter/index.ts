@@ -6,7 +6,7 @@
 import { prisma } from '@/lib/prisma';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { unisender } from '@/lib/unisender';
+import { unisender, DEFAULT_LIST_ID } from '@/lib/unisender';
 import { generateDigestHtml, generateNotificationHtml } from './templates';
 
 export interface NewsletterArticle {
@@ -58,7 +58,7 @@ export async function sendNewArticleNotification(articleId: string) {
   }
   console.log(`[Newsletter] Found article: ${article.title || article.titleOriginal}`);
 
-  let listId = process.env.UNISENDER_LIST_ID;
+  let listId = DEFAULT_LIST_ID;
   if (!listId) {
     // Try to fetch default list
     try {
@@ -127,7 +127,7 @@ export async function sendNewArticleNotification(articleId: string) {
 }
 
 export async function sendWeeklyDigest(digest: NewsletterDigest) {
-  let listId = process.env.UNISENDER_LIST_ID;
+  let listId = DEFAULT_LIST_ID;
   if (!listId) {
     // Try to fetch default list
     try {
