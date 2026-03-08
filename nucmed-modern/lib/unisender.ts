@@ -2,7 +2,7 @@ import { CACHE } from "@/lib/config";
 import { format } from "date-fns";
 
 const UNISENDER_API_KEY = process.env.UNISENDER || process.env.UNISENDER_API_KEY;
-const UNISENDER_FROM_EMAIL = process.env.UNISENDER_FROM_EMAIL || "info@conmed.ru";
+const UNISENDER_FROM_EMAIL = process.env.UNISENDER_FROM_EMAIL || "conmed.ru@outlook.com";
 const UNISENDER_FROM_NAME = process.env.UNISENDER_FROM_NAME || "Conmed";
 const UNISENDER_LOGIN = process.env.UNISENDER_LOGIN;
 const BASE_URL = "https://api.unisender.com/ru/api";
