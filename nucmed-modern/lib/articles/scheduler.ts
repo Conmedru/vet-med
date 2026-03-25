@@ -1,110 +1,96 @@
-import { prisma } from "@/lib/prisma";
-import { startOfDay, endOfDay, addMinutes, isBefore, isAfter, setHours, setMinutes, max } from "date-fns";
+import { prisma } from '../prisma';
+import { ArticleStatus } from '@prisma/client';
+import { addMinutes, setHours, setMinutes, startOfDay, isBefore, isAfter, addDays, max } from 'date-fns';
 
-const MAX_ARTICLES_PER_DAY = 10;
-const INTERVAL_MINUTES = 90;
+const DAILY_LIMIT = 10;
+const MIN_INTERVAL_MINUTES = 90;
 const START_HOUR = 7;
 const END_HOUR = 22;
 
+/**
+ * Schedules a newly processed article for publishing.
+ * Logic: Spaced out (90m), daily limit (10), 07:00-22:00 window.
+ */
 export async function scheduleNewArticle(articleId: string) {
-    let targetDate = new Date();
-    let scheduledAt: Date | null = null;
-    let attempts = 0;
+  const now = new Date();
+  let targetDate = startOfDay(now);
 
-    // Search for the next available slot within the next 7 days
-    while (!scheduledAt && attempts < 7) {
-        const dayStart = startOfDay(targetDate);
-        const dayEnd = endOfDay(targetDate);
+  // 1. Find the first available slot starting from now
+  // We look for the latest scheduledAt for current and future days
+  const lastScheduled = await prisma.article.findFirst({
+    where: {
+      status: ArticleStatus.SCHEDULED,
+      scheduledAt: { not: null },
+    },
+    orderBy: { scheduledAt: 'desc' },
+    select: { scheduledAt: true },
+  });
 
-        // Count how many articles are already scheduled or published for this target day
-        const count = await prisma.article.count({
-            where: {
-                OR: [
-                    { status: "SCHEDULED", scheduledAt: { gte: dayStart, lte: dayEnd } },
-                    { status: "PUBLISHED", publishedAt: { gte: dayStart, lte: dayEnd } }
-                ]
-            }
-        });
+  let nextSlot: Date;
 
-        if (count < MAX_ARTICLES_PER_DAY) {
-            // Find the latest scheduled article for this day to calculate the next slot
-            const latestScheduled = await prisma.article.findFirst({
-                where: {
-                    status: "SCHEDULED",
-                    scheduledAt: { gte: dayStart, lte: dayEnd }
-                },
-                orderBy: { scheduledAt: 'desc' },
-                select: { scheduledAt: true }
-            });
+  if (lastScheduled?.scheduledAt && isAfter(lastScheduled.scheduledAt, now)) {
+    // There are already articles scheduled in the future
+    nextSlot = addMinutes(lastScheduled.scheduledAt, MIN_INTERVAL_MINUTES);
+  } else {
+    // No future articles, start scheduling from now + interval
+    nextSlot = addMinutes(now, MIN_INTERVAL_MINUTES);
+  }
 
-            // Find the latest published article for this day to calculate the next slot
-            const latestPublished = await prisma.article.findFirst({
-                where: {
-                    status: "PUBLISHED",
-                    publishedAt: { gte: dayStart, lte: dayEnd }
-                },
-                orderBy: { publishedAt: 'desc' },
-                select: { publishedAt: true }
-            });
+  // 2. Adjust for business hours (07:00 - 22:00)
+  nextSlot = adjustForBusinessHours(nextSlot);
 
-            const now = new Date();
+  // 3. Check daily limit for the target slot's day
+  let finalSlot = await ensureDailyLimit(nextSlot);
 
-            // Determine base time
-            let baseTime = dayStart;
+  console.log(`[Scheduler] Scheduling article ${articleId} for ${finalSlot.toISOString()}`);
 
-            // If target day is today, base time is max(now, latest_scheduled, latest_published)
-            if (dayStart.getTime() === startOfDay(now).getTime()) {
-                baseTime = now;
-            }
+  return prisma.article.update({
+    where: { id: articleId },
+    data: {
+      status: ArticleStatus.SCHEDULED,
+      scheduledAt: finalSlot,
+    },
+  });
+}
 
-            if (latestScheduled?.scheduledAt) {
-                baseTime = max([baseTime, latestScheduled.scheduledAt]);
-            }
+function adjustForBusinessHours(date: Date): Date {
+  const hour = date.getHours();
+  let adjusted = new Date(date);
 
-            if (latestPublished?.publishedAt) {
-                baseTime = max([baseTime, latestPublished.publishedAt]);
-            }
+  if (hour < START_HOUR) {
+    // Too early, move to 07:00 today
+    adjusted = setHours(setMinutes(adjusted, 0), START_HOUR);
+  } else if (hour >= END_HOUR) {
+    // Too late, move to 07:00 tomorrow
+    adjusted = addDays(adjusted, 1);
+    adjusted = setHours(setMinutes(adjusted, 0), START_HOUR);
+  }
 
-            // Propose a slot: base time + interval
-            let proposedSlot = addMinutes(baseTime, INTERVAL_MINUTES);
+  return adjusted;
+}
 
-            // Snap to bounds
-            const dayStartBoundary = setMinutes(setHours(targetDate, START_HOUR), 0);
-            const dayEndBoundary = setMinutes(setHours(targetDate, END_HOUR), 0);
+async function ensureDailyLimit(date: Date): Promise<Date> {
+  let currentSlot = new Date(date);
+  
+  while (true) {
+    const dayStart = startOfDay(currentSlot);
+    const dayEnd = setHours(setMinutes(new Date(dayStart), 59), 23);
 
-            if (isBefore(proposedSlot, dayStartBoundary)) {
-                proposedSlot = dayStartBoundary;
-            }
-
-            if (isBefore(proposedSlot, dayEndBoundary) || proposedSlot.getTime() === dayEndBoundary.getTime()) {
-                scheduledAt = proposedSlot;
-            }
-        }
-
-        if (!scheduledAt) {
-            // Move to next day and retry
-            targetDate = addMinutes(dayEnd, 1); // Jump to next day 00:00:01
-            attempts++;
-        }
-    }
-
-    if (!scheduledAt) {
-        console.error(`[Scheduler] Could not find a slot for article ${articleId} within 7 days. Falling back to draft.`);
-        await prisma.article.update({
-            where: { id: articleId },
-            data: { status: "DRAFT" }
-        });
-        return false;
-    }
-
-    console.log(`[Scheduler] Scheduling article ${articleId} for ${scheduledAt.toISOString()}`);
-    await prisma.article.update({
-        where: { id: articleId },
-        data: {
-            status: "SCHEDULED",
-            scheduledAt
-        }
+    const count = await prisma.article.count({
+      where: {
+        OR: [
+          { status: ArticleStatus.PUBLISHED, publishedAt: { gte: dayStart, lte: dayEnd } },
+          { status: ArticleStatus.SCHEDULED, scheduledAt: { gte: dayStart, lte: dayEnd } },
+        ],
+      },
     });
 
-    return true;
+    if (count < DAILY_LIMIT) {
+      return currentSlot;
+    }
+
+    // Daily limit reached for this day, move to 07:00 next day
+    currentSlot = addDays(dayStart, 1);
+    currentSlot = setHours(setMinutes(currentSlot, 0), START_HOUR);
+  }
 }

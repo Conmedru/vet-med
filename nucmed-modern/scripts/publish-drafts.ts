@@ -1,91 +1,48 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
+import { ArticleStatus } from '@prisma/client';
 
 async function main() {
-    const args = process.argv.slice(2);
-    const isDryRun = args.includes("--dry-run");
+  console.log('📝 [Publish] Starting safe bulk publishing of drafts...');
 
-    console.log(`[Publish Drafts] Starting script. Dry run: ${isDryRun}`);
+  // Find drafts that have required fields for publishing
+  const drafts = await prisma.article.findMany({
+    where: {
+      status: ArticleStatus.DRAFT,
+      title: { not: null },
+      content: { not: null },
+      coverImageUrl: { not: null },
+    },
+  });
 
-    // Find all DRAFT articles with required fields
-    const draftsToPublish = await prisma.article.findMany({
-        where: {
-            status: "DRAFT",
-            title: { not: null },
-            content: { not: null },
-            coverImageUrl: { not: null },
+  console.log(`📊 [Publish] Found ${drafts.length} drafts ready for publishing.`);
+
+  let successCount = 0;
+  for (const article of drafts) {
+    try {
+      // Set publishedAt to originalPublishedAt if available, otherwise now
+      const publishDate = article.originalPublishedAt || new Date();
+
+      await prisma.article.update({
+        where: { id: article.id },
+        data: {
+          status: ArticleStatus.PUBLISHED,
+          publishedAt: publishDate,
         },
-        select: {
-            id: true,
-            title: true,
-            originalPublishedAt: true,
-            createdAt: true,
-        },
-    });
-
-    console.log(`[Publish Drafts] Found ${draftsToPublish.length} valid drafts to publish.`);
-
-    if (draftsToPublish.length === 0) {
-        console.log("[Publish Drafts] Nothing to do.");
-        return;
+      });
+      
+      console.log(`   ✅ Published: ${article.title?.substring(0, 50)}...`);
+      successCount++;
+    } catch (error) {
+      console.error(`   ❌ Failed to publish ${article.id}:`, error);
     }
+  }
 
-    let publishedCount = 0;
-    let errorCount = 0;
-
-    for (const article of draftsToPublish) {
-        try {
-            const publishDate = article.originalPublishedAt || article.createdAt;
-
-            if (!isDryRun) {
-                await prisma.article.update({
-                    where: { id: article.id },
-                    data: {
-                        status: "PUBLISHED",
-                        publishedAt: publishDate,
-                    },
-                });
-
-                // Log activity
-                await prisma.activityLog.create({
-                    data: {
-                        action: "article.bulk_published",
-                        entityType: "article",
-                        entityId: article.id,
-                        metadata: {
-                            actor: "system_script",
-                            title: article.title,
-                        }
-                    }
-                });
-            }
-
-            console.log(`[${isDryRun ? "DRY-RUN" : "PUBLISHED"}] ${article.title?.slice(0, 50)}... -> Set to ${publishDate.toISOString()}`);
-            publishedCount++;
-        } catch (error) {
-            console.error(`[ERROR] Failed to publish article ${article.id}:`, error);
-            errorCount++;
-        }
-    }
-
-    console.log(`\n[Publish Drafts] Summary:`);
-    console.log(`- Total prepared: ${draftsToPublish.length}`);
-    console.log(`- Successfully updated: ${publishedCount}`);
-    console.log(`- Errors: ${errorCount}`);
-
-    if (isDryRun) {
-        console.log(`\nThis was a DRY RUN. Run without --dry-run to commit changes.`);
-    } else {
-        console.log(`\nNote: Email notifications were EXPLICITLY OMITTED during this bulk run.`);
-    }
+  console.log(`🏁 [Publish] Complete. ${successCount} articles published.`);
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error('💥 [Publish] Fatal error:', e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
