@@ -53,6 +53,7 @@ model Event {
   id          String   @id @default(cuid())
   title       String
   description String?
+  linkUrl     String?
   organizer   String
   eventDate   DateTime
   createdAt   DateTime @default(now())

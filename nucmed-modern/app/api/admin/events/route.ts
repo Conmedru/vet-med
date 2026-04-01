@@ -17,6 +17,10 @@ export async function GET(request: NextRequest) {
     const events = await listEventsAdmin();
     return NextResponse.json(EventListResponseSchema.parse({ events }));
   } catch (error) {
+    if (error instanceof EventServiceError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
+
     console.error("[Admin Events] list error:", error);
     return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
   }

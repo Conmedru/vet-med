@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EventApiItem } from "@/lib/schemas/events";
 
@@ -164,13 +164,6 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
             <div className="text-2xl font-serif font-bold tracking-tight text-stone-900 sm:text-3xl">
               Календарь событий
             </div>
-            <div className="max-w-2xl text-sm text-stone-500 sm:text-base">
-              Следите за отраслевыми конференциями, образовательными встречами и профессиональными событиями.
-            </div>
-          </div>
-          <div className="rounded-2xl bg-stone-50 px-4 py-3 text-right">
-            <div className="text-xs uppercase tracking-[0.18em] text-stone-400">Всего в месяце</div>
-            <div className="mt-1 text-2xl font-semibold text-stone-900">{events.length}</div>
           </div>
         </div>
 
@@ -179,7 +172,8 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
             <button
               type="button"
               onClick={() => moveMonth(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary"
+              disabled={isLoading}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Предыдущий месяц"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -190,7 +184,8 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
             <button
               type="button"
               onClick={() => moveMonth(1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary"
+              disabled={isLoading}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Следующий месяц"
             >
               <ChevronRight className="h-4 w-4" />
@@ -242,13 +237,6 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
               );
             })}
           </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-stone-500">
-            <div>
-              {isLoading ? "Обновляем календарь…" : `Отмечены ${eventsByDate.size} ${eventsByDate.size === 1 ? "день" : eventsByDate.size < 5 ? "дня" : "дней"} с событиями`}
-            </div>
-            <div className="text-xs uppercase tracking-[0.18em] text-stone-400">UTC-safe</div>
-          </div>
         </div>
       </div>
 
@@ -260,19 +248,12 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
               {formatFullDate(`${selectedDateKey}T00:00:00.000Z`)}
             </div>
           </div>
-          <div className="rounded-2xl bg-primary/5 px-4 py-3 text-right">
-            <div className="text-xs uppercase tracking-[0.18em] text-stone-400">Событий</div>
-            <div className="mt-1 text-2xl font-semibold text-stone-900">{selectedDayEvents.length}</div>
-          </div>
         </div>
 
         <div className="mt-5 space-y-4">
           {selectedDayEvents.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-5 py-10 text-center">
               <div className="text-lg font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
-              <div className="mt-2 text-sm text-stone-500">
-                Выберите другую дату с отметкой в календаре или добавьте событие через админку.
-              </div>
             </div>
           ) : (
             selectedDayEvents.map((event) => (
@@ -296,6 +277,17 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                   <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-stone-600">
                     {event.description}
                   </div>
+                )}
+                {event.linkUrl && (
+                  <a
+                    href={event.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                  >
+                    Перейти к мероприятию
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
                 )}
               </article>
             ))

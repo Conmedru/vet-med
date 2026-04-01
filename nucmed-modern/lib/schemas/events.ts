@@ -9,6 +9,7 @@ export const EventCreateSchema = z
   .object({
     title: z.string().trim().min(1).max(300),
     description: z.preprocess(emptyToNull, z.string().trim().max(4000).nullable().optional()),
+    linkUrl: z.preprocess(emptyToNull, z.string().trim().url().max(2000).nullable().optional()),
     organizer: z.string().trim().min(1).max(300),
     eventDate: z.coerce.date(),
   })
@@ -18,6 +19,7 @@ export const EventUpdateSchema = z
   .object({
     title: z.string().trim().min(1).max(300).optional(),
     description: z.preprocess(emptyToNull, z.string().trim().max(4000).nullable().optional()),
+    linkUrl: z.preprocess(emptyToNull, z.string().trim().url().max(2000).nullable().optional()),
     organizer: z.string().trim().min(1).max(300).optional(),
     eventDate: z.coerce.date().optional(),
   })
@@ -27,6 +29,7 @@ export const EventApiItemSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().nullable(),
+  linkUrl: z.string().nullable(),
   organizer: z.string(),
   eventDate: z.string().datetime(),
   createdAt: z.string().datetime(),

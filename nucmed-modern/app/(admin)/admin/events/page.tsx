@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowLeft, Building2, CalendarDays, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, CalendarDays, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { formatDateUTC } from "@/lib/utils/date";
@@ -164,6 +164,17 @@ export default function AdminEventsPage() {
                             {event.description}
                           </div>
                         )}
+                        {event.linkUrl && (
+                          <a
+                            href={event.linkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                          >
+                            Перейти к странице мероприятия
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
                       </div>
 
                       <div className="flex shrink-0 items-center gap-2">
@@ -230,6 +241,7 @@ function EventForm({
   const [title, setTitle] = useState(event?.title || "");
   const [organizer, setOrganizer] = useState(event?.organizer || "");
   const [description, setDescription] = useState(event?.description || "");
+  const [linkUrl, setLinkUrl] = useState(event?.linkUrl || "");
   const [eventDate, setEventDate] = useState(event?.eventDate.slice(0, 10) || format(new Date(), "yyyy-MM-dd"));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -244,6 +256,7 @@ function EventForm({
         title: title.trim(),
         organizer: organizer.trim(),
         description: description.trim() || null,
+        linkUrl: linkUrl.trim() || null,
         eventDate: new Date(`${eventDate}T00:00:00.000Z`).toISOString(),
       };
 
@@ -316,6 +329,17 @@ function EventForm({
               onChange={(inputEvent) => setEventDate(inputEvent.target.value)}
               className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-stone-700">Ссылка на мероприятие</label>
+            <input
+              type="url"
+              value={linkUrl}
+              onChange={(inputEvent) => setLinkUrl(inputEvent.target.value)}
+              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://example.com/event"
             />
           </div>
 

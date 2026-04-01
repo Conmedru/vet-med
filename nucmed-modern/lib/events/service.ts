@@ -6,6 +6,7 @@ const eventSelect = {
   id: true,
   title: true,
   description: true,
+  linkUrl: true,
   organizer: true,
   eventDate: true,
   createdAt: true,
@@ -23,11 +24,26 @@ export class EventServiceError extends Error {
   }
 }
 
+function normalizeEventError(error: unknown): never {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2025") {
+      throw new EventServiceError("Event not found", 404);
+    }
+
+    if (error.code === "P2021") {
+      throw new EventServiceError("Events storage is not initialized", 503);
+    }
+  }
+
+  throw error;
+}
+
 function toApiEvent(event: EventRecord): EventApiItem {
   return {
     id: event.id,
     title: event.title,
     description: event.description,
+    linkUrl: event.linkUrl,
     organizer: event.organizer,
     eventDate: event.eventDate.toISOString(),
     createdAt: event.createdAt.toISOString(),
@@ -72,55 +88,72 @@ export function getEventDateKey(value: string | Date): string {
 }
 
 export async function listEventsAdmin(): Promise<EventApiItem[]> {
-  const events = await prisma.event.findMany({
-    orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
-    select: eventSelect,
-  });
+  try {
+    const events = await prisma.event.findMany({
+      orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
+      select: eventSelect,
+    });
 
-  return events.map(toApiEvent);
+    return events.map(toApiEvent);
+  } catch (error) {
+    normalizeEventError(error);
+  }
 }
 
 export async function listEventsByMonth(month?: string | null): Promise<{ month: string; events: EventApiItem[] }> {
   const { monthKey, start, end } = getMonthRange(month);
-  const events = await prisma.event.findMany({
-    where: {
-      eventDate: {
-        gte: start,
-        lt: end,
+  try {
+    const events = await prisma.event.findMany({
+      where: {
+        eventDate: {
+          gte: start,
+          lt: end,
+        },
       },
-    },
-    orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
-    select: eventSelect,
-  });
+      orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
+      select: eventSelect,
+    });
 
-  return {
-    month: monthKey,
-    events: events.map(toApiEvent),
-  };
+    return {
+      month: monthKey,
+      events: events.map(toApiEvent),
+    };
+  } catch (error) {
+    normalizeEventError(error);
+  }
 }
 
 export async function getEventById(id: string): Promise<EventApiItem | null> {
-  const event = await prisma.event.findUnique({
-    where: { id },
-    select: eventSelect,
-  });
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: eventSelect,
+    });
 
-  if (!event) return null;
-  return toApiEvent(event);
+    if (!event) return null;
+    return toApiEvent(event);
+  } catch (error) {
+    normalizeEventError(error);
+  }
 }
 
 export async function createEvent(input: EventCreateInput): Promise<EventApiItem> {
-  const event = await prisma.event.create({
-    data: {
-      title: input.title,
-      description: input.description || null,
-      organizer: input.organizer,
-      eventDate: input.eventDate,
-    },
-    select: eventSelect,
-  });
+  try {
+    const event = await prisma.event.create({
+      data: {
+        title: input.title,
+        description: input.description || null,
+        linkUrl: input.linkUrl || null,
+        organizer: input.organizer,
+        eventDate: input.eventDate,
+      },
+      select: eventSelect,
+    });
 
-  return toApiEvent(event);
+    return toApiEvent(event);
+  } catch (error) {
+    normalizeEventError(error);
+  }
 }
 
 export async function updateEvent(id: string, input: EventUpdateInput): Promise<EventApiItem> {
@@ -130,6 +163,7 @@ export async function updateEvent(id: string, input: EventUpdateInput): Promise<
       data: {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.description !== undefined ? { description: input.description || null } : {}),
+        ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl || null } : {}),
         ...(input.organizer !== undefined ? { organizer: input.organizer } : {}),
         ...(input.eventDate !== undefined ? { eventDate: input.eventDate } : {}),
       },
@@ -138,14 +172,7 @@ export async function updateEvent(id: string, input: EventUpdateInput): Promise<
 
     return toApiEvent(event);
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      throw new EventServiceError("Event not found", 404);
-    }
-
-    throw error;
+    normalizeEventError(error);
   }
 }
 
@@ -155,13 +182,6 @@ export async function deleteEvent(id: string): Promise<void> {
       where: { id },
     });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      throw new EventServiceError("Event not found", 404);
-    }
-
-    throw error;
+    normalizeEventError(error);
   }
 }

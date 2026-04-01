@@ -18,6 +18,7 @@ coverage
 
 # Large files / backups
 *.sql
+!nucmed-modern/prisma/migrations/**/*.sql
 *.dump
 replicate-prediction-*.png
 con-vet.ru.png

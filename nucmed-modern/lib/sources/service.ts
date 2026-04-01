@@ -24,6 +24,7 @@ export interface SourceListItem {
   articlesCount: number;
   health: SourceHealthStatus;
   healthMessage: string;
+  lastErrorMessage: string | null;
   metrics: SourceHealthMetrics;
   createdAt: Date;
 }
@@ -154,6 +155,7 @@ export async function getSourcesWithHealth(): Promise<SourceListItem[]> {
       select: {
         entityId: true,
         success: true,
+        errorMessage: true,
         metadata: true,
         createdAt: true,
       },
@@ -175,6 +177,7 @@ export async function getSourcesWithHealth(): Promise<SourceListItem[]> {
   return sources.map((source) => {
     const sourceLogs = logsBySource.get(source.id) || [];
     const successLogs = sourceLogs.filter((entry) => entry.success);
+    const latestError = sourceLogs.find((entry) => !entry.success && entry.errorMessage)?.errorMessage ?? null;
 
     const totalFetched = sourceLogs.reduce(
       (sum, entry) => sum + readNumberField(entry.metadata as Prisma.JsonValue, "totalFetched"),
@@ -217,6 +220,7 @@ export async function getSourcesWithHealth(): Promise<SourceListItem[]> {
       articlesCount: source._count.articles,
       health: derivedHealth.health,
       healthMessage: derivedHealth.healthMessage,
+      lastErrorMessage: latestError,
       metrics: {
         duplicateRatio,
         parseErrorRatio,

@@ -12,7 +12,6 @@ import {
   Clock,
   RefreshCw,
   ExternalLink,
-  Play,
   Zap,
   Edit2
 } from "lucide-react";
@@ -29,6 +28,7 @@ interface Source {
   articlesCount: number;
   health: "healthy" | "degraded" | "stale" | "broken" | "never" | "inactive";
   healthMessage: string;
+  lastErrorMessage: string | null;
   metrics?: {
     duplicateRatio: number | null;
     parseErrorRatio: number | null;
@@ -274,11 +274,18 @@ export default function SourcesPage() {
 
                       {/* Health Status */}
                       <td className="px-6 py-4">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${bg}`}>
-                          <HealthIcon className={`h-4 w-4 ${color}`} />
-                          <span className={`text-xs font-medium ${color}`}>
-                            {source.healthMessage}
-                          </span>
+                        <div className="space-y-2">
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${bg}`}>
+                            <HealthIcon className={`h-4 w-4 ${color}`} />
+                            <span className={`text-xs font-medium ${color}`}>
+                              {source.healthMessage}
+                            </span>
+                          </div>
+                          {source.lastErrorMessage && (source.health === "broken" || source.health === "degraded") ? (
+                            <div className="max-w-xs text-xs leading-5 text-red-600">
+                              {source.lastErrorMessage}
+                            </div>
+                          ) : null}
                         </div>
                       </td>
 
