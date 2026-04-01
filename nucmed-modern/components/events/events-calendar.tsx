@@ -153,46 +153,46 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
   }
 
   return (
-    <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-6">
-      <div className="rounded-2xl border border-stone-200/70 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-5">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+    <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-5">
+      <div className="rounded-2xl border border-stone-200/70 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               <CalendarDays className="h-3.5 w-3.5" />
               Мероприятия
             </div>
-            <div className="text-2xl font-serif font-bold tracking-tight text-stone-900 sm:text-3xl">
+            <div className="text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl">
               Календарь событий
             </div>
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-stone-100 bg-stone-50/70 p-4 sm:p-5">
+        <div className="mt-4 rounded-2xl border border-stone-100 bg-stone-50/70 p-3.5 sm:p-4">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => moveMonth(-1)}
               disabled={isLoading}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Предыдущий месяц"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="text-center text-lg font-semibold capitalize text-stone-900 sm:text-xl">
+            <div className="text-center text-base font-semibold capitalize text-stone-900 sm:text-lg">
               {formatMonthLabel(currentMonth)}
             </div>
             <button
               type="button"
               onClick={() => moveMonth(1)}
               disabled={isLoading}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Следующий месяц"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">
+          <div className="mt-4 grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
             {dayNames.map((day) => (
               <div key={day} className="py-1">
                 {day}
@@ -200,10 +200,10 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
             ))}
           </div>
 
-          <div className="mt-3 grid grid-cols-7 gap-2">
+          <div className="mt-2.5 grid grid-cols-7 gap-1.5">
             {calendarDays.map((day, index) => {
               if (day === null) {
-                return <div key={`empty-${index}`} className="aspect-square rounded-2xl" />;
+                return <div key={`empty-${index}`} className="aspect-square rounded-xl" />;
               }
 
               const dateKey = `${currentMonth}-${String(day).padStart(2, "0")}`;
@@ -217,9 +217,9 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                   type="button"
                   onClick={() => setSelectedDateKey(dateKey)}
                   className={cn(
-                    "relative aspect-square rounded-2xl border text-sm font-medium transition-all",
+                    "relative aspect-square rounded-xl border text-[15px] font-medium transition-all",
                     isSelected
-                      ? "border-primary bg-primary text-white shadow-lg shadow-primary/20"
+                      ? "border-primary bg-primary text-white shadow-md shadow-primary/15"
                       : "border-stone-200 bg-white text-stone-700 hover:border-primary/30 hover:text-primary",
                     isToday && !isSelected ? "border-primary/40 text-primary" : ""
                   )}
@@ -228,7 +228,7 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                   {hasEvents && (
                     <span
                       className={cn(
-                        "absolute bottom-2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
+                        "absolute bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
                         isSelected ? "bg-white" : "bg-primary"
                       )}
                     />
@@ -240,41 +240,41 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200/70 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-5">
+      <div className="rounded-2xl border border-stone-200/70 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">На выбранную дату</div>
-            <div className="mt-2 text-xl font-serif font-bold tracking-tight text-stone-900 sm:text-2xl">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">На выбранную дату</div>
+            <div className="mt-1.5 text-lg font-semibold tracking-tight text-stone-900 sm:text-xl">
               {formatFullDate(`${selectedDateKey}T00:00:00.000Z`)}
             </div>
           </div>
         </div>
 
-        <div className="mt-5 space-y-4">
+        <div className="mt-4 space-y-3">
           {selectedDayEvents.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-5 py-10 text-center">
-              <div className="text-lg font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
+            <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-4 py-8 text-center">
+              <div className="text-base font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
             </div>
           ) : (
             selectedDayEvents.map((event) => (
               <article
                 key={event.id}
-                className="rounded-2xl border border-stone-200/80 bg-gradient-to-br from-white to-stone-50 p-5 shadow-sm"
+                className="rounded-2xl border border-stone-200/80 bg-gradient-to-br from-white to-stone-50 p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="text-lg font-semibold text-stone-900">{event.title}</div>
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-600">
+                    <div className="text-base font-semibold leading-6 text-stone-900">{event.title}</div>
+                    <div className="mt-2.5 inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
                       <Users className="h-3.5 w-3.5" />
                       {event.organizer}
                     </div>
                   </div>
-                  <div className="shrink-0 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                  <div className="shrink-0 rounded-xl bg-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                     {new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(event.eventDate))}
                   </div>
                 </div>
                 {event.description && (
-                  <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-stone-600">
+                  <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-600">
                     {event.description}
                   </div>
                 )}
@@ -283,7 +283,7 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                     href={event.linkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                   >
                     Перейти к мероприятию
                     <ExternalLink className="h-4 w-4" />
