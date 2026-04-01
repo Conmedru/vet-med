@@ -58,6 +58,10 @@ export const CONTACT = {
   ADDRESS: 'Москва, Россия',
 } as const;
 
+export const FEATURES = {
+  PUBLIC_JOURNAL: false,
+} as const;
+
 export const PAGINATION = {
   SIDEBAR_ARTICLES: 20,
   FEATURED_ARTICLES: 5,
@@ -72,5 +76,6 @@ export const CACHE = {
 
 export const CONTENT = {
   MIN_SIGNIFICANCE_SCORE: 0.6,
+  EDITORIAL_MAX_AGE_DAYS: 7,
   WORDS_PER_MINUTE: 200,
 } as const;

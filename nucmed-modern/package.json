@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "demo:article-format": "tsx scripts/generate-article-demo.ts",
     "migrate:covers": "tsx scripts/migrate-cover-images.ts"
   },
   "prisma": {

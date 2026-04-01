@@ -10,6 +10,7 @@ import { uploadImage, isS3Configured } from "@/lib/storage/s3";
 import { withRetry } from "@/lib/utils/retry";
 import { parsePartialJson } from "@/lib/utils/json";
 import { scheduleNewArticle } from "@/lib/articles/scheduler";
+import { buildArticleProcessingUserPrompt, PROCESSING_PROMPT_VERSION } from "@/lib/ai/prompts";
 
 export interface ProcessingResult {
   success: boolean;
@@ -54,11 +55,12 @@ export async function processAndGenerateCover(
     const aiModel = (config?.value as string) || "claude-3.7-sonnet";
 
     // Step 2: AI text processing via Replicate
-    const prompt = `Заголовок: ${article.titleOriginal}
-Источник: ${article.source?.name || "Unknown"}
-Текст: ${article.contentOriginal.slice(0, 12000)}
-
-Обработай статью и верни JSON согласно инструкциям.`;
+    const prompt = buildArticleProcessingUserPrompt({
+      sourceName: article.source?.name || "Unknown",
+      titleOriginal: article.titleOriginal,
+      contentOriginal: article.contentOriginal.slice(0, 12000),
+      excerptOriginal: article.excerptOriginal,
+    });
 
     const aiResponse = await callReplicateAI(prompt, aiModel as any);
     const result = parsePartialJson(aiResponse.output);
@@ -81,7 +83,7 @@ export async function processAndGenerateCover(
         significanceScore: result.significanceScore,
         status: "PROCESSING", // Keep as PROCESSING until cover is done and scheduled
         aiModel: aiResponse.model,
-        aiPromptVersion: "v2.0",
+        aiPromptVersion: PROCESSING_PROMPT_VERSION,
         processingCostUsd: aiResponse.costUsd,
         processingError: null,
       },

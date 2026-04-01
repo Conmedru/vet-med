@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   FileText,
   Calendar,
+  CalendarDays,
   Settings,
   LogOut,
   Menu,
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/journal", label: "Журнал", icon: BookOpen },
   { href: "/admin/newsletter", label: "Рассылка", icon: Mail },
   { href: "/admin/sponsored", label: "Реклама", icon: Megaphone },
+  { href: "/admin/events", label: "Мероприятия", icon: CalendarDays },
   { href: "/admin/calendar", label: "Календарь", icon: Calendar },
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];

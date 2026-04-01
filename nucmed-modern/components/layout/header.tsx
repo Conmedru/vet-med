@@ -9,6 +9,7 @@ import { animalCategoryGroups, getCategorySlug } from "@/lib/data"
 import { SearchDialog } from "@/components/search"
 import { cn } from "@/lib/utils"
 import { SubscribeDialog } from "@/components/dialogs/subscribe-dialog"
+import { FEATURES } from "@/lib/config"
 
 const petSubcategories = animalCategoryGroups["Питомцы"]
 
@@ -56,13 +57,13 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
       <div className="container h-20 flex items-center justify-between gap-2 md:gap-4">
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-          <a href="/" className="shrink min-w-0 flex items-center">
+          <Link href="/" className="shrink min-w-0 flex items-center">
             <img
               src="/con-vet-logo.png"
               alt="CON-VET.ru"
               className="w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-[320px] h-auto max-h-[40px] md:max-h-[50px] lg:max-h-[64px] object-contain"
             />
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
@@ -166,17 +167,19 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
               )
             })}
 
-            <Link
-              href="/journal"
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                pathname === "/journal"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              Журнал
-            </Link>
+            {FEATURES.PUBLIC_JOURNAL && (
+              <Link
+                href="/journal"
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                  pathname === "/journal"
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                Журнал
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -272,16 +275,18 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
               Навигация
             </div>
 
-            <Link
-              href="/journal"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={cn(
-                "block px-3 py-2.5 text-sm rounded-md transition-colors",
-                pathname === "/journal" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
-              )}
-            >
-              Журнал
-            </Link>
+            {FEATURES.PUBLIC_JOURNAL && (
+              <Link
+                href="/journal"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  "block px-3 py-2.5 text-sm rounded-md transition-colors",
+                  pathname === "/journal" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+                )}
+              >
+                Журнал
+              </Link>
+            )}
 
             {/* Trending tags in mobile */}
             {trendingTags.length > 0 && (

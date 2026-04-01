@@ -3,6 +3,8 @@
  * Extracted to avoid circular dependencies between replicate.ts and process-article.ts
  */
 
+export const PROCESSING_PROMPT_VERSION = "v2.1-newsroom";
+
 export const PROCESSING_SYSTEM_PROMPT = `Ты — профессиональный редактор портала VetMed, специализирующегося на ветеринарной медицине.
 
 ТВОЯ ЗАДАЧА:
@@ -85,3 +87,20 @@ export const PROCESSING_SYSTEM_PROMPT = `Ты — профессиональны
 - Не добавляй комментарии вне JSON
 - Теги на русском языке, 3-5 штук
 - Весь текст экранирован, \n для переносов строк внутри значений`;
+
+export function buildArticleProcessingUserPrompt(input: {
+  sourceName: string;
+  titleOriginal: string;
+  contentOriginal?: string | null;
+  excerptOriginal?: string | null;
+}): string {
+  return `Обработай следующую статью:
+
+ИСТОЧНИК: ${input.sourceName}
+
+ЗАГОЛОВОК:
+${input.titleOriginal}
+
+СОДЕРЖАНИЕ:
+${input.contentOriginal || input.excerptOriginal || "Содержание недоступно"}`;
+}

@@ -10,7 +10,12 @@ export async function GET() {
       DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING',
       DIRECT_URL: process.env.DIRECT_URL ? 'SET' : 'MISSING',
       CRON_SECRET: process.env.CRON_SECRET ? 'SET' : 'MISSING',
+      ADMIN_API_KEY: process.env.ADMIN_API_KEY ? 'SET' : 'MISSING',
+      INGEST_API_KEY: process.env.INGEST_API_KEY ? 'SET' : 'MISSING',
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ? 'SET' : 'MISSING',
       NODE_ENV: process.env.NODE_ENV || 'not set',
+      APP_ROLE: process.env.APP_ROLE || 'web',
+      RUN_PRISMA_MIGRATIONS: process.env.RUN_PRISMA_MIGRATIONS || 'false',
     },
     database: 'checking...',
     data: {} as Record<string, unknown>,
@@ -62,6 +67,14 @@ export async function GET() {
     (checks.tables as Record<string, string>).journal_issues = 'exists';
   } catch {
     (checks.tables as Record<string, string>).journal_issues = 'MISSING';
+  }
+
+  // Check if events table exists
+  try {
+    await prisma.$queryRaw`SELECT 1 FROM events LIMIT 0`;
+    (checks.tables as Record<string, string>).events = 'exists';
+  } catch {
+    (checks.tables as Record<string, string>).events = 'MISSING';
   }
 
   return NextResponse.json(checks, {

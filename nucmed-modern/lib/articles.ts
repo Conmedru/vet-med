@@ -136,6 +136,54 @@ export const getFeaturedArticles = async (limit = PAGINATION.FEATURED_ARTICLES) 
   }
 };
 
+export const getEditorialFeaturedArticles = async (
+  limit = PAGINATION.FEATURED_ARTICLES,
+  options: { maxAgeDays?: number; fallback?: boolean } = {}
+) => {
+  const maxAgeDays = options.maxAgeDays ?? CONTENT.EDITORIAL_MAX_AGE_DAYS;
+  const fallback = options.fallback ?? true;
+
+  try {
+    const minScore = CONTENT.MIN_SIGNIFICANCE_SCORE;
+    const freshnessThreshold = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000);
+    const freshArticles = await prisma.$queryRaw<DBArticle[]>`
+      SELECT 
+        a."id",
+        a."slug",
+        a."title",
+        a."titleOriginal",
+        a."excerpt",
+        a."category",
+        a."tags",
+        a."coverImageUrl",
+        a."publishedAt",
+        a."originalPublishedAt",
+        a."createdAt",
+        a."significanceScore",
+        json_build_object('name', s."name", 'slug', s."slug") as source
+      FROM "articles" a
+      LEFT JOIN "sources" s ON a."sourceId" = s."id"
+      WHERE a."status" = 'PUBLISHED'
+        AND a."significanceScore" >= ${minScore}
+        AND COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") >= ${freshnessThreshold}
+      ORDER BY a."significanceScore" DESC, COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
+      LIMIT ${limit}
+    `;
+
+    if (freshArticles.length > 0 || !fallback) {
+      return freshArticles;
+    }
+
+    return getFeaturedArticles(limit);
+  } catch (error) {
+    console.error("Failed to fetch editorial featured articles:", error);
+    if (!fallback) {
+      return [];
+    }
+    return getFeaturedArticles(limit);
+  }
+};
+
 export const getTrendingArticles = async (limit = PAGINATION.TRENDING_ARTICLES) => {
   try {
     const articles = await prisma.$queryRaw<DBArticle[]>`

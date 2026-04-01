@@ -1,5 +1,5 @@
 import Replicate from "replicate";
-import { PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { buildArticleProcessingUserPrompt, PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -26,15 +26,7 @@ const SYSTEM_PROMPT = PROCESSING_SYSTEM_PROMPT;
 export async function processArticle(
   input: ArticleProcessingInput
 ): Promise<ArticleProcessingOutput> {
-  const userMessage = `Обработай следующую статью:
-
-ИСТОЧНИК: ${input.sourceName}
-
-ЗАГОЛОВОК:
-${input.titleOriginal}
-
-СОДЕРЖАНИЕ:
-${input.contentOriginal || input.excerptOriginal || "Содержание недоступно"}`;
+  const userMessage = buildArticleProcessingUserPrompt(input);
 
   console.log(`[AI] Processing article: ${input.titleOriginal.substring(0, 50)}...`);
 

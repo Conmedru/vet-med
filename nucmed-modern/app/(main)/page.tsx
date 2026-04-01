@@ -2,8 +2,11 @@ import Link from "next/link"
 import Script from "next/script"
 import { TrendingUp } from "lucide-react"
 import { DBArticleCard, DBArticleSidebar, LatestNews } from "@/components/articles"
+import { EventsCalendar } from "@/components/events/events-calendar"
 import { FadeIn } from "@/components/ui/fade-in"
-import { getPublishedArticles, getFeaturedArticles, getArticleStats, getTrendingTags } from "@/lib/articles"
+import { getPublishedArticles, getEditorialFeaturedArticles, getArticleStats, getTrendingTags } from "@/lib/articles"
+import { FEATURES } from "@/lib/config"
+import { getCurrentMonthKey, listEventsByMonth } from "@/lib/events"
 import { getActiveSponsoredPosts } from "@/lib/sponsored"
 import { getLatestJournalIssueForBanner } from "@/lib/magazine"
 import { NewsletterForm, ExpandableTrends } from "@/components/shared"
@@ -13,13 +16,15 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export default async function Home() {
+  const currentEventsMonth = getCurrentMonthKey();
   const results = await Promise.allSettled([
     getPublishedArticles(20),
-    getFeaturedArticles(5),
+    getEditorialFeaturedArticles(5),
     getArticleStats(),
     getTrendingTags(8),
     getActiveSponsoredPosts(),
-    getLatestJournalIssueForBanner(),
+    FEATURES.PUBLIC_JOURNAL ? getLatestJournalIssueForBanner() : Promise.resolve(null),
+    listEventsByMonth(currentEventsMonth),
   ]);
 
   const articles = results[0].status === 'fulfilled' ? results[0].value : [];
@@ -28,11 +33,12 @@ export default async function Home() {
   const trendingTags = results[3].status === 'fulfilled' ? results[3].value : [];
   const sponsoredPosts = results[4].status === 'fulfilled' ? results[4].value : [];
   const latestJournalIssue = results[5].status === 'fulfilled' ? results[5].value : null;
+  const eventsMonth = results[6].status === 'fulfilled' ? results[6].value : { month: currentEventsMonth, events: [] };
 
   // Log any failures for debugging
   results.forEach((r, i) => {
     if (r.status === 'rejected') {
-      const names = ['getPublishedArticles', 'getFeaturedArticles', 'getArticleStats', 'getTrendingTags', 'getActiveSponsoredPosts', 'getLatestJournalIssueForBanner'];
+      const names = ['getPublishedArticles', 'getEditorialFeaturedArticles', 'getArticleStats', 'getTrendingTags', 'getActiveSponsoredPosts', 'getLatestJournalIssueForBanner', 'listEventsByMonth'];
       console.error(`[Home] ${names[i]} FAILED:`, r.reason);
     }
   });
@@ -99,7 +105,7 @@ export default async function Home() {
       />
     <div className="container py-8 md:py-12">
       {/* Full-width Journal Banner */}
-      {latestJournalIssue && (
+      {FEATURES.PUBLIC_JOURNAL && latestJournalIssue && (
         <div className="mb-10">
           <JournalBanner issue={latestJournalIssue} />
         </div>
@@ -123,10 +129,10 @@ export default async function Home() {
           <section>
             <FadeIn className="mb-8">
               <h1 className="text-4xl font-serif font-bold tracking-tight lg:text-5xl mb-4">
-                Главное сегодня
+                Выбор редакции
               </h1>
               <p className="text-muted-foreground text-lg max-w-2xl">
-                Актуальные новости ветеринарной медицины, исследования и клинические случаи.
+                Редакционный выбор самых сильных материалов ветеринарной медицины за последние дни.
               </p>
             </FadeIn>
 
@@ -178,6 +184,8 @@ export default async function Home() {
               </div>
             </div>
           </section>
+
+          <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} />
 
           {/* Latest News Section */}
           <LatestNews articles={latestNews} sponsoredPosts={sponsoredPosts} maxArticles={10} />

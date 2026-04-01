@@ -16,6 +16,7 @@ export {
   getPublishedArticles,
   getArticlesByCategory,
   getFeaturedArticles,
+  getEditorialFeaturedArticles,
   getTrendingArticles,
   getArticleStats,
   getTrendingTags,

@@ -19,11 +19,12 @@ export interface DBArticle {
   title: string | null;
   titleOriginal: string;
   excerpt: string | null;
-  content: string | null;
+  content?: string | null;
   category: string | null;
   tags: string[];
   coverImageUrl: string | null;
   publishedAt: Date | null;
+  originalPublishedAt: Date | null;
   createdAt: Date;
   significanceScore: number | null;
   source: ArticleSource | null;

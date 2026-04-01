@@ -7,3 +7,8 @@ nuclear-news
 nucmed-modern/node_modules
 nucmed-modern/.next
 nucmed-modern/.env
+nucmed-modern/.env.*
+nucmed-modern/playwright-report
+nucmed-modern/test-results
+nucmed-modern/tests
+nucmed-modern/docs

@@ -8,30 +8,30 @@
 
 | Ключ | Значение |
 | :--- | :--- |
-| `DATABASE_URL` | `postgresql://gen_user:v*e)1.kVIoz9np@02adb95ad871d548d0d754d4.twc1.net:5432/default_db?sslmode=require` |
-| `DIRECT_URL` | `postgresql://gen_user:v*e)1.kVIoz9np@02adb95ad871d548d0d754d4.twc1.net:5432/default_db?sslmode=require` |
+| `DATABASE_URL` | `postgresql://USER:PASSWORD@HOST:5432/DB?sslmode=require` |
+| `DIRECT_URL` | `postgresql://USER:PASSWORD@HOST:5432/DB?sslmode=require` |
 
 ## 2. S3 Хранилище (Обложки)
 
 | Ключ | Значение |
 | :--- | :--- |
 | `S3_ENDPOINT` | `https://s3.twcstorage.ru` |
-| `S3_BUCKET` | `1873f82d-617b-4505-a1ec-3fe47ebe0e64` |
+| `S3_BUCKET` | `YOUR_BUCKET_ID` |
 | `S3_REGION` | `ru-1` |
-| `S3_ACCESS_KEY` | `CD6XLQJ96B3QNQQPYJC6` |
-| `S3_SECRET_KEY` | `JSw4o9HtBwsLBiSvIMvmNm3I4jrRmjf4BfZqmN2s` |
-| `S3_PREFIX` | `vetmed` |
+| `S3_ACCESS_KEY` | `YOUR_ACCESS_KEY` |
+| `S3_SECRET_KEY` | `YOUR_SECRET_KEY` |
+| `S3_PREFIX` | `YOUR_PREFIX` |
 
 ## 3. Настройки Приложения
 
 | Ключ | Значение |
 | :--- | :--- |
-| `NEXT_PUBLIC_SITE_URL` | `https://vet-umbriel.tw1.ru` (или ваш привязанный домен) |
+| `NEXT_PUBLIC_SITE_URL` | `https://YOUR_DOMAIN` |
 | `NODE_ENV` | `production` |
-| `REPLICATE_API_TOKEN` | `r8_****************************************` (See your local .env or Replicate dashboard) |
+| `REPLICATE_API_TOKEN` | `YOUR_REPLICATE_TOKEN` |
 | `AI_MODEL` | `gpt-4o-mini` |
-| `ADMIN_PASSWORD` | *(Придумайте сложный пароль для входа в админку)* |
-| `ADMIN_API_KEY` | *(Придумайте ключ, например `my-secret-admin-key-2024`)* |
+| `ADMIN_PASSWORD` | `YOUR_ADMIN_PASSWORD` |
+| `ADMIN_API_KEY` | `YOUR_ADMIN_API_KEY` |
 
 ---
 
