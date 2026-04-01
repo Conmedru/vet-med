@@ -26,12 +26,28 @@ kill_pid() {
   fi
 }
 
+APP_ROLE="${APP_ROLE:-web}"
+
 require_env DATABASE_URL
 require_env DIRECT_URL
 require_env NEXT_PUBLIC_SITE_URL
-require_env ADMIN_API_KEY
-require_env INGEST_API_KEY
-require_env CRON_SECRET
+
+case "$APP_ROLE" in
+  web)
+    warn_env ADMIN_API_KEY
+    warn_env INGEST_API_KEY
+    warn_env CRON_SECRET
+    ;;
+  cron|all)
+    warn_env ADMIN_API_KEY
+    warn_env INGEST_API_KEY
+    require_env CRON_SECRET
+    ;;
+  *)
+    echo "[Entrypoint] Invalid APP_ROLE: ${APP_ROLE}. Expected web, cron, or all."
+    exit 1
+    ;;
+esac
 
 warn_env NEXT_PUBLIC_APP_URL
 warn_env REPLICATE_API_TOKEN
@@ -61,7 +77,6 @@ start_cron() {
   exec node cron.js
 }
 
-APP_ROLE="${APP_ROLE:-web}"
 SERVER_PID=""
 CRON_PID=""
 
