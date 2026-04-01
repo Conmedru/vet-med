@@ -10,7 +10,7 @@ const DEFAULT_SETTINGS = {
   require_review: true,
   scrape_interval_hours: 6,
   ai_processing_enabled: true,
-  ai_model: "claude-3-sonnet",
+  ai_model: "claude-3.7-sonnet",
   email_notifications: false,
   telegram_notifications: false,
   telegram_bot_token: "",

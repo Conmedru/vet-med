@@ -37,23 +37,13 @@ export interface ReplicateResponse {
   status: "succeeded" | "failed" | "canceled";
 }
 
-interface ReplicatePrediction {
-  id: string;
-  status: "starting" | "processing" | "succeeded" | "failed" | "canceled";
-  output: string[] | string | null;
-  error: string | null;
-  metrics?: {
-    predict_time?: number;
-  };
-}
-
 /**
  * Вызов Replicate API для обработки текста
  * С автоматическим retry при сбоях
  */
 export async function callReplicateAI(
   prompt: string,
-  model: ReplicateModel = "llama-3-70b"
+  model: ReplicateModel = "claude-3.7-sonnet"
 ): Promise<ReplicateResponse> {
   return withRetry(
     () => _callReplicateAI(prompt, model),
