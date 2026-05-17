@@ -11,10 +11,12 @@ import { PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 
 // Модели для обработки текста (можно переключать)
 export const REPLICATE_MODELS = {
-  // Claude 3.5 Haiku - быстрый, стабильный через стандартный API
-  "claude-3.5-haiku": "anthropic/claude-3.5-haiku",
-  // Claude 3.7 Sonnet - требует deployments API (может падать с 404)
+  // Claude 3.7 Sonnet - основная модель
   "claude-3.7-sonnet": "anthropic/claude-3.7-sonnet",
+  // Claude 4 Sonnet - fallback при 404
+  "claude-4-sonnet": "anthropic/claude-4-sonnet",
+  // Claude 3.5 Haiku - быстрый, дешевый
+  "claude-3.5-haiku": "anthropic/claude-3.5-haiku",
   // Claude 3.5 Sonnet
   "claude-3-sonnet": "anthropic/claude-3.5-sonnet",
   // Claude 3 Haiku
@@ -119,11 +121,11 @@ async function _callReplicateAI(
 
   if (prediction.status === "failed" || prediction.status === "canceled") {
     const errMsg = String(prediction.error || "unknown error");
-    // Fallback: if claude-3.7-sonnet returns 404 from Replicate's side, retry with claude-3.5-haiku
+    // Fallback: if claude-3.7-sonnet returns 404 from Replicate's side, retry with claude-4-sonnet
     if (errMsg.includes("404") || errMsg.includes("NotFoundError") || errMsg.includes("NOT_FOUND")) {
       if (modelId === REPLICATE_MODELS["claude-3.7-sonnet"]) {
-        console.warn(`[Replicate] claude-3.7-sonnet returned 404, falling back to claude-3.5-haiku`);
-        modelId = REPLICATE_MODELS["claude-3.5-haiku"];
+        console.warn(`[Replicate] claude-3.7-sonnet returned 404, falling back to claude-4-sonnet`);
+        modelId = REPLICATE_MODELS["claude-4-sonnet"];
         let fallbackPrediction = await replicate.predictions.create({
           model: modelId as `${string}/${string}`,
           input,
@@ -164,8 +166,9 @@ async function _callReplicateAI(
 
   // Расчёт стоимости (приблизительно)
   const costMap: Record<string, number> = {
-    "anthropic/claude-3.5-haiku": 0.004,
     "anthropic/claude-3.7-sonnet": 0.018,
+    "anthropic/claude-4-sonnet": 0.018,
+    "anthropic/claude-3.5-haiku": 0.004,
     "anthropic/claude-3.5-sonnet": 0.015,
     "anthropic/claude-3-haiku": 0.001,
     "anthropic/claude-3-opus": 0.075,
