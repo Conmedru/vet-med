@@ -91,9 +91,7 @@ async function _callReplicateAI(
   const input = {
     prompt: prompt,
     system_prompt: SYSTEM_PROMPT,
-    max_new_tokens: 4096,
-    temperature: 0.3,
-    top_p: 0.9,
+    max_tokens: 4096,
   };
 
   // Create prediction explicitly so we keep the ID even if connection drops
