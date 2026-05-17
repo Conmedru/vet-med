@@ -50,6 +50,16 @@ export async function callReplicateAI(
     {
       maxAttempts: 3,
       initialDelayMs: 2000,
+      retryableErrors: [
+        "ECONNRESET",
+        "ETIMEDOUT",
+        "ENOTFOUND",
+        "rate limit",
+        "429",
+        "503",
+        "502",
+        "timeout",
+      ],
       onRetry: (attempt, error, delay) => {
         console.warn(`[Replicate] Retry ${attempt}, next in ${delay}ms: ${error.message}`);
       },
@@ -78,7 +88,6 @@ async function _callReplicateAI(
   console.log(`[Replicate] Running model: ${modelId}`);
   const startTime = Date.now();
 
-  // Формируем input для Llama/Mixtral
   const input = {
     prompt: prompt,
     system_prompt: SYSTEM_PROMPT,
@@ -87,11 +96,34 @@ async function _callReplicateAI(
     top_p: 0.9,
   };
 
-  // Вызываем модель через SDK
-  const output = await replicate.run(modelId as `${string}/${string}`, { input });
+  // Create prediction explicitly so we keep the ID even if connection drops
+  let prediction = await replicate.predictions.create({
+    model: modelId as `${string}/${string}`,
+    input,
+  });
+  console.log(`[Replicate] Prediction created: ${prediction.id}`);
+
+  // Poll with explicit timeout (240s)
+  const POLL_TIMEOUT_MS = 240_000;
+  const POLL_INTERVAL_MS = 2_000;
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+
+  while (prediction.status !== "succeeded" && prediction.status !== "failed" && prediction.status !== "canceled") {
+    if (Date.now() > deadline) {
+      throw new Error(`Replicate prediction ${prediction.id} timed out after ${POLL_TIMEOUT_MS / 1000}s`);
+    }
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+    prediction = await replicate.predictions.get(prediction.id);
+  }
+
+  if (prediction.status === "failed" || prediction.status === "canceled") {
+    throw new Error(`Prediction ${prediction.status}: ${prediction.error || "unknown error"}`);
+  }
+
+  const output = prediction.output;
 
   const elapsed = Date.now() - startTime;
-  console.log(`[Replicate] Completed in ${elapsed}ms`);
+  console.log(`[Replicate] Completed in ${elapsed}ms (prediction: ${prediction.id})`);
 
   // Собираем output (может быть массивом строк или строкой)
   let outputText: string;
