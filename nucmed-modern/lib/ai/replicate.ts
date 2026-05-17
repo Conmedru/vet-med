@@ -11,13 +11,15 @@ import { PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 
 // Модели для обработки текста (можно переключать)
 export const REPLICATE_MODELS = {
-  // Claude 3.7 Sonnet - новейшая модель (рекомендуется)
+  // Claude 3.5 Haiku - быстрый, стабильный через стандартный API
+  "claude-3.5-haiku": "anthropic/claude-3.5-haiku",
+  // Claude 3.7 Sonnet - требует deployments API (может падать с 404)
   "claude-3.7-sonnet": "anthropic/claude-3.7-sonnet",
-  // Claude 3.5 Sonnet - проверенное качество
+  // Claude 3.5 Sonnet
   "claude-3-sonnet": "anthropic/claude-3.5-sonnet",
-  // Claude 3 Haiku - быстрый, дешевый
+  // Claude 3 Haiku
   "claude-3-haiku": "anthropic/claude-3-haiku",
-  // Claude 3 Opus - максимум качества
+  // Claude 3 Opus
   "claude-3-opus": "anthropic/claude-3-opus",
   // Meta Llama 3 70B - доступная альтернатива
   "llama-3-70b": "meta/meta-llama-3-70b-instruct",
@@ -43,7 +45,7 @@ export interface ReplicateResponse {
  */
 export async function callReplicateAI(
   prompt: string,
-  model: ReplicateModel = "claude-3.7-sonnet"
+  model: ReplicateModel = "claude-3.5-haiku"
 ): Promise<ReplicateResponse> {
   return withRetry(
     () => _callReplicateAI(prompt, model),
@@ -83,7 +85,7 @@ async function _callReplicateAI(
   }
 
   const replicate = new Replicate({ auth: apiToken });
-  const modelId = REPLICATE_MODELS[model];
+  let modelId = REPLICATE_MODELS[model];
 
   console.log(`[Replicate] Running model: ${modelId}`);
   const startTime = Date.now();
@@ -94,7 +96,8 @@ async function _callReplicateAI(
     max_tokens: 4096,
   };
 
-  // Create prediction explicitly so we keep the ID even if connection drops
+  // Official models (e.g. anthropic/*) use predictions.create with { model } field (not { version })
+  // See: https://replicate.com/docs/topics/predictions/create-a-prediction
   let prediction = await replicate.predictions.create({
     model: modelId as `${string}/${string}`,
     input,
@@ -115,7 +118,33 @@ async function _callReplicateAI(
   }
 
   if (prediction.status === "failed" || prediction.status === "canceled") {
-    throw new Error(`Prediction ${prediction.status}: ${prediction.error || "unknown error"}`);
+    const errMsg = String(prediction.error || "unknown error");
+    // Fallback: if claude-3.7-sonnet returns 404 from Replicate's side, retry with claude-3.5-haiku
+    if (errMsg.includes("404") || errMsg.includes("NotFoundError") || errMsg.includes("NOT_FOUND")) {
+      if (modelId === REPLICATE_MODELS["claude-3.7-sonnet"]) {
+        console.warn(`[Replicate] claude-3.7-sonnet returned 404, falling back to claude-3.5-haiku`);
+        modelId = REPLICATE_MODELS["claude-3.5-haiku"];
+        let fallbackPrediction = await replicate.predictions.create({
+          model: modelId as `${string}/${string}`,
+          input,
+        });
+        console.log(`[Replicate] Fallback prediction created: ${fallbackPrediction.id}`);
+        const fallbackDeadline = Date.now() + POLL_TIMEOUT_MS;
+        while (fallbackPrediction.status !== "succeeded" && fallbackPrediction.status !== "failed" && fallbackPrediction.status !== "canceled") {
+          if (Date.now() > fallbackDeadline) throw new Error(`Fallback prediction timed out`);
+          await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+          fallbackPrediction = await replicate.predictions.get(fallbackPrediction.id);
+        }
+        if (fallbackPrediction.status !== "succeeded") {
+          throw new Error(`Fallback prediction ${fallbackPrediction.status}: ${fallbackPrediction.error || "unknown"}`);
+        }
+        prediction = fallbackPrediction;
+      } else {
+        throw new Error(`Prediction ${prediction.status}: ${errMsg}`);
+      }
+    } else {
+      throw new Error(`Prediction ${prediction.status}: ${errMsg}`);
+    }
   }
 
   const output = prediction.output;
@@ -135,6 +164,7 @@ async function _callReplicateAI(
 
   // Расчёт стоимости (приблизительно)
   const costMap: Record<string, number> = {
+    "anthropic/claude-3.5-haiku": 0.004,
     "anthropic/claude-3.7-sonnet": 0.018,
     "anthropic/claude-3.5-sonnet": 0.015,
     "anthropic/claude-3-haiku": 0.001,
