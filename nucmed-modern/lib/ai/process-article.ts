@@ -52,7 +52,7 @@ export async function processAndGenerateCover(
   try {
     // Get AI model from settings
     const config = await prisma.systemConfig.findUnique({ where: { key: "ai_model" } });
-    const aiModel = (config?.value as string) || "claude-3.7-sonnet";
+    const aiModel = (config?.value as string) || "claude-4-sonnet";
 
     // Step 2: AI text processing via Replicate
     const prompt = buildArticleProcessingUserPrompt({

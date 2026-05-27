@@ -11,9 +11,7 @@ import { PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 
 // Модели для обработки текста (можно переключать)
 export const REPLICATE_MODELS = {
-  // Claude 3.7 Sonnet - основная модель
-  "claude-3.7-sonnet": "anthropic/claude-3.7-sonnet",
-  // Claude 4 Sonnet - fallback при 404
+  // Claude 4 Sonnet - основная модель
   "claude-4-sonnet": "anthropic/claude-4-sonnet",
   // Claude 3.5 Haiku - быстрый, дешевый
   "claude-3.5-haiku": "anthropic/claude-3.5-haiku",
@@ -47,7 +45,7 @@ export interface ReplicateResponse {
  */
 export async function callReplicateAI(
   prompt: string,
-  model: ReplicateModel = "claude-3.5-haiku"
+  model: ReplicateModel = "claude-4-sonnet"
 ): Promise<ReplicateResponse> {
   return withRetry(
     () => _callReplicateAI(prompt, model),
@@ -121,32 +119,7 @@ async function _callReplicateAI(
 
   if (prediction.status === "failed" || prediction.status === "canceled") {
     const errMsg = String(prediction.error || "unknown error");
-    // Fallback: if claude-3.7-sonnet returns 404 from Replicate's side, retry with claude-4-sonnet
-    if (errMsg.includes("404") || errMsg.includes("NotFoundError") || errMsg.includes("NOT_FOUND")) {
-      if (modelId === REPLICATE_MODELS["claude-3.7-sonnet"]) {
-        console.warn(`[Replicate] claude-3.7-sonnet returned 404, falling back to claude-4-sonnet`);
-        modelId = REPLICATE_MODELS["claude-4-sonnet"];
-        let fallbackPrediction = await replicate.predictions.create({
-          model: modelId as `${string}/${string}`,
-          input,
-        });
-        console.log(`[Replicate] Fallback prediction created: ${fallbackPrediction.id}`);
-        const fallbackDeadline = Date.now() + POLL_TIMEOUT_MS;
-        while (fallbackPrediction.status !== "succeeded" && fallbackPrediction.status !== "failed" && fallbackPrediction.status !== "canceled") {
-          if (Date.now() > fallbackDeadline) throw new Error(`Fallback prediction timed out`);
-          await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
-          fallbackPrediction = await replicate.predictions.get(fallbackPrediction.id);
-        }
-        if (fallbackPrediction.status !== "succeeded") {
-          throw new Error(`Fallback prediction ${fallbackPrediction.status}: ${fallbackPrediction.error || "unknown"}`);
-        }
-        prediction = fallbackPrediction;
-      } else {
-        throw new Error(`Prediction ${prediction.status}: ${errMsg}`);
-      }
-    } else {
-      throw new Error(`Prediction ${prediction.status}: ${errMsg}`);
-    }
+    throw new Error(`Prediction ${prediction.status}: ${errMsg}`);
   }
 
   const output = prediction.output;
@@ -285,17 +258,37 @@ Create a prompt for an abstract visualization of this article.`;
 
   const replicate = new Replicate({ auth: apiToken });
 
-  const modelId = "anthropic/claude-3.7-sonnet";
+  const modelId = REPLICATE_MODELS["claude-4-sonnet"];
 
-  const output = await replicate.run(modelId as `${string}/${string}`, {
+  // Use predictions.create for reliable control
+  let prediction = await replicate.predictions.create({
+    model: modelId as `${string}/${string}`,
     input: {
       prompt: userPrompt,
       system_prompt: COVER_PROMPT_SYSTEM,
       max_tokens: 1024,
-      temperature: 0.7,
-      max_image_resolution: 0.001,
     },
-  }) as string[] | string;
+  });
+  console.log(`[CoverPrompt] Prediction created: ${prediction.id}`);
+
+  // Poll for completion
+  const POLL_TIMEOUT_MS = 120_000;
+  const POLL_INTERVAL_MS = 2_000;
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  
+  while (prediction.status !== "succeeded" && prediction.status !== "failed" && prediction.status !== "canceled") {
+    if (Date.now() > deadline) {
+      throw new Error(`Cover prompt prediction timed out`);
+    }
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+    prediction = await replicate.predictions.get(prediction.id);
+  }
+
+  if (prediction.status !== "succeeded") {
+    throw new Error(`Cover prompt prediction failed: ${prediction.error || "unknown"}`);
+  }
+
+  const output = prediction.output;
 
   let outputText: string;
   if (Array.isArray(output)) {

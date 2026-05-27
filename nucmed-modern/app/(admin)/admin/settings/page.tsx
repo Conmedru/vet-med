@@ -545,9 +545,9 @@ export default function AdminSettingsPage() {
                       onChange={(e) => updateSetting("ai_model", e.target.value)}
                       className="w-full max-w-md px-4 py-2.5 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     >
-                      <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (рекомендуется)</option>
+                      <option value="claude-4-sonnet">Claude 4 Sonnet (рекомендуется)</option>
                       <option value="claude-3-sonnet">Claude 3.5 Sonnet</option>
-                      <option value="claude-3-haiku">Claude 3 Haiku (быстро)</option>
+                      <option value="claude-3.5-haiku">Claude 3.5 Haiku (быстро)</option>
                       <option value="claude-3-opus">Claude 3 Opus (максимум качества)</option>
                       <option value="llama-3-70b">Llama 3 70B (Replicate, дешево)</option>
                     </select>
@@ -559,7 +559,7 @@ export default function AdminSettingsPage() {
                 <h4 className="font-medium text-stone-900 mb-3">О моделях</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl p-4 border border-stone-200/60">
-                    <p className="font-medium text-stone-900 text-sm">Claude 3.7 Sonnet</p>
+                    <p className="font-medium text-stone-900 text-sm">Claude 4 Sonnet</p>
                     <p className="text-xs text-stone-500 mt-1">Оптимальный основной вариант для редакционного рерайта и перевода.</p>
                   </div>
                   <div className="bg-white rounded-xl p-4 border border-stone-200/60">
