@@ -598,6 +598,49 @@ export default function NewArticlePage() {
                   </p>
                 )}
 
+                {/* File Upload Input */}
+                <div className="pt-2 border-t">
+                  <label className="text-xs text-muted-foreground mb-1 block">Загрузить с устройства</label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      setIsGeneratingCover(true);
+                      setError("");
+
+                      try {
+                        const formData = new FormData();
+                        formData.append("file", file);
+
+                        const res = await fetch("/api/admin/images", {
+                          method: "POST",
+                          body: formData,
+                        });
+
+                        if (!res.ok) {
+                          const err = await res.json();
+                          throw new Error(err.error || "Ошибка загрузки файла");
+                        }
+
+                        const data = await res.json();
+                        setCoverImageUrl(data.imageUrl);
+                        setSuccessMessage("Обложка загружена!");
+                        setTimeout(() => setSuccessMessage(""), 3000);
+                      } catch (err: unknown) {
+                        const message = err instanceof Error ? err.message : "Неизвестная ошибка при загрузке";
+                        setError(message);
+                      } finally {
+                        setIsGeneratingCover(false);
+                      }
+                    }}
+                    className="text-sm cursor-pointer"
+                    disabled={isGeneratingCover || isSaving}
+                  />
+                </div>
+
                 {/* Manual URL Input */}
                 <div className="pt-2 border-t">
                   <label className="text-xs text-muted-foreground mb-1 block">Или вставьте URL</label>

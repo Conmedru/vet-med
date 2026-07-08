@@ -85,9 +85,9 @@ async function _callReplicateAI(
   }
 
   const replicate = new Replicate({ auth: apiToken });
-  let modelId = REPLICATE_MODELS[model];
+  let modelId = REPLICATE_MODELS[model] || REPLICATE_MODELS["claude-4-sonnet"];
 
-  console.log(`[Replicate] Running model: ${modelId}`);
+  console.log(`[Replicate] Running model: ${modelId} (requested: ${model})`);
   const startTime = Date.now();
 
   const input = {

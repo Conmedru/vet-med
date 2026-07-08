@@ -76,3 +76,60 @@ export async function GET(request: NextRequest) {
     },
   });
 }
+
+export async function POST(request: NextRequest) {
+  const authResult = validateAuthWithDevBypass(request, validateAdminAuth);
+  if (!authResult.authenticated) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file") as File | null;
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF" },
+        { status: 400 }
+      );
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: "File too large. Maximum 10MB" }, { status: 400 });
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    let imageUrl: string;
+
+    const { uploadImage, isS3Configured } = await import("@/lib/storage/s3");
+    const { processImage } = await import("@/lib/storage/image-processor");
+
+    if (isS3Configured()) {
+      const processed = await processImage(buffer);
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const key = `uploads/${year}/${month}/${randomId}.webp`;
+
+      imageUrl = await uploadImage(processed.original, key, "image/webp");
+    } else {
+      const base64 = buffer.toString("base64");
+      imageUrl = `data:${file.type};base64,${base64}`;
+    }
+
+    return NextResponse.json({ success: true, imageUrl });
+  } catch (error) {
+    console.error("[Images] Upload error:", error);
+    return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
+  }
+}
+
