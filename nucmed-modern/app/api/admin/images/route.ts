@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateAuthWithDevBypass, validateAdminAuth } from "@/lib/auth/simple";
+import { requireAdminRouteAuth } from "@/lib/auth/guards";
 
 export async function GET(request: NextRequest) {
-  const authResult = validateAuthWithDevBypass(request, validateAdminAuth);
-  if (!authResult.authenticated) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authResponse = await requireAdminRouteAuth(request);
+  if (authResponse) return authResponse;
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
@@ -78,10 +76,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authResult = validateAuthWithDevBypass(request, validateAdminAuth);
-  if (!authResult.authenticated) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authResponse = await requireAdminRouteAuth(request);
+  if (authResponse) return authResponse;
 
   try {
     const formData = await request.formData();

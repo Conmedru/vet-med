@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { generateSlug } from "@/lib/slug";
 import { revalidatePath } from "next/cache";
-import { validateAuthWithDevBypass, validateAdminAuth } from "@/lib/auth/simple";
+import { requireAdminRouteAuth } from "@/lib/auth/guards";
 
 // ArticleStatus: INGESTED | PROCESSING | DRAFT | SCHEDULED | PUBLISHED | ARCHIVED | FAILED
 type ArticleStatus = "INGESTED" | "PROCESSING" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED" | "FAILED";
@@ -169,10 +169,8 @@ async function getManualSource() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authResult = validateAuthWithDevBypass(request, validateAdminAuth);
-    if (!authResult.authenticated) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResponse = await requireAdminRouteAuth(request);
+    if (authResponse) return authResponse;
 
     const body = await request.json();
     const parsed = CreateArticleSchema.safeParse(body);
