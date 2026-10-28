@@ -32,10 +32,9 @@ export async function POST(request: NextRequest) {
 
   const { email } = result.data;
 
-  // Per-account limit: protects the mailbox from a flood of reset emails sent from many IPs
-  if (!checkRateLimit(`forgot-password-account:${email}`, { limit: 3, windowMs: 60 * 60 * 1000 }).allowed) {
-    return NextResponse.json({ error: "Слишком много попыток. Попробуйте позже." }, { status: 429 });
-  }
+  // Per-account limit against a flood of reset emails from many IPs. Over the limit the answer
+  // is the usual one and no email is sent: the requester cannot tell, the owner's earlier link still works.
+  const sendAllowed = checkRateLimit(`forgot-password-account:${email}`, { limit: 3, windowMs: 60 * 60 * 1000 }).allowed;
 
   // Ответ одинаков независимо от того, найден ли аккаунт — иначе форма
   // становится инструментом для проверки, зарегистрирован ли конкретный врач.
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
   });
 
   const member = await prisma.member.findUnique({ where: { email } });
-  if (!member || member.status !== "ACTIVE") {
+  if (!member || member.status !== "ACTIVE" || !sendAllowed) {
     return genericResponse;
   }
 

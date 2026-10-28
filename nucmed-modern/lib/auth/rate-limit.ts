@@ -36,6 +36,28 @@ export function checkRateLimit(
   return { allowed: true, retryAfterMs: 0 };
 }
 
+/** Is the key over its limit, without counting this request (for failure-only counters) */
+export function isRateLimited(key: string, limit: number): { limited: boolean; retryAfterMs: number } {
+  const bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt < Date.now()) return { limited: false, retryAfterMs: 0 };
+  return { limited: bucket.count >= limit, retryAfterMs: bucket.resetAt - Date.now() };
+}
+
+/** Count one failure (e.g. a wrong password) */
+export function recordFailure(key: string, windowMs: number): void {
+  const now = Date.now();
+  const bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
+  } else {
+    bucket.count += 1;
+  }
+}
+
+export function resetRateLimit(key: string): void {
+  buckets.delete(key);
+}
+
 export function getClientIp(headers: Headers): string {
   // x-real-ip is set by our reverse proxy; the first x-forwarded-for entry can be forged by the client
   return (
