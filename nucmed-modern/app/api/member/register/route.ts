@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPasswordAsync } from "@/lib/auth/utils";
-import { createMemberSession, setMemberSessionCookie, generateMemberToken, hashToken } from "@/lib/auth/member-session";
+import { createMemberSession, setKnownDeviceCookie, setMemberSessionCookie, generateMemberToken, hashToken } from "@/lib/auth/member-session";
 import { sendMemberVerificationEmail } from "@/lib/auth/member-email";
 import { RegisterSchema } from "@/lib/schemas/member";
 import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") || undefined;
   const session = await createMemberSession(member.id, { userAgent, ipAddress: ip });
   await setMemberSessionCookie(session.token, session.expiresAt);
+  await setKnownDeviceCookie(data.email);
 
   return NextResponse.json({
     success: true,

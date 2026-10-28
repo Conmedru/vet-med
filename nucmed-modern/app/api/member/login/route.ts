@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/utils";
-import { createMemberSession, setMemberSessionCookie } from "@/lib/auth/member-session";
+import { createMemberSession, isKnownDevice, setKnownDeviceCookie, setMemberSessionCookie } from "@/lib/auth/member-session";
 import { LoginSchema } from "@/lib/schemas/member";
 import { checkRateLimit, getClientIp, loginFailureKey, releaseAttempt, reserveAttempt, resetRateLimit } from "@/lib/auth/rate-limit";
 import { getSpecialtyName } from "@/lib/data/specialties";
@@ -42,12 +42,17 @@ export async function POST(request: NextRequest) {
 
   // Failed-password limits: every attempt is reserved before the (slow) bcrypt check and given
   // back on success, so only failures stay counted and parallel requests cannot slip past the limit.
-  // Strict per account + IP; per account 20 per 15 min against guessing from many IPs.
-  // If someone deliberately locks a vet out, a password reset by email clears the counters.
+  // Strict per account + IP; per account 20 per 15 min against guessing from many IPs — not applied
+  // to browsers that logged in before. A password reset by email also clears the counters.
   const pairKey = loginFailureKey(email, ip);
   const accountKey = loginFailureKey(email);
   const pair = reserveAttempt(pairKey, LOGIN_FAILS_PER_IP, LOGIN_FAIL_WINDOW_MS);
-  const account = pair.allowed ? reserveAttempt(accountKey, LOGIN_FAILS_PER_ACCOUNT, LOGIN_FAIL_WINDOW_MS) : pair;
+  // A browser that has logged into this account before skips the account-wide limit
+  const knownDevice = await isKnownDevice(email);
+  const account =
+    pair.allowed && !knownDevice
+      ? reserveAttempt(accountKey, LOGIN_FAILS_PER_ACCOUNT, LOGIN_FAIL_WINDOW_MS)
+      : pair;
   if (!pair.allowed || !account.allowed) {
     if (pair.allowed) releaseAttempt(pairKey);
     return NextResponse.json(
@@ -69,7 +74,8 @@ export async function POST(request: NextRequest) {
   }
   // Success: this attempt was not a failure
   resetRateLimit(pairKey);
-  releaseAttempt(accountKey);
+  if (!knownDevice) releaseAttempt(accountKey);
+  await setKnownDeviceCookie(email);
 
   const userAgent = request.headers.get("user-agent") || undefined;
   const session = await createMemberSession(member.id, { userAgent, ipAddress: ip });

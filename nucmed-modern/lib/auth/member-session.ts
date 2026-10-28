@@ -140,3 +140,43 @@ export async function invalidateOtherMemberSessions(memberId: string): Promise<v
     where: { memberId, ...(token ? { tokenHash: { not: hashToken(token) } } : {}) },
   });
 }
+
+// ─── Known device ────────────────────────────────────────────────
+// After a successful login the browser gets a signed cookie for that email. A device that has
+// logged in before is not blocked by the account-wide failure limit, so a stranger hammering
+// the account from many IPs cannot lock the vet out of their own browser.
+
+const KNOWN_DEVICE_COOKIE = "convet_device";
+const KNOWN_DEVICE_DAYS = 365;
+
+function deviceSecret(): string | null {
+  return process.env.MEMBER_DEVICE_SECRET || process.env.CRON_SECRET || null;
+}
+
+function deviceSignature(email: string, secret: string): string {
+  return crypto.createHmac("sha256", secret).update(`known-device:${email.toLowerCase()}`).digest("hex");
+}
+
+export async function setKnownDeviceCookie(email: string): Promise<void> {
+  const secret = deviceSecret();
+  if (!secret) return;
+  const cookieStore = await cookies();
+  cookieStore.set(KNOWN_DEVICE_COOKIE, deviceSignature(email, secret), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: KNOWN_DEVICE_DAYS * 24 * 60 * 60,
+  });
+}
+
+export async function isKnownDevice(email: string): Promise<boolean> {
+  const secret = deviceSecret();
+  if (!secret) return false;
+  const cookieStore = await cookies();
+  const value = cookieStore.get(KNOWN_DEVICE_COOKIE)?.value;
+  if (!value) return false;
+  const expected = Buffer.from(deviceSignature(email, secret));
+  const actual = Buffer.from(value);
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
