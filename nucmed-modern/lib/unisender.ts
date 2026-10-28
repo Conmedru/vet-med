@@ -141,6 +141,17 @@ export const unisender = {
   },
 
   /**
+   * Remove an email from lists (stays in the account, no further campaigns from these lists)
+   */
+  async exclude(email: string, listIds: string | string[]) {
+    return this.request("exclude", {
+      contact_type: "email",
+      contact: email,
+      list_ids: Array.isArray(listIds) ? listIds.join(",") : listIds,
+    });
+  },
+
+  /**
    * Send a single email (transactional or simple notification)
    */
   async sendEmail(email: string, subject: string, html: string, senderName = UNISENDER_FROM_NAME, senderEmail = UNISENDER_FROM_EMAIL) {

@@ -55,6 +55,7 @@ interface Article {
   excerpt?: string;
   category?: string;
   rubrics?: string[];
+  isGated?: boolean;
   tags: string[];
   status: string;
   significanceScore?: number;
@@ -112,6 +113,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [rubrics, setRubrics] = useState<string[]>([]);
+  const [isGated, setIsGated] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -136,11 +138,12 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       excerpt !== (article.excerpt || "") ||
       content !== (article.content || "") ||
       JSON.stringify(rubrics) !== JSON.stringify(article.rubrics || []) ||
+      isGated !== Boolean(article.isGated) ||
       JSON.stringify(tags) !== JSON.stringify(article.tags || []) ||
       scheduledChanged ||
       currentCover !== savedCover
     );
-  }, [article, title, excerpt, content, rubrics, tags, scheduledAt, pendingCoverUrl]);
+  }, [article, title, excerpt, content, rubrics, isGated, tags, scheduledAt, pendingCoverUrl]);
 
   // Cover has pending changes specifically
   const hasPendingCover = pendingCoverUrl !== null;
@@ -157,6 +160,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
         setContent(data.content || "");
         setCategory(data.category || "");
         setRubrics(data.rubrics || []);
+        setIsGated(Boolean(data.isGated));
         setTags(data.tags || []);
         setScheduledAt(data.scheduledAt ? data.scheduledAt.slice(0, 16) : "");
         setIsLoading(false);
@@ -189,6 +193,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       setContent(data.content || "");
       setCategory(data.category || "");
       setRubrics(data.rubrics || []);
+      setIsGated(Boolean(data.isGated));
       setTags(data.tags || []);
       setScheduledAt(data.scheduledAt ? data.scheduledAt.slice(0, 16) : "");
       // Heuristic: if original date matches published, assume override was intended
@@ -214,6 +219,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
           excerpt,
           content,
           rubrics,
+          isGated,
           tags,
           scheduledAt: scheduledAt || null,
         }),
@@ -233,6 +239,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       setContent(updated.content || "");
       setCategory(updated.category || "");
       setRubrics(updated.rubrics || []);
+      setIsGated(Boolean(updated.isGated));
       setTags(updated.tags || []);
       setScheduledAt(updated.scheduledAt ? updated.scheduledAt.slice(0, 16) : "");
 
@@ -891,6 +898,21 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
               <div>
                 <label className="text-sm font-medium text-stone-700 mb-2 block">Рубрики</label>
                 <RubricPicker value={rubrics} onChange={setRubrics} />
+              </div>
+
+              <div>
+              <label className="flex items-start gap-2.5 text-sm text-stone-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isGated}
+                  onChange={(e) => setIsGated(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-stone-300"
+                />
+                <span>
+                  Только для зарегистрированных
+                  <span className="block text-xs text-stone-500">Гости увидят начало статьи и предложение войти или зарегистрироваться</span>
+                </span>
+              </label>
               </div>
 
               <div>

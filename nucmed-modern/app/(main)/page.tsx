@@ -3,6 +3,7 @@ import Script from "next/script"
 import { TrendingUp } from "lucide-react"
 import { DBArticleCard, DBArticleSidebar, LatestNews } from "@/components/articles"
 import { EventsCalendar } from "@/components/events/events-calendar"
+import { PersonalFeedSection } from "@/components/home/personal-feed-section"
 import { FadeIn } from "@/components/ui/fade-in"
 import { getPublishedArticles, getEditorialFeaturedArticles, getArticleStats, getTrendingTags } from "@/lib/articles"
 import { FEATURES } from "@/lib/config"
@@ -185,6 +186,8 @@ export default async function Home() {
               </div>
             </div>
           </section>
+
+          <PersonalFeedSection />
 
           <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} initialVetDates={eventsMonth.vetDates} />
 

@@ -89,6 +89,8 @@ model Article {
   category            String?
   tags                String[]          @default([])
   rubrics             String[]          @default([]) // slugs from lib/rubrics.ts
+  // Full text only for registered members (anonymous readers get a preview, lib/paywall.ts)
+  isGated             Boolean           @default(false)
   significanceScore   Int?
   language            String            @default("en")
   authors             String[]          @default([])
@@ -424,4 +426,98 @@ model NewsletterCampaign {
   updatedAt       DateTime @updatedAt
 
   @@map("newsletter_campaigns")
+}
+
+// ─── Registered readers (separate from admin/editor User) ─────────
+
+model Member {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+
+  lastName   String
+  firstName  String
+  middleName String
+
+  // Slug from lib/data/specialties.ts; for "other" the text is in specialtyOther
+  specialty      String
+  specialtyOther String?
+
+  phone   String?
+  country String
+  city    String
+
+  // Professional interests as typed by the vet
+  interests String[] @default([])
+
+  // Personal feed: rubric slugs from lib/rubrics.ts (empty = all materials)
+  rubrics       String[] @default([])
+  // Weekly digest; at registration equals consentMarketing (no mailing without consent)
+  digestEnabled Boolean  @default(false)
+
+  // Consents (152-ФЗ / 156-ФЗ): the first three are required, marketing is optional
+  consentHealthcare Boolean   @default(false)
+  consentPd152      Boolean   @default(false)
+  consentPd156      Boolean   @default(false)
+  consentMarketing  Boolean   @default(false)
+  consentedAt       DateTime?
+
+  emailVerified   Boolean      @default(false)
+  emailVerifiedAt DateTime?
+  status          MemberStatus @default(ACTIVE)
+
+  lastLoginAt DateTime?
+  loginCount  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sessions MemberSession[]
+  tokens   MemberToken[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("members")
+}
+
+model MemberSession {
+  id         String   @id @default(cuid())
+  memberId   String
+  // sha256 of the cookie token: a DB dump does not allow hijacking sessions
+  tokenHash  String   @unique
+  userAgent  String?
+  ipAddress  String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+  @@index([expiresAt])
+  @@map("member_sessions")
+}
+
+model MemberToken {
+  id        String          @id @default(cuid())
+  memberId  String
+  tokenHash String          @unique
+  type      MemberTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime        @default(now())
+  member    Member          @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, type])
+  @@index([expiresAt])
+  @@map("member_tokens")
+}
+
+enum MemberStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum MemberTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
 }

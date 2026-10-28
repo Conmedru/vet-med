@@ -1,12 +1,17 @@
 
 import crypto from "crypto";
-import { compare, hashSync } from "bcryptjs";
+import { compare, hash, hashSync } from "bcryptjs";
 
 /**
  * Hash password using bcrypt (consistent with user creation in /api/admin/users)
  */
 export function hashPassword(password: string): string {
   return hashSync(password, 12);
+}
+
+/** Async variant for public endpoints: does not block the event loop for ~250 ms */
+export function hashPasswordAsync(password: string): Promise<string> {
+  return hash(password, 12);
 }
 
 /**

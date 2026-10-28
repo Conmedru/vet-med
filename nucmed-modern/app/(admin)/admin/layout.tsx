@@ -21,8 +21,7 @@ import {
   Mail,
   User,
   Megaphone,
-  BookOpen
-} from "lucide-react";
+  BookOpen, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -43,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/images", label: "Изображения", icon: ImageIcon },
   { href: "/admin/journal", label: "Журнал", icon: BookOpen },
   { href: "/admin/newsletter", label: "Рассылка", icon: Mail },
+  { href: "/admin/members", label: "Пользователи", icon: Users },
   { href: "/admin/sponsored", label: "Реклама", icon: Megaphone },
   { href: "/admin/events", label: "Мероприятия", icon: CalendarDays },
   { href: "/admin/calendar", label: "Календарь", icon: Calendar },

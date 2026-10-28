@@ -30,6 +30,7 @@ export const ArticleUpdateSchema = z.object({
   category: z.preprocess((val) => val === "" ? null : val, z.string().optional().nullable()),
   tags: z.array(z.string().min(1).max(50)).max(10).optional(),
   rubrics: z.array(z.string().min(1).max(50)).max(30).optional(),
+  isGated: z.boolean().optional(),
   coverImageUrl: z.preprocess((val) => val === "" ? null : val, z.string().url().optional().nullable()),
   scheduledAt: z.preprocess((val) => val === "" ? null : val, z.coerce.date().optional().nullable()),
   publishedAt: z.preprocess((val) => val === "" ? null : val, z.coerce.date().optional().nullable()),

@@ -42,6 +42,7 @@ export default function NewArticlePage() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [rubrics, setRubrics] = useState<string[]>([]);
+  const [isGated, setIsGated] = useState(false);
   const category = primaryRubricName(rubrics) || "";
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -72,6 +73,7 @@ export default function NewArticlePage() {
           excerpt: excerpt || undefined,
           content,
           rubrics,
+          isGated,
           tags,
           externalUrl: externalUrl || undefined,
           coverImageUrl: coverImageUrl || undefined,
@@ -463,6 +465,21 @@ export default function NewArticlePage() {
               <div>
                 <label className="text-sm font-medium mb-1 block">Рубрики</label>
                 <RubricPicker value={rubrics} onChange={setRubrics} />
+              </div>
+
+              <div>
+              <label className="flex items-start gap-2.5 text-sm text-stone-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isGated}
+                  onChange={(e) => setIsGated(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-stone-300"
+                />
+                <span>
+                  Только для зарегистрированных
+                  <span className="block text-xs text-stone-500">Гости увидят начало статьи и предложение войти или зарегистрироваться</span>
+                </span>
+              </label>
               </div>
 
               {/* Significance Score */}

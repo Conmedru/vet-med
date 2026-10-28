@@ -8,6 +8,9 @@ import { ShareButtons } from "@/components/shared";
 import { prisma } from "@/lib/prisma";
 import { getCategorySlug } from "@/lib/data";
 import { articleRubrics, primaryRubric } from "@/lib/rubrics";
+import { getCurrentMember } from "@/lib/auth/member-session";
+import { truncateForPaywall } from "@/lib/paywall";
+import { ArticlePaywall } from "@/components/articles/article-paywall";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
@@ -130,7 +133,7 @@ function generateArticleJsonLd(article: NonNullable<Awaited<ReturnType<typeof ge
     inLanguage: "ru-RU",
     wordCount: article.content?.split(/\s+/).length || 0,
     timeRequired: `PT${readingTime}M`,
-    isAccessibleForFree: true,
+    isAccessibleForFree: !article.isGated,
     ...(article.coverImageUrl && {
       image: {
         "@type": "ImageObject",
@@ -258,6 +261,10 @@ export default async function NewsArticlePage({ params }: PageProps) {
     redirect(`/news/${canonicalSlug}`);
   }
 
+  // Gated article: anonymous readers get a preview cut on the server, the full text never reaches the HTML
+  const locked = article.isGated && !(await getCurrentMember());
+  const visibleContent = locked && article.content ? truncateForPaywall(article.content) : article.content;
+
   const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
 
   const relatedArticles = await getRelatedArticles(article.id, article.rubrics, article.category);
@@ -375,14 +382,16 @@ export default async function NewsArticlePage({ params }: PageProps) {
               prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none"
             itemProp="articleBody"
           >
-            {article.content ? (
-              <ReactMarkdown>{article.content}</ReactMarkdown>
+            {visibleContent ? (
+              <ReactMarkdown>{visibleContent}</ReactMarkdown>
             ) : (
               <p className="text-muted-foreground italic">
                 Содержание статьи недоступно
               </p>
             )}
           </div>
+
+          {locked && <ArticlePaywall redirectPath={`/news/${canonicalSlug}`} />}
 
           {/* Tags & Share */}
           <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

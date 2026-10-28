@@ -117,6 +117,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(data.category && { category: data.category }),
         ...(rubrics && { rubrics, category: primaryRubricName(rubrics) || data.category || existing.category }),
         ...(data.tags && { tags: data.tags }),
+        ...(data.isGated !== undefined && { isGated: data.isGated }),
         ...(data.coverImageUrl !== undefined && { coverImageUrl: data.coverImageUrl }),
         ...(data.scheduledAt !== undefined && {
           scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null

@@ -160,3 +160,83 @@
     font-weight: 600;
   }
 }
+/*
+ * Account & registration tokens (components/account, ported from onco-compass),
+ * mapped onto the site theme so the forms follow its colors.
+ */
+:root {
+  --ink: var(--foreground);
+  --ink-2: color-mix(in srgb, var(--foreground) 80%, var(--muted-foreground));
+  --ink-3: var(--muted-foreground);
+  --ink-4: color-mix(in srgb, var(--muted-foreground) 55%, var(--background));
+  --bg: var(--background);
+  --rule: var(--border);
+  --rule-soft: color-mix(in srgb, var(--border) 60%, var(--background));
+  --rule-strong: color-mix(in srgb, var(--border) 70%, var(--foreground) 10%);
+  --teal: var(--primary);
+  --teal-deep: color-mix(in srgb, var(--primary) 80%, black);
+  --teal-tint: color-mix(in srgb, var(--primary) 10%, var(--background));
+  --gold: #a16207;
+  --gold-tint: #fef3c7;
+  --gold-tint-2: #fde68a;
+  --red: var(--destructive);
+}
+
+.t-body { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+
+.input {
+  height: 40px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--card);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+.input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 20%, transparent); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all .15s ease;
+}
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn-primary { background: var(--teal); color: var(--primary-foreground); }
+.btn-primary:hover { background: var(--teal-deep); }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+.btn-ghost:hover { border-color: var(--ink-3); background: var(--card); }
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--teal);
+}
+.btn-link:hover { text-decoration: underline; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.eyebrow-teal { color: var(--teal); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+}

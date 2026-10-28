@@ -9,6 +9,7 @@ import { getRubricsByKind, PET_SLUGS } from "@/lib/rubrics"
 import { SearchDialog } from "@/components/search"
 import { cn } from "@/lib/utils"
 import { SubscribeDialog } from "@/components/dialogs/subscribe-dialog"
+import { MemberMenu } from "@/components/layout/member-menu"
 import { FEATURES } from "@/lib/config"
 
 type MenuLink = { name: string; href: string; icon?: React.ElementType }
@@ -95,6 +96,8 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
           <SearchDialog />
 
           <SubscribeDialog />
+
+          <MemberMenu />
 
           <Button
             variant="ghost"
@@ -269,6 +272,10 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                 Журнал
               </Link>
             )}
+
+            <div className="pt-3 md:hidden">
+              <MemberMenu mobile />
+            </div>
 
             {/* Trending tags in mobile */}
             {trendingTags.length > 0 && (
