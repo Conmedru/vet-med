@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isCronAuthorized } from "@/lib/auth/cron";
 import { ingestSource } from "@/lib/scraper";
 import { prisma } from "@/lib/prisma";
 
@@ -12,15 +13,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     // Проверка авторизации для cron
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-    const apiKey = request.headers.get("x-api-key");
-
-    // Vercel Cron использует Authorization: Bearer <CRON_SECRET>
-    const isVercelCron = authHeader === `Bearer ${cronSecret}`;
-    const isApiKeyValid = apiKey === process.env.INGEST_API_KEY || apiKey === process.env.ADMIN_API_KEY;
-
-    if (!isVercelCron && !isApiKeyValid) {
+    if (!isCronAuthorized(request, ["INGEST_API_KEY", "ADMIN_API_KEY"])) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

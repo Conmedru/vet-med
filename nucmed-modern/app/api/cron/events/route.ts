@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
+import { isCronAuthorized } from "@/lib/auth/cron";
 import { syncScrapedEvents } from "@/lib/events/sync";
-
-function safeEqual(value: string | null, expected: string): boolean {
-  if (!value) return false;
-  const a = Buffer.from(value);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 /**
  * GET /api/cron/events
@@ -16,17 +9,7 @@ function safeEqual(value: string | null, expected: string): boolean {
  */
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-    const apiKey = request.headers.get("x-api-key");
-
-    const adminApiKey = process.env.ADMIN_API_KEY;
-
-    // Fail closed: an unset secret must not match "Bearer undefined"
-    const isVercelCron = !!cronSecret && safeEqual(authHeader, `Bearer ${cronSecret}`);
-    const isApiKeyValid = !!adminApiKey && safeEqual(apiKey, adminApiKey);
-
-    if (!isVercelCron && !isApiKeyValid) {
+    if (!isCronAuthorized(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

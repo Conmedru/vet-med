@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isCronAuthorized } from "@/lib/auth/cron";
 import { prisma } from '@/lib/prisma';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -18,12 +19,7 @@ const ALL_TABLES = [
 ];
 
 function isAuthorized(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  const apiKey = request.headers.get('x-api-key');
-  const cronSecret = process.env.CRON_SECRET;
-  const adminApiKey = process.env.ADMIN_API_KEY;
-
-  return authHeader === `Bearer ${cronSecret}` || apiKey === adminApiKey || apiKey === cronSecret;
+  return isCronAuthorized(request, ["ADMIN_API_KEY", "CRON_SECRET"]);
 }
 
 async function runSetup(applyMigrations: boolean) {

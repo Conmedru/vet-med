@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isCronAuthorized } from "@/lib/auth/cron";
 import { generateWeeklyDigest, saveDigestToDb, sendWeeklyDigest } from "@/lib/newsletter";
 import { prisma } from "@/lib/prisma";
 
@@ -12,14 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     // 1. Authorization
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-    const apiKey = request.headers.get("x-api-key");
-
-    const isVercelCron = authHeader === `Bearer ${cronSecret}`;
-    const isApiKeyValid = apiKey === process.env.ADMIN_API_KEY;
-
-    if (!isVercelCron && !isApiKeyValid) {
+    if (!isCronAuthorized(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
