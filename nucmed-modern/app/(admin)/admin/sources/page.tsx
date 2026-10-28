@@ -13,7 +13,8 @@ import {
   RefreshCw,
   ExternalLink,
   Zap,
-  Edit2
+  Edit2,
+  BookOpen
 } from "lucide-react";
 
 interface Source {
@@ -50,12 +51,14 @@ const adapterIcons: Record<string, typeof Rss> = {
   rss: Rss,
   html: Globe,
   playwright: FileText,
+  doaj: BookOpen,
 };
 
 const adapterLabels: Record<string, string> = {
   rss: "RSS Feed",
   html: "HTML Scraper",
   playwright: "Playwright",
+  doaj: "DOAJ",
 };
 
 const healthConfig: Record<string, { icon: typeof CheckCircle; color: string; bg: string }> = {

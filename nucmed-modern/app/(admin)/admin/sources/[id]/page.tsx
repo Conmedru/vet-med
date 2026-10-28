@@ -10,7 +10,7 @@ interface Source {
   name: string;
   slug: string;
   url: string;
-  adapterType: "rss" | "playwright" | "html";
+  adapterType: "rss" | "playwright" | "html" | "doaj";
   adapterConfig: Record<string, any>;
   isActive: boolean;
   scrapeIntervalMinutes: number;
@@ -28,7 +28,7 @@ interface PreviewItem {
 interface PreviewResult {
   sourceId: string;
   sourceName: string;
-  adapterType: "rss" | "playwright" | "html";
+  adapterType: "rss" | "playwright" | "html" | "doaj";
   configVersion: number;
   durationMs: number;
   totalFetched: number;
@@ -52,7 +52,7 @@ export default function SourceEditorPage({ params }: { params: Promise<{ id: str
   // Form state
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [adapterType, setAdapterType] = useState<"rss" | "playwright" | "html">("rss");
+  const [adapterType, setAdapterType] = useState<"rss" | "playwright" | "html" | "doaj">("rss");
   const [interval, setInterval] = useState(1440);
   const [isActive, setIsActive] = useState(false);
   const [config, setConfig] = useState<Record<string, any>>({});
@@ -253,6 +253,7 @@ export default function SourceEditorPage({ params }: { params: Promise<{ id: str
                 <option value="rss">RSS Feed</option>
                 <option value="playwright">Playwright</option>
                 <option value="html">HTML Scraper</option>
+                <option value="doaj">DOAJ (по ISSN)</option>
               </select>
             </div>
 
@@ -298,6 +299,17 @@ export default function SourceEditorPage({ params }: { params: Promise<{ id: str
                 value={config.feedUrl || ""}
                 onChange={(e) => handleConfigChange("feedUrl", e.target.value)}
                 placeholder="https://example.com/rss.xml"
+                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              />
+            </div>
+          ) : adapterType === "doaj" ? (
+            <div>
+              <label className="text-sm font-medium text-stone-700 mb-2 block">ISSN журнала</label>
+              <input
+                type="text"
+                value={config.issn || ""}
+                onChange={(e) => handleConfigChange("issn", e.target.value)}
+                placeholder="1746-6148"
                 className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>

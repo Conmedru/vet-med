@@ -18,6 +18,7 @@ model Source {
   url                   String
   adapterType           String
   adapterConfig         Json      @default("{}")
+  region                String    @default("foreign") // ru | foreign
   isActive              Boolean   @default(true)
   scrapeIntervalMinutes Int       @default(1440)
   lastScrapedAt         DateTime?

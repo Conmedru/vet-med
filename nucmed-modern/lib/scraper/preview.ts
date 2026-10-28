@@ -1,20 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { PlaywrightAdapter } from "./adapters/playwright";
-import { RSSAdapter } from "./adapters/rss";
-import type { BaseAdapter, ScrapedArticle, SourceConfig } from "./types";
+import { getAdapter } from "./adapters";
+import type { ScrapedArticle, SourceConfig } from "./types";
 import type { SourcePreviewRequestInput } from "@/lib/schemas/source";
-
-function getAdapter(config: SourceConfig): BaseAdapter {
-  switch (config.adapterType) {
-    case "rss":
-      return new RSSAdapter(config);
-    case "playwright":
-    case "html":
-      return new PlaywrightAdapter(config);
-    default:
-      throw new Error(`Unknown adapter type: ${config.adapterType}`);
-  }
-}
 
 function getConfigVersion(config: Record<string, unknown>): number {
   const raw = config.version;

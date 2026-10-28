@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { ArticleStatus, Prisma } from '@prisma/client';
-import { RSSAdapter } from './adapters/rss';
-import { PlaywrightAdapter } from './adapters/playwright';
-import { BaseAdapter, IngestResult, ScrapedArticle, SourceConfig } from './types';
+import { getAdapter } from './adapters';
+import { IngestResult, ScrapedArticle, SourceConfig } from './types';
 import { embedImage } from '@/lib/ai/clip-embeddings';
 import { storeArticleImage, isS3Configured } from '@/lib/storage';
 import { generateSlug } from '@/lib/slug';
@@ -27,18 +26,6 @@ async function logSourceRun(
   }).catch((error) => {
     console.error('[Ingest] Failed to persist source run log:', error);
   });
-}
-
-function getAdapter(config: SourceConfig): BaseAdapter {
-  switch (config.adapterType) {
-    case 'rss':
-      return new RSSAdapter(config);
-    case 'playwright':
-    case 'html':
-      return new PlaywrightAdapter(config);
-    default:
-      throw new Error(`Unknown adapter type: ${config.adapterType}`);
-  }
 }
 
 // Helper to ensure unique slug (handles race conditions with PgBouncer)
@@ -78,7 +65,7 @@ export async function ingestSource(sourceId: string, options?: { autoProcess?: b
     name: source.name,
     slug: source.slug,
     url: source.url,
-    adapterType: source.adapterType as 'rss' | 'html' | 'playwright',
+    adapterType: source.adapterType as SourceConfig['adapterType'],
     adapterConfig: source.adapterConfig as SourceConfig['adapterConfig'],
   };
 
@@ -97,6 +84,13 @@ export async function ingestSource(sourceId: string, options?: { autoProcess?: b
   try {
     articles = await adapter.scrape();
     result.totalFetched = articles.length;
+
+    // Ignore old items (e.g. a journal's archive on the first scrape of a new source)
+    const maxAgeDays = Number(config.adapterConfig.maxAgeDays);
+    if (maxAgeDays > 0) {
+      const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+      articles = articles.filter((a) => !a.publishedAt || a.publishedAt.getTime() >= cutoff);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown scraping error';
     result.errors.push(`Scraping failed: ${message}`);
@@ -151,7 +145,7 @@ export async function ingestSource(sourceId: string, options?: { autoProcess?: b
               originalPublishedAt: article.publishedAt,
               authors: article.authors,
               status: ArticleStatus.INGESTED,
-              language: 'en',
+              language: config.adapterConfig.language === 'ru' ? 'ru' : 'en',
             },
           });
           break;

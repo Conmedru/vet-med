@@ -29,6 +29,24 @@ type CustomItem = {
   };
 };
 
+// Russian OJS/elpub feeds use localized RFC 822 dates: "Ср, 19 авг 2026 00:27:49 +0300"
+const RU_MONTHS: Record<string, string> = {
+  янв: 'Jan', фев: 'Feb', мар: 'Mar', апр: 'Apr', мая: 'May', май: 'May', июн: 'Jun',
+  июл: 'Jul', авг: 'Aug', сен: 'Sep', окт: 'Oct', ноя: 'Nov', дек: 'Dec',
+};
+
+function parseFeedDate(value?: string | null): Date | null {
+  if (!value) return null;
+  let date = new Date(value);
+  if (isNaN(date.getTime())) {
+    const normalized = value
+      .replace(/^[^,\d]*,\s*/, '')
+      .replace(/[а-яё]+\.?/gi, (word) => RU_MONTHS[word.toLowerCase().slice(0, 3)] || word);
+    date = new Date(normalized);
+  }
+  return isNaN(date.getTime()) ? null : date;
+}
+
 export class RSSAdapter extends BaseAdapter {
   private parser: Parser<CustomFeed, CustomItem>;
 
@@ -63,11 +81,7 @@ export class RSSAdapter extends BaseAdapter {
 
       const articles: ScrapedArticle[] = feed.items.map((item) => {
         const externalId = item.guid || item.link || '';
-        const publishedAt = item.isoDate
-          ? new Date(item.isoDate)
-          : item.pubDate
-            ? new Date(item.pubDate)
-            : null;
+        const publishedAt = parseFeedDate(item.isoDate) || parseFeedDate(item.pubDate);
 
         // Extract authors from various RSS fields
         const authors: string[] = [];
@@ -174,7 +188,7 @@ export class RSSAdapter extends BaseAdapter {
       const content = $item.find('content\\:encoded').text() || $item.find('description').text();
       const dateStr = $item.find('pubDate').text() || $item.find('dc\\:date').text();
 
-      const publishedAt = dateStr ? new Date(dateStr) : null;
+      const publishedAt = parseFeedDate(dateStr);
 
       // Images
       const images: ScrapedImage[] = [];
