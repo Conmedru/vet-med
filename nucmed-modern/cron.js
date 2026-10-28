@@ -52,9 +52,15 @@ setInterval(() => {
   runTask('Scrape Sources', '/api/cron/scrape');
 }, 2 * 60 * 60 * 1000);
 
+// 4. Veterinary events from external calendars: Every 24 hours
+setInterval(() => {
+  runTask('Sync Events', '/api/cron/events');
+}, 24 * 60 * 60 * 1000);
+
 // --- INITIAL RUN ---
 // Wait 30 seconds for Next.js to start, then run initial checks
 setTimeout(() => {
   console.log('[Internal Cron] Performing initial startup checks...');
   runTask('Initial Publish Check', '/api/cron/publish');
+  runTask('Initial Events Sync', '/api/cron/events');
 }, 30 * 1000);

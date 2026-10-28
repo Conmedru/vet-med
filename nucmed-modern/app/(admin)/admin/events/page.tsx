@@ -149,13 +149,28 @@ export default function AdminEventsPage() {
                           <div className="text-lg font-semibold text-stone-900">{event.title}</div>
                           <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
                             {formatDateUTC(event.eventDate, "d MMM yyyy")}
+                            {event.endDate && ` – ${formatDateUTC(event.endDate, "d MMM yyyy")}`}
                           </span>
+                          {event.sourceType !== "manual" && (
+                            <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-500">
+                              {event.sourceType}
+                            </span>
+                          )}
+                          {!event.isActive && (
+                            <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">скрыто</span>
+                          )}
                         </div>
                         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-500">
                           <span className="inline-flex items-center gap-1.5">
                             <Building2 className="h-4 w-4" />
                             {event.organizer}
                           </span>
+                          {(event.isOnline || event.location) && (
+                            <>
+                              <span className="text-stone-300">•</span>
+                              <span>{event.isOnline ? "Онлайн" : event.location}</span>
+                            </>
+                          )}
                           <span className="text-stone-300">•</span>
                           <span>{format(new Date(event.createdAt), "d MMM yyyy", { locale: ru })}</span>
                         </div>
@@ -243,6 +258,9 @@ function EventForm({
   const [description, setDescription] = useState(event?.description || "");
   const [linkUrl, setLinkUrl] = useState(event?.linkUrl || "");
   const [eventDate, setEventDate] = useState(event?.eventDate.slice(0, 10) || format(new Date(), "yyyy-MM-dd"));
+  const [endDate, setEndDate] = useState(event?.endDate?.slice(0, 10) || "");
+  const [location, setLocation] = useState(event?.location || "");
+  const [isOnline, setIsOnline] = useState(event?.isOnline || false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -258,6 +276,9 @@ function EventForm({
         description: description.trim() || null,
         linkUrl: linkUrl.trim() || null,
         eventDate: new Date(`${eventDate}T00:00:00.000Z`).toISOString(),
+        endDate: endDate ? new Date(`${endDate}T00:00:00.000Z`).toISOString() : null,
+        location: location.trim() || null,
+        isOnline,
       };
 
       const response = await fetch(isEditing ? `/api/admin/events/${event?.id}` : "/api/admin/events", {
@@ -321,15 +342,52 @@ function EventForm({
             </div>
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-stone-700">Дата</label>
-            <input
-              type="date"
-              value={eventDate}
-              onChange={(inputEvent) => setEventDate(inputEvent.target.value)}
-              className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              required
-            />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-stone-700">Дата начала</label>
+              <input
+                type="date"
+                value={eventDate}
+                onChange={(inputEvent) => setEventDate(inputEvent.target.value)}
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-stone-700">Дата окончания</label>
+              <input
+                type="date"
+                value={endDate}
+                min={eventDate}
+                onChange={(inputEvent) => setEndDate(inputEvent.target.value)}
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-stone-700">Место проведения</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(inputEvent) => setLocation(inputEvent.target.value)}
+                className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Город, площадка"
+                disabled={isOnline}
+              />
+            </div>
+
+            <label className="flex items-center gap-2 pb-2.5 text-sm font-medium text-stone-700">
+              <input
+                type="checkbox"
+                checked={isOnline}
+                onChange={(inputEvent) => setIsOnline(inputEvent.target.checked)}
+                className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary/20"
+              />
+              Онлайн
+            </label>
           </div>
 
           <div>

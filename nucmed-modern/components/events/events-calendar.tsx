@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Users } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, PartyPopper, Users, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EventApiItem } from "@/lib/schemas/events";
+import type { VetDate } from "@/lib/vet-dates";
 
 interface EventsCalendarProps {
   initialMonth: string;
   initialEvents: EventApiItem[];
+  initialVetDates: VetDate[];
 }
 
 const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function getMonthDate(month: string): Date {
   const [year, monthValue] = month.split("-").map(Number);
@@ -26,12 +29,15 @@ function getDateKey(value: string | Date): string {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 }
 
-function getDefaultSelectedDate(month: string, events: EventApiItem[]): string {
-  if (events.length > 0) {
-    return getDateKey(events[0].eventDate);
+/** Today if it is in the month, else the first day with something on it, else the 1st */
+function getDefaultSelectedDate(month: string, events: EventApiItem[], vetDates: VetDate[]): string {
+  const todayKey = getDateKey(new Date());
+  if (todayKey.startsWith(`${month}-`)) {
+    return todayKey;
   }
 
-  return `${month}-01`;
+  const firstEvent = events.map((e) => getDateKey(e.eventDate)).find((key) => key.startsWith(`${month}-`));
+  return firstEvent || vetDates[0]?.date || `${month}-01`;
 }
 
 function formatMonthLabel(month: string): string {
@@ -50,6 +56,13 @@ function formatFullDate(value: string): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(value));
+}
+
+const shortDate = new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", timeZone: "UTC" });
+
+function formatEventDates(event: EventApiItem): string {
+  const start = shortDate.format(new Date(event.eventDate));
+  return event.endDate ? `${start} – ${shortDate.format(new Date(event.endDate))}` : start;
 }
 
 function buildCalendarDays(month: string): Array<number | null> {
@@ -73,10 +86,13 @@ function buildCalendarDays(month: string): Array<number | null> {
   return days;
 }
 
-export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarProps) {
+export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }: EventsCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
   const [events, setEvents] = useState<EventApiItem[]>(initialEvents);
-  const [selectedDateKey, setSelectedDateKey] = useState(getDefaultSelectedDate(initialMonth, initialEvents));
+  const [vetDates, setVetDates] = useState<VetDate[]>(initialVetDates);
+  const [selectedDateKey, setSelectedDateKey] = useState(() =>
+    getDefaultSelectedDate(initialMonth, initialEvents, initialVetDates)
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -85,6 +101,7 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
     async function loadMonth() {
       if (currentMonth === initialMonth) {
         setEvents(initialEvents);
+        setVetDates(initialVetDates);
         setIsLoading(false);
         return;
       }
@@ -99,11 +116,13 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
 
         if (!cancelled) {
           setEvents(data.events || []);
+          setVetDates(data.vetDates || []);
         }
       } catch (error) {
         console.error("Failed to load month events:", error);
         if (!cancelled) {
           setEvents([]);
+          setVetDates([]);
         }
       } finally {
         if (!cancelled) {
@@ -117,7 +136,7 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
     return () => {
       cancelled = true;
     };
-  }, [currentMonth, initialEvents, initialMonth]);
+  }, [currentMonth, initialEvents, initialVetDates, initialMonth]);
 
   useEffect(() => {
     setSelectedDateKey((currentValue) => {
@@ -125,24 +144,38 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
         return currentValue;
       }
 
-      return getDefaultSelectedDate(currentMonth, events);
+      return getDefaultSelectedDate(currentMonth, events, vetDates);
     });
-  }, [currentMonth, events]);
+  }, [currentMonth, events, vetDates]);
 
+  // Multi-day events are shown on every day of their range
   const eventsByDate = useMemo(() => {
     const nextMap = new Map<string, EventApiItem[]>();
 
     events.forEach((event) => {
-      const dateKey = getDateKey(event.eventDate);
-      const dayEvents = nextMap.get(dateKey) || [];
-      dayEvents.push(event);
-      nextMap.set(dateKey, dayEvents);
+      const start = new Date(event.eventDate).getTime();
+      const end = event.endDate ? new Date(event.endDate).getTime() : start;
+      for (let time = start; time <= end; time += DAY_MS) {
+        const dateKey = getDateKey(new Date(time));
+        const dayEvents = nextMap.get(dateKey) || [];
+        dayEvents.push(event);
+        nextMap.set(dateKey, dayEvents);
+      }
     });
 
     return nextMap;
   }, [events]);
 
+  const vetDatesByDate = useMemo(() => {
+    const nextMap = new Map<string, VetDate[]>();
+    vetDates.forEach((vetDate) => {
+      nextMap.set(vetDate.date, [...(nextMap.get(vetDate.date) || []), vetDate]);
+    });
+    return nextMap;
+  }, [vetDates]);
+
   const selectedDayEvents = eventsByDate.get(selectedDateKey) || [];
+  const selectedDayVetDates = vetDatesByDate.get(selectedDateKey) || [];
   const calendarDays = useMemo(() => buildCalendarDays(currentMonth), [currentMonth]);
   const todayKey = getDateKey(new Date());
 
@@ -208,6 +241,7 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
 
               const dateKey = `${currentMonth}-${String(day).padStart(2, "0")}`;
               const hasEvents = eventsByDate.has(dateKey);
+              const hasVetDates = vetDatesByDate.has(dateKey);
               const isSelected = selectedDateKey === dateKey;
               const isToday = todayKey === dateKey;
 
@@ -225,17 +259,30 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                   )}
                 >
                   <span>{day}</span>
-                  {hasEvents && (
-                    <span
-                      className={cn(
-                        "absolute bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
-                        isSelected ? "bg-white" : "bg-primary"
+                  {(hasEvents || hasVetDates) && (
+                    <span className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
+                      {hasEvents && (
+                        <span className={cn("h-1.5 w-1.5 rounded-full", isSelected ? "bg-white" : "bg-primary")} />
                       )}
-                    />
+                      {hasVetDates && (
+                        <span className={cn("h-1.5 w-1.5 rounded-full", isSelected ? "bg-amber-200" : "bg-amber-500")} />
+                      )}
+                    </span>
                   )}
                 </button>
               );
             })}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              Мероприятия
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              Памятные даты
+            </span>
           </div>
         </div>
       </div>
@@ -250,11 +297,29 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
           </div>
         </div>
 
-        <div className="mt-4 space-y-3">
-          {selectedDayEvents.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-4 py-8 text-center">
-              <div className="text-base font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
+        <div className="mt-4 max-h-[640px] space-y-3 overflow-y-auto pr-1">
+          {selectedDayVetDates.length > 0 && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                <PartyPopper className="h-3.5 w-3.5" />
+                Памятная дата
+              </div>
+              <ul className="mt-2 space-y-1">
+                {selectedDayVetDates.map((vetDate) => (
+                  <li key={vetDate.title} className="text-sm font-medium leading-6 text-stone-900">
+                    {vetDate.title}
+                  </li>
+                ))}
+              </ul>
             </div>
+          )}
+
+          {selectedDayEvents.length === 0 ? (
+            selectedDayVetDates.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-4 py-8 text-center">
+                <div className="text-base font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
+              </div>
+            )
           ) : (
             selectedDayEvents.map((event) => (
               <article
@@ -264,17 +329,32 @@ export function EventsCalendar({ initialMonth, initialEvents }: EventsCalendarPr
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-base font-semibold leading-6 text-stone-900">{event.title}</div>
-                    <div className="mt-2.5 inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
-                      <Users className="h-3.5 w-3.5" />
-                      {event.organizer}
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
+                        <Users className="h-3.5 w-3.5" />
+                        {event.organizer}
+                      </span>
+                      {event.isOnline ? (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary">
+                          <Video className="h-3.5 w-3.5" />
+                          Онлайн
+                        </span>
+                      ) : (
+                        event.location && (
+                          <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            {event.location}
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
                   <div className="shrink-0 rounded-xl bg-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-                    {new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(event.eventDate))}
+                    {formatEventDates(event)}
                   </div>
                 </div>
                 {event.description && (
-                  <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-600">
+                  <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-600 line-clamp-4">
                     {event.description}
                   </div>
                 )}

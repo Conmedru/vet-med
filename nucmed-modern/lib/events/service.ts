@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { EventApiItem, EventCreateInput, EventUpdateInput } from "@/lib/schemas/events";
+import { getVetDatesForMonth, type VetDate } from "@/lib/vet-dates";
 
 const eventSelect = {
   id: true,
@@ -9,6 +10,11 @@ const eventSelect = {
   linkUrl: true,
   organizer: true,
   eventDate: true,
+  endDate: true,
+  location: true,
+  isOnline: true,
+  sourceType: true,
+  isActive: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.EventSelect;
@@ -46,6 +52,11 @@ function toApiEvent(event: EventRecord): EventApiItem {
     linkUrl: event.linkUrl,
     organizer: event.organizer,
     eventDate: event.eventDate.toISOString(),
+    endDate: event.endDate ? event.endDate.toISOString() : null,
+    location: event.location,
+    isOnline: event.isOnline,
+    sourceType: event.sourceType,
+    isActive: event.isActive,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   };
@@ -100,15 +111,17 @@ export async function listEventsAdmin(): Promise<EventApiItem[]> {
   }
 }
 
-export async function listEventsByMonth(month?: string | null): Promise<{ month: string; events: EventApiItem[] }> {
+export async function listEventsByMonth(
+  month?: string | null
+): Promise<{ month: string; events: EventApiItem[]; vetDates: VetDate[] }> {
   const { monthKey, start, end } = getMonthRange(month);
   try {
+    // Events overlapping the month: multi-day events started earlier are included
     const events = await prisma.event.findMany({
       where: {
-        eventDate: {
-          gte: start,
-          lt: end,
-        },
+        isActive: true,
+        eventDate: { lt: end },
+        OR: [{ eventDate: { gte: start } }, { endDate: { gte: start } }],
       },
       orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
       select: eventSelect,
@@ -117,6 +130,7 @@ export async function listEventsByMonth(month?: string | null): Promise<{ month:
     return {
       month: monthKey,
       events: events.map(toApiEvent),
+      vetDates: getVetDatesForMonth(monthKey),
     };
   } catch (error) {
     normalizeEventError(error);
@@ -146,6 +160,9 @@ export async function createEvent(input: EventCreateInput): Promise<EventApiItem
         linkUrl: input.linkUrl || null,
         organizer: input.organizer,
         eventDate: input.eventDate,
+        endDate: input.endDate ?? null,
+        location: input.location ?? null,
+        isOnline: input.isOnline ?? false,
       },
       select: eventSelect,
     });
@@ -166,6 +183,12 @@ export async function updateEvent(id: string, input: EventUpdateInput): Promise<
         ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl || null } : {}),
         ...(input.organizer !== undefined ? { organizer: input.organizer } : {}),
         ...(input.eventDate !== undefined ? { eventDate: input.eventDate } : {}),
+        ...(input.endDate !== undefined ? { endDate: input.endDate } : {}),
+        ...(input.location !== undefined ? { location: input.location } : {}),
+        ...(input.isOnline !== undefined ? { isOnline: input.isOnline } : {}),
+        ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+        // Scraped events keep editor changes on the next sync
+        manualEditedAt: new Date(),
       },
       select: eventSelect,
     });
@@ -178,6 +201,12 @@ export async function updateEvent(id: string, input: EventUpdateInput): Promise<
 
 export async function deleteEvent(id: string): Promise<void> {
   try {
+    const event = await prisma.event.findUniqueOrThrow({ where: { id }, select: { sourceType: true } });
+    // A deleted scraped event would come back on the next sync, so it is hidden instead
+    if (event.sourceType !== "manual") {
+      await prisma.event.update({ where: { id }, data: { isActive: false, manualEditedAt: new Date() } });
+      return;
+    }
     await prisma.event.delete({
       where: { id },
     });

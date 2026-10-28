@@ -7,6 +7,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { getPublishedArticles, getEditorialFeaturedArticles, getArticleStats, getTrendingTags } from "@/lib/articles"
 import { FEATURES } from "@/lib/config"
 import { getCurrentMonthKey, listEventsByMonth } from "@/lib/events"
+import { getVetDatesForMonth } from "@/lib/vet-dates"
 import { getActiveSponsoredPosts } from "@/lib/sponsored"
 import { getLatestJournalIssueForBanner } from "@/lib/magazine"
 import { NewsletterForm, ExpandableTrends } from "@/components/shared"
@@ -33,7 +34,7 @@ export default async function Home() {
   const trendingTags = results[3].status === 'fulfilled' ? results[3].value : [];
   const sponsoredPosts = results[4].status === 'fulfilled' ? results[4].value : [];
   const latestJournalIssue = results[5].status === 'fulfilled' ? results[5].value : null;
-  const eventsMonth = results[6].status === 'fulfilled' ? results[6].value : { month: currentEventsMonth, events: [] };
+  const eventsMonth = results[6].status === 'fulfilled' ? results[6].value : { month: currentEventsMonth, events: [], vetDates: getVetDatesForMonth(currentEventsMonth) };
 
   // Log any failures for debugging
   results.forEach((r, i) => {
@@ -185,7 +186,7 @@ export default async function Home() {
             </div>
           </section>
 
-          <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} />
+          <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} initialVetDates={eventsMonth.vetDates} />
 
           {/* Latest News Section */}
           <LatestNews articles={latestNews} sponsoredPosts={sponsoredPosts} maxArticles={10} />
