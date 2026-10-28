@@ -13,7 +13,7 @@ import { primaryRubricName, rubricsFromAI } from '@/lib/rubrics';
  *   npx tsx scripts/reclassify-rubrics.ts --dry-run        # сколько статей и примерная стоимость
  *   npx tsx scripts/reclassify-rubrics.ts --limit 20       # первые 20, для проверки качества
  *   npx tsx scripts/reclassify-rubrics.ts                  # все
- *   --model claude-3.5-haiku                               # модель (по умолчанию claude-4-sonnet)
+ *   --model claude-4.5-haiku                               # модель (по умолчанию claude-4.5-sonnet)
  */
 
 const prisma = new PrismaClient();
@@ -23,11 +23,12 @@ const dryRun = args.includes('--dry-run');
 const limitArg = args.indexOf('--limit');
 const limit = limitArg >= 0 ? Number(args[limitArg + 1]) : undefined;
 const modelArg = args.indexOf('--model');
-const model = (modelArg >= 0 ? args[modelArg + 1] : 'claude-4-sonnet') as ReplicateModel;
+const model = (modelArg >= 0 ? args[modelArg + 1] : 'claude-4.5-sonnet') as ReplicateModel;
 
 // Цены за 1M токенов (input, output) для оценки; ~3 символа кириллицы на токен
 const PRICES: Record<string, [number, number]> = {
-  'claude-4-sonnet': [3, 15],
+  'claude-4.5-sonnet': [3, 15],
+  'claude-4.5-haiku': [1, 5],
   'claude-3.5-haiku': [0.8, 4],
 };
 const CHARS_PER_TOKEN = 3;
@@ -67,7 +68,7 @@ async function main() {
     take: limit,
   });
 
-  const [inPrice, outPrice] = PRICES[model] || PRICES['claude-4-sonnet'];
+  const [inPrice, outPrice] = PRICES[model] || PRICES['claude-4.5-sonnet'];
   const inputChars = articles.reduce((sum, a) => sum + SYSTEM_PROMPT.length + buildPrompt(a).length, 0);
   const estimate = (inputChars / CHARS_PER_TOKEN) * (inPrice / 1e6) + articles.length * 80 * (outPrice / 1e6);
   console.log(`Articles to reclassify: ${articles.length} (already done: ${doneIds.length}), model ${model}`);

@@ -545,7 +545,8 @@ export default function AdminSettingsPage() {
                       onChange={(e) => updateSetting("ai_model", e.target.value)}
                       className="w-full max-w-md px-4 py-2.5 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     >
-                      <option value="claude-4-sonnet">Claude 4 Sonnet (рекомендуется)</option>
+                      <option value="claude-4.5-sonnet">Claude 4.5 Sonnet (рекомендуется)</option>
+                      <option value="claude-4.5-haiku">Claude 4.5 Haiku (быстро, дешево)</option>
                       <option value="claude-3-sonnet">Claude 3.5 Sonnet</option>
                       <option value="claude-3.5-haiku">Claude 3.5 Haiku (быстро)</option>
                       <option value="claude-3-opus">Claude 3 Opus (максимум качества)</option>

@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { callReplicateAI } from "@/lib/ai/replicate";
+import { callReplicateAI, DEFAULT_TEXT_MODEL } from "@/lib/ai/replicate";
 import { generateArticleCover } from "@/lib/ai/replicate";
 import { uploadImage, isS3Configured } from "@/lib/storage/s3";
 import { withRetry } from "@/lib/utils/retry";
@@ -53,7 +53,7 @@ export async function processAndGenerateCover(
   try {
     // Get AI model from settings
     const config = await prisma.systemConfig.findUnique({ where: { key: "ai_model" } });
-    const aiModel = (config?.value as string) || "claude-4-sonnet";
+    const aiModel = (config?.value as string) || DEFAULT_TEXT_MODEL;
 
     // Step 2: AI text processing via Replicate
     const prompt = buildArticleProcessingUserPrompt({

@@ -90,11 +90,17 @@ export function isFarmOnly(rubrics: string[]): boolean {
   return rubrics.includes(FARM_SLUG) && !rubrics.some((s) => NON_FARM_ANIMAL_SLUGS.includes(s));
 }
 
-/** Keep only known slugs of the given kind, in taxonomy order */
+/** Keep only known slugs of the given kind, in the given order (the AI lists the most relevant first) */
 export function filterRubricSlugs(slugs: unknown, kind?: RubricKind): string[] {
   if (!Array.isArray(slugs)) return [];
-  const wanted = new Set(slugs.filter((s): s is string => typeof s === "string").map((s) => s.trim().toLowerCase()));
-  return RUBRICS.filter((r) => wanted.has(r.slug) && (!kind || r.kind === kind)).map((r) => r.slug);
+  const result: string[] = [];
+  for (const value of slugs) {
+    if (typeof value !== "string") continue;
+    const slug = value.trim().toLowerCase();
+    const rubric = getRubric(slug);
+    if (rubric && (!kind || rubric.kind === kind) && !result.includes(slug)) result.push(slug);
+  }
+  return result;
 }
 
 /** Main rubric of an article: first specialty, else first animal, else first rubric */

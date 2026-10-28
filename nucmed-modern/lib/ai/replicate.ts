@@ -11,7 +11,11 @@ import { PROCESSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 
 // Модели для обработки текста (можно переключать)
 export const REPLICATE_MODELS = {
-  // Claude 4 Sonnet - основная модель
+  // Claude 4.5 Sonnet - основная модель
+  "claude-4.5-sonnet": "anthropic/claude-4.5-sonnet",
+  // Claude 4.5 Haiku - быстрый, дешевый
+  "claude-4.5-haiku": "anthropic/claude-4.5-haiku",
+  // Claude 4 Sonnet - снята с Replicate (404 с октября 2026), запросы уходят на резервную модель
   "claude-4-sonnet": "anthropic/claude-4-sonnet",
   // Claude 3.5 Haiku - быстрый, дешевый
   "claude-3.5-haiku": "anthropic/claude-3.5-haiku",
@@ -31,6 +35,15 @@ export const REPLICATE_MODELS = {
 
 export type ReplicateModel = keyof typeof REPLICATE_MODELS;
 
+export const DEFAULT_TEXT_MODEL: ReplicateModel = "claude-4.5-sonnet";
+
+// Used when the requested model is gone (404/422 "Invalid version or not permitted") or
+// overloaded (E003): a removed or busy model must not stop all processing.
+const FALLBACK_TEXT_MODEL: ReplicateModel = "claude-4.5-sonnet";
+const MODEL_UNAVAILABLE = /status 404|Invalid version|not permitted|E003/i;
+// Claude 4.5 models on Replicate reject max_tokens below 1024
+const MIN_MAX_TOKENS = 1024;
+
 export interface ReplicateResponse {
   output: string;
   model: string;
@@ -45,8 +58,23 @@ export interface ReplicateResponse {
  */
 export async function callReplicateAI(
   prompt: string,
-  model: ReplicateModel = "claude-4-sonnet",
+  model: ReplicateModel = DEFAULT_TEXT_MODEL,
   options: { systemPrompt?: string; maxTokens?: number } = {}
+): Promise<ReplicateResponse> {
+  try {
+    return await callWithRetry(prompt, model, options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (model === FALLBACK_TEXT_MODEL || !MODEL_UNAVAILABLE.test(message)) throw error;
+    console.warn(`[Replicate] Model ${model} unavailable (${message.slice(0, 120)}), falling back to ${FALLBACK_TEXT_MODEL}`);
+    return callWithRetry(prompt, FALLBACK_TEXT_MODEL, options);
+  }
+}
+
+function callWithRetry(
+  prompt: string,
+  model: ReplicateModel,
+  options: { systemPrompt?: string; maxTokens?: number }
 ): Promise<ReplicateResponse> {
   return withRetry(
     () => _callReplicateAI(prompt, model, options),
@@ -87,7 +115,7 @@ async function _callReplicateAI(
   }
 
   const replicate = new Replicate({ auth: apiToken });
-  let modelId = REPLICATE_MODELS[model] || REPLICATE_MODELS["claude-4-sonnet"];
+  let modelId = REPLICATE_MODELS[model] || REPLICATE_MODELS[DEFAULT_TEXT_MODEL];
 
   console.log(`[Replicate] Running model: ${modelId} (requested: ${model})`);
   const startTime = Date.now();
@@ -95,7 +123,7 @@ async function _callReplicateAI(
   const input = {
     prompt: prompt,
     system_prompt: options.systemPrompt ?? SYSTEM_PROMPT,
-    max_tokens: options.maxTokens ?? 4096,
+    max_tokens: Math.max(options.maxTokens ?? 4096, MIN_MAX_TOKENS),
   };
 
   // Official models (e.g. anthropic/*) use predictions.create with { model } field (not { version })
@@ -143,6 +171,8 @@ async function _callReplicateAI(
   const costMap: Record<string, number> = {
     "anthropic/claude-3.7-sonnet": 0.018,
     "anthropic/claude-4-sonnet": 0.018,
+    "anthropic/claude-4.5-sonnet": 0.018,
+    "anthropic/claude-4.5-haiku": 0.005,
     "anthropic/claude-3.5-haiku": 0.004,
     "anthropic/claude-3.5-sonnet": 0.015,
     "anthropic/claude-3-haiku": 0.001,
@@ -260,7 +290,7 @@ Create a prompt for an abstract visualization of this article.`;
 
   const replicate = new Replicate({ auth: apiToken });
 
-  const modelId = REPLICATE_MODELS["claude-4-sonnet"];
+  const modelId = REPLICATE_MODELS[DEFAULT_TEXT_MODEL];
 
   // Use predictions.create for reliable control
   let prediction = await replicate.predictions.create({
