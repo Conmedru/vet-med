@@ -1,74 +1,63 @@
 /**
  * Authentication Middleware
- * Protects admin routes and API endpoints
- * 
- * Note: Middleware runs in Edge Runtime by default.
- * We disable Prisma calls in middleware to avoid edge runtime issues.
+ * First gate for the admin area: no admin session cookie (or API key) → login / 401.
+ *
+ * Note: Middleware runs in Edge Runtime by default and cannot query the database,
+ * so it only checks that credentials are present; route handlers and pages validate them
+ * (getAuthUser / validateAdminAuth).
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/types";
 
-// Routes that require authentication
-const PROTECTED_ROUTES = [
-  "/admin",
-  "/api/admin",
-];
+// Admin pages and API
+const PROTECTED_PREFIXES = ["/admin", "/api/admin"];
 
-// Public routes that don't require auth
-const PUBLIC_ROUTES = [
-  "/admin/auth",
-  "/api/admin/auth",
-  "/api/cron",
-  "/api/ingest",
-  "/api/sources",
-  "/api/articles",
-  "/api/search",
-  "/api/newsletter",
-  "/news",
-  "/",
-];
+// Admin login page and its API
+const PUBLIC_EXCEPTIONS = ["/admin/auth", "/api/admin/auth"];
+
+/** Exact path or a sub-path: "/admin" matches "/admin" and "/admin/x", not "/administrator" */
+function matches(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+function isLocalRequest(request: NextRequest): boolean {
+  const host = request.headers.get("host") || "";
+  return host.startsWith("localhost") || host.startsWith("127.0.0.1");
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for public routes
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  if (!PROTECTED_PREFIXES.some((prefix) => matches(pathname, prefix))) {
+    return NextResponse.next();
+  }
+  if (PUBLIC_EXCEPTIONS.some((prefix) => matches(pathname, prefix))) {
     return NextResponse.next();
   }
 
-  // Check if route needs protection
-  if (PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
-    // Simple cookie check - actual auth validation happens in API routes/pages
-    const sessionToken = request.cookies.get("nucmed_session")?.value;
-    
-    if (!sessionToken) {
-      // Redirect to login for admin routes
-      if (pathname.startsWith("/admin")) {
-        const loginUrl = new URL("/admin/auth", request.url);
-        loginUrl.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-      
-      // Return 401 for API routes
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+  const hasSession = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+  if (hasSession) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  if (pathname.startsWith("/api/")) {
+    // Scripts and cron call the admin API with a key; the route validates it
+    const hasApiKey = Boolean(request.headers.get("x-api-key") || request.headers.get("authorization"));
+    // Same localhost bypass as validateAuthWithDevBypass in the routes
+    const devLocal = process.env.NODE_ENV === "development" && isLocalRequest(request);
+    if (hasApiKey || devLocal) {
+      return NextResponse.next();
+    }
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const loginUrl = new URL("/admin/auth", request.url);
+  loginUrl.searchParams.set("redirect", pathname);
+  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
-  ],
+  // Only the admin area: public pages and APIs do not go through the middleware at all
+  matcher: ["/admin", "/admin/:path*", "/api/admin", "/api/admin/:path*"],
 };
