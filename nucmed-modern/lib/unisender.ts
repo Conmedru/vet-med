@@ -11,6 +11,9 @@ const BASE_URL = "https://api.unisender.com/ru/api";
 // Our list is fixed in code on purpose: UNISENDER_LIST_ID in the env pointed to other projects' lists.
 export const VET_LIST_ID = "7"; // vet-digest
 export const DEFAULT_LIST_ID = VET_LIST_ID;
+// Service list for single emails (email confirmation, password reset): Unisender's sendEmail
+// requires a list and adds the recipient to it. Never send campaigns to it — no mailing consent.
+export const VET_SERVICE_LIST_ID = "60"; // vet-service
 
 if (!UNISENDER_API_KEY) {
   console.warn("WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)");
@@ -164,7 +167,7 @@ export const unisender = {
       sender_email: senderEmail,
       subject,
       body: html,
-      list_id: 1, // Optional but sometimes required
+      list_id: VET_SERVICE_LIST_ID,
     });
   },
 
