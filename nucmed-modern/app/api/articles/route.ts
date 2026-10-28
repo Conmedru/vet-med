@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateSlug } from "@/lib/slug";
 import { revalidatePath } from "next/cache";
 import { requireAdminRouteAuth } from "@/lib/auth/guards";
+import { filterRubricSlugs, primaryRubricName } from "@/lib/rubrics";
 
 // ArticleStatus: INGESTED | PROCESSING | DRAFT | SCHEDULED | PUBLISHED | ARCHIVED | FAILED
 type ArticleStatus = "INGESTED" | "PROCESSING" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED" | "FAILED";
@@ -16,6 +17,7 @@ const CreateArticleSchema = z.object({
   excerpt: z.string().optional(),
   excerptOriginal: z.string().optional(),
   category: z.string().optional(),
+  rubrics: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   externalUrl: z.string().url().optional().or(z.literal("")),
   coverImageUrl: z.string().url().optional().or(z.literal("")),
@@ -183,6 +185,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+    const rubrics = filterRubricSlugs(data.rubrics);
     const manualSource = await getManualSource();
     const externalId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -202,7 +205,8 @@ export async function POST(request: NextRequest) {
         contentOriginal: data.contentOriginal || data.content,
         excerpt: data.excerpt || null,
         excerptOriginal: data.excerptOriginal || data.excerpt || null,
-        category: data.category || null,
+        category: primaryRubricName(rubrics) || data.category || null,
+        rubrics,
         tags: data.tags || [],
         coverImageUrl: data.coverImageUrl || null,
         status: data.status,
@@ -219,8 +223,8 @@ export async function POST(request: NextRequest) {
       revalidatePath("/");
       revalidatePath("/news");
       revalidatePath(`/news/${uniqueSlug}`);
-      if (data.category) {
-        revalidatePath(`/category/${data.category.toLowerCase()}`);
+      for (const slug of rubrics) {
+        revalidatePath(`/category/${slug}`);
       }
     }
 

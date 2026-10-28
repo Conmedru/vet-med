@@ -7,6 +7,7 @@ import { ReadingProgress } from "@/components/ui/reading-progress";
 import { ShareButtons } from "@/components/shared";
 import { prisma } from "@/lib/prisma";
 import { getCategorySlug } from "@/lib/data";
+import { articleRubrics, primaryRubric } from "@/lib/rubrics";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
@@ -18,6 +19,13 @@ export const revalidate = 60;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
 const SITE_NAME = "VetMed";
+
+/** Breadcrumb link for the article's main rubric (old articles fall back to the category) */
+function categoryHref(article: { rubrics: string[]; category: string | null }): string | null {
+  const rubric = primaryRubric(article.rubrics);
+  if (rubric) return `/category/${rubric.slug}`;
+  return article.category ? `/category/${getCategorySlug(article.category)}` : null;
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,13 +55,13 @@ async function getArticle(slugOrId: string) {
   return article;
 }
 
-async function getRelatedArticles(articleId: string, category: string | null) {
+async function getRelatedArticles(articleId: string, rubrics: string[], category: string | null) {
   try {
     const related = await prisma.article.findMany({
       where: {
         id: { not: articleId },
         status: "PUBLISHED",
-        ...(category ? { category } : {}),
+        ...(rubrics.length > 0 ? { rubrics: { hasSome: rubrics } } : category ? { category } : {}),
       },
       select: {
         id: true,
@@ -158,7 +166,7 @@ function generateBreadcrumbJsonLd(article: NonNullable<Awaited<ReturnType<typeof
         "@type": "ListItem",
         position: 3,
         name: article.category,
-        item: `${SITE_URL}/category/${getCategorySlug(article.category)}`,
+        item: `${SITE_URL}${categoryHref(article)}`,
       }] : []),
       {
         "@type": "ListItem",
@@ -252,7 +260,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
 
   const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
 
-  const relatedArticles = await getRelatedArticles(article.id, article.category);
+  const relatedArticles = await getRelatedArticles(article.id, article.rubrics, article.category);
   const readingTime = estimateReadingTime(article.content);
   const articleJsonLd = generateArticleJsonLd(article);
   const breadcrumbJsonLd = generateBreadcrumbJsonLd(article);
@@ -274,7 +282,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
         <Breadcrumbs
           items={[
             { label: "Новости", href: "/news" },
-            ...(article.category ? [{ label: article.category, href: `/category/${getCategorySlug(article.category)}` }] : []),
+            ...(article.category ? [{ label: article.category, href: categoryHref(article) || undefined }] : []),
             { label: article.title || article.titleOriginal }
           ]}
           className="mb-8"
@@ -284,7 +292,15 @@ export default async function NewsArticlePage({ params }: PageProps) {
           {/* Header */}
           <header className="mb-10 pb-8 border-b">
             <div className="flex flex-wrap items-center gap-3 mb-5 text-sm">
-              {article.category && (
+              {article.rubrics.length > 0 ? (
+                articleRubrics(article.rubrics).map((rubric) => (
+                  <Link key={rubric.slug} href={`/category/${rubric.slug}`}>
+                    <Badge variant="secondary" className="font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
+                      {rubric.shortName || rubric.name}
+                    </Badge>
+                  </Link>
+                ))
+              ) : article.category && (
                 <Badge variant="secondary" className="font-medium">
                   {article.category}
                 </Badge>

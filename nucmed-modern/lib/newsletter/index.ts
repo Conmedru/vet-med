@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { articleRubrics, PET_SLUGS } from '@/lib/rubrics';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { unisender, DEFAULT_LIST_ID } from '@/lib/unisender';
@@ -190,11 +191,12 @@ export async function sendWeeklyDigest(digest: NewsletterDigest) {
   return result;
 }
 
-export async function getSubscribersForCategory(category: string): Promise<string[]> {
+/** Subscribers of any of the given categories (subscriptions store rubric/category names) */
+export async function getSubscribersForCategories(categories: string[]): Promise<string[]> {
   const subscribers = await prisma.subscriber.findMany({
     where: {
       status: "active",
-      categories: { has: category },
+      categories: { hasSome: categories },
     },
     select: { email: true },
   });
@@ -229,8 +231,11 @@ export async function sendCategoryNotification(articleId: string) {
     return;
   }
 
-  // Find subscribers for this category
-  const emails = await getSubscribersForCategory(article.category);
+  // Find subscribers of any article rubric (and of the "Питомцы" group for pet articles)
+  const rubrics = articleRubrics(article.rubrics);
+  const names = [article.category, ...rubrics.map((r) => r.name)];
+  if (rubrics.some((r) => PET_SLUGS.includes(r.slug))) names.push("Питомцы");
+  const emails = await getSubscribersForCategories([...new Set(names)]);
   if (emails.length === 0) {
     console.log(`[Newsletter] No subscribers for category: ${article.category}`);
     return;

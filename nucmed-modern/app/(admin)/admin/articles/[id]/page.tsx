@@ -54,6 +54,7 @@ interface Article {
   content?: string;
   excerpt?: string;
   category?: string;
+  rubrics?: string[];
   tags: string[];
   status: string;
   significanceScore?: number;
@@ -70,7 +71,7 @@ interface Article {
 }
 
 import { CATEGORIES } from "@/lib/schemas/article";
-import { ANIMAL_CATEGORIES, NOSOLOGIES, SPECIAL_SECTIONS } from "@/lib/config/constants";
+import { RubricPicker } from "@/components/admin/rubric-picker";
 
 // Custom markdown components for professional styling
 const MarkdownComponents = {
@@ -110,6 +111,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
+  const [rubrics, setRubrics] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -133,12 +135,12 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       title !== (article.title || "") ||
       excerpt !== (article.excerpt || "") ||
       content !== (article.content || "") ||
-      category !== (article.category || "") ||
+      JSON.stringify(rubrics) !== JSON.stringify(article.rubrics || []) ||
       JSON.stringify(tags) !== JSON.stringify(article.tags || []) ||
       scheduledChanged ||
       currentCover !== savedCover
     );
-  }, [article, title, excerpt, content, category, tags, scheduledAt, pendingCoverUrl]);
+  }, [article, title, excerpt, content, rubrics, tags, scheduledAt, pendingCoverUrl]);
 
   // Cover has pending changes specifically
   const hasPendingCover = pendingCoverUrl !== null;
@@ -154,6 +156,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
         setExcerpt(data.excerpt || "");
         setContent(data.content || "");
         setCategory(data.category || "");
+        setRubrics(data.rubrics || []);
         setTags(data.tags || []);
         setScheduledAt(data.scheduledAt ? data.scheduledAt.slice(0, 16) : "");
         setIsLoading(false);
@@ -185,6 +188,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       setExcerpt(data.excerpt || "");
       setContent(data.content || "");
       setCategory(data.category || "");
+      setRubrics(data.rubrics || []);
       setTags(data.tags || []);
       setScheduledAt(data.scheduledAt ? data.scheduledAt.slice(0, 16) : "");
       // Heuristic: if original date matches published, assume override was intended
@@ -209,7 +213,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
           title,
           excerpt,
           content,
-          category,
+          rubrics,
           tags,
           scheduledAt: scheduledAt || null,
         }),
@@ -228,6 +232,7 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
       setExcerpt(updated.excerpt || "");
       setContent(updated.content || "");
       setCategory(updated.category || "");
+      setRubrics(updated.rubrics || []);
       setTags(updated.tags || []);
       setScheduledAt(updated.scheduledAt ? updated.scheduledAt.slice(0, 16) : "");
 
@@ -884,29 +889,8 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
             </div>
             <div className="px-6 py-5 space-y-5">
               <div>
-                <label className="text-sm font-medium text-stone-700 mb-2 block">Категория</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                >
-                  <option value="">Выберите категорию</option>
-                  <optgroup label="По виду животного">
-                    {ANIMAL_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Нозологии">
-                    {NOSOLOGIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Специальные разделы">
-                    {SPECIAL_SECTIONS.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                </select>
+                <label className="text-sm font-medium text-stone-700 mb-2 block">Рубрики</label>
+                <RubricPicker value={rubrics} onChange={setRubrics} />
               </div>
 
               <div>

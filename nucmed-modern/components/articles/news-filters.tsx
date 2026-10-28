@@ -5,10 +5,11 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { X, Calendar, Tag, Search, ChevronDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RUBRIC_KIND_LABELS, type RubricKind } from "@/lib/rubrics";
 
 interface NewsFiltersProps {
   options: {
-    categories: string[];
+    rubrics: { slug: string; name: string; kind: RubricKind }[];
     popularTags: string[];
   };
   currentFilters: {
@@ -61,7 +62,8 @@ export function NewsFilters({ options, currentFilters }: NewsFiltersProps) {
   const activeFilters: { key: string; label: string; value: string }[] = [];
   
   if (currentFilters.category) {
-    activeFilters.push({ key: "category", label: "Рубрика", value: currentFilters.category });
+    const rubric = options.rubrics.find((r) => r.slug === currentFilters.category);
+    activeFilters.push({ key: "category", label: "Рубрика", value: rubric?.name || currentFilters.category });
   }
   if (currentFilters.tag) {
     activeFilters.push({ key: "tag", label: "Тег", value: `#${currentFilters.tag}` });
@@ -116,17 +118,18 @@ export function NewsFilters({ options, currentFilters }: NewsFiltersProps) {
           value={currentFilters.category || ""}
           onChange={(e) => updateFilters({ category: e.target.value || null })}
         >
-          <option value="">Все нозологии</option>
-          <optgroup label="Нозологии">
-            {options.categories.filter((_, i) => i < 12).map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </optgroup>
-          <optgroup label="Специальные разделы">
-            {options.categories.filter((_, i) => i >= 12).map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </optgroup>
+          <option value="">Все рубрики</option>
+          {(Object.keys(RUBRIC_KIND_LABELS) as RubricKind[]).map((kind) => {
+            const items = options.rubrics.filter((r) => r.kind === kind);
+            if (items.length === 0) return null;
+            return (
+              <optgroup key={kind} label={RUBRIC_KIND_LABELS[kind]}>
+                {items.map((r) => (
+                  <option key={r.slug} value={r.slug}>{r.name}</option>
+                ))}
+              </optgroup>
+            );
+          })}
         </select>
 
         {/* Advanced Toggle */}

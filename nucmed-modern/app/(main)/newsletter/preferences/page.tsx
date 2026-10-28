@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { NOSOLOGIES, SPECIAL_SECTIONS } from "@/lib/config/constants"
+import { getRubricsByKind, RUBRIC_KIND_LABELS, type RubricKind } from "@/lib/rubrics"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Loader2, AlertCircle, Newspaper, ListFilter, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -157,61 +157,38 @@ export default function PreferencesPage() {
             <ListFilter className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="font-medium">Подписка на нозологии</p>
+            <p className="font-medium">Подписка на рубрики</p>
             <p className="text-sm text-muted-foreground">Получайте уведомления по выбранным разделам</p>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div>
-            <p className="text-xs font-medium text-stone-500 uppercase mb-3">Нозологии</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              {NOSOLOGIES.map((cat) => (
-                <label
-                  key={cat}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all text-sm",
-                    categories.includes(cat)
-                      ? "border-primary bg-primary/5 text-foreground font-medium"
-                      : "border-stone-100 hover:bg-muted/50 text-muted-foreground"
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={categories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    className="rounded border-stone-300 text-primary focus:ring-primary/20"
-                  />
-                  {cat}
-                </label>
-              ))}
+          {(Object.keys(RUBRIC_KIND_LABELS) as RubricKind[]).map((kind) => (
+            <div key={kind}>
+              <p className="text-xs font-medium text-stone-500 uppercase mb-3">{RUBRIC_KIND_LABELS[kind]}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {getRubricsByKind(kind).map(({ name: cat }) => (
+                  <label
+                    key={cat}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all text-sm",
+                      categories.includes(cat)
+                        ? "border-primary bg-primary/5 text-foreground font-medium"
+                        : "border-stone-100 hover:bg-muted/50 text-muted-foreground"
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={categories.includes(cat)}
+                      onChange={() => toggleCategory(cat)}
+                      className="rounded border-stone-300 text-primary focus:ring-primary/20"
+                    />
+                    {cat}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-medium text-stone-500 uppercase mb-3">Спецразделы</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              {SPECIAL_SECTIONS.map((cat) => (
-                <label
-                  key={cat}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all text-sm",
-                    categories.includes(cat)
-                      ? "border-primary bg-primary/5 text-foreground font-medium"
-                      : "border-stone-100 hover:bg-muted/50 text-muted-foreground"
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={categories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    className="rounded border-stone-300 text-primary focus:ring-primary/20"
-                  />
-                  {cat}
-                </label>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 

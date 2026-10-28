@@ -115,7 +115,7 @@ export default async function Home() {
 
         {/* LEFT COLUMN: Text-only Sidebar (Sticky) */}
         <aside className="lg:col-span-3 hidden lg:block">
-          <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-hidden">
+          <div className="sticky top-36 h-[calc(100vh-11rem)] overflow-hidden">
             <FadeIn delay={0.1}>
               <DBArticleSidebar articles={articles} />
             </FadeIn>

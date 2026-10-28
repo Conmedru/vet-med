@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { FARM_SLUG, getRubric, NON_FARM_ANIMAL_SLUGS, RUBRICS } from "@/lib/rubrics";
 import { Pagination } from "@/components/ui/pagination-custom";
 import { NewsList, NewsFilters } from "@/components/articles";
 import type { Metadata } from "next";
@@ -93,10 +94,21 @@ async function getPublishedArticles(
   const params: any[] = [];
   let paramIndex = 1;
 
-  if (category) {
+  if (category && getRubric(category)) {
+    conditions.push(`$${paramIndex} = ANY(a."rubrics")`);
+    params.push(category);
+    paramIndex++;
+  } else if (category) {
+    // Old links with a category name
     conditions.push(`a."category" = $${paramIndex}`);
     params.push(category);
     paramIndex++;
+  }
+
+  // Farm-only articles are shown only when the farm-animals rubric is selected
+  if (category !== FARM_SLUG) {
+    const nonFarm = NON_FARM_ANIMAL_SLUGS.map((slug) => `'${slug}'`).join(", ");
+    conditions.push(`NOT ('${FARM_SLUG}' = ANY(a."rubrics") AND NOT (a."rubrics" && ARRAY[${nonFarm}]::text[]))`);
   }
 
   if (tag) {
@@ -163,11 +175,10 @@ async function getPublishedArticles(
 
 // Fetch filter options using efficient SQL aggregation
 async function getFilterOptions() {
-    const [categories, popularTags] = await Promise.all([
-      prisma.$queryRaw<{ category: string }[]>`
-        SELECT DISTINCT "category" FROM "articles"
-        WHERE "status" = 'PUBLISHED' AND "category" IS NOT NULL
-        ORDER BY "category"
+    const [usedRubrics, popularTags] = await Promise.all([
+      prisma.$queryRaw<{ rubric: string }[]>`
+        SELECT DISTINCT rubric FROM "articles", unnest("rubrics") AS rubric
+        WHERE "status" = 'PUBLISHED'
       `,
       prisma.$queryRaw<{ tag: string; cnt: bigint }[]>`
         SELECT tag, COUNT(*) as cnt
@@ -177,8 +188,9 @@ async function getFilterOptions() {
       `,
     ]);
 
+    const used = new Set(usedRubrics.map((r) => r.rubric));
     return {
-      categories: categories.map(c => c.category),
+      rubrics: RUBRICS.filter((r) => used.has(r.slug)).map(({ slug, name, kind }) => ({ slug, name, kind })),
       popularTags: popularTags.map(t => t.tag),
     };
 }

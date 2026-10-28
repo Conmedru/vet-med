@@ -11,6 +11,7 @@ import { withRetry } from "@/lib/utils/retry";
 import { parsePartialJson } from "@/lib/utils/json";
 import { scheduleNewArticle } from "@/lib/articles/scheduler";
 import { buildArticleProcessingUserPrompt, PROCESSING_PROMPT_VERSION } from "@/lib/ai/prompts";
+import { rubricsFromAI, primaryRubricName } from "@/lib/rubrics";
 
 export interface ProcessingResult {
   success: boolean;
@@ -65,9 +66,12 @@ export async function processAndGenerateCover(
     const aiResponse = await callReplicateAI(prompt, aiModel as any);
     const result = parsePartialJson(aiResponse.output);
 
-    if (!result.title || !result.content || !result.category) {
+    if (!result.title || !result.content) {
       throw new Error("Missing required fields in AI response");
     }
+
+    const rubrics = rubricsFromAI(result.rubrics);
+    const category = primaryRubricName(rubrics) || "Общая ветеринария";
 
     const processingTime = Date.now() - startTime;
 
@@ -78,7 +82,8 @@ export async function processAndGenerateCover(
         title: result.title,
         content: result.content,
         excerpt: result.excerpt,
-        category: result.category,
+        category,
+        rubrics,
         tags: result.tags || [],
         significanceScore: result.significanceScore,
         status: "PROCESSING", // Keep as PROCESSING until cover is done and scheduled
@@ -99,12 +104,13 @@ export async function processAndGenerateCover(
           model: aiResponse.model,
           processingTimeMs: processingTime,
           costUsd: aiResponse.costUsd,
-          category: result.category,
+          category,
+          rubrics,
         },
       },
     });
 
-    console.log(`[Process] AI done: "${result.title}" | ${result.category} | ${processingTime}ms`);
+    console.log(`[Process] AI done: "${result.title}" | ${rubrics.join(", ")} | ${processingTime}ms`);
 
     // Step 4: Generate cover (optional)
     let coverGenerated = false;
@@ -114,7 +120,7 @@ export async function processAndGenerateCover(
           articleId,
           result.title,
           result.excerpt || "",
-          result.category
+          category
         );
       } catch (coverError) {
         console.error(`[Process] Cover failed for ${articleId}:`, coverError);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateAdminAuth, validateAuthWithDevBypass, getAuthUser } from "@/lib/auth";
 import { ArticleUpdateSchema } from "@/lib/schemas/article";
+import { filterRubricSlugs, primaryRubricName } from "@/lib/rubrics";
 import { revalidatePath } from "next/cache";
 import { sendNewArticleNotification } from "@/lib/newsletter";
 
@@ -105,6 +106,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       data.publishedAt === undefined &&
       !existing.publishedAt;
 
+    const rubrics = data.rubrics ? filterRubricSlugs(data.rubrics) : undefined;
+
     const article = await prisma.article.update({
       where: { id },
       data: {
@@ -112,6 +115,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(data.content && { content: data.content }),
         ...(data.excerpt && { excerpt: data.excerpt }),
         ...(data.category && { category: data.category }),
+        ...(rubrics && { rubrics, category: primaryRubricName(rubrics) || data.category || existing.category }),
         ...(data.tags && { tags: data.tags }),
         ...(data.coverImageUrl !== undefined && { coverImageUrl: data.coverImageUrl }),
         ...(data.scheduledAt !== undefined && {
@@ -165,8 +169,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (article.slug) {
       revalidatePath(`/news/${article.slug}`);
     }
-    if (article.category) {
-      revalidatePath(`/category/${article.category.toLowerCase()}`);
+    for (const slug of article.rubrics) {
+      revalidatePath(`/category/${slug}`);
     }
 
     return NextResponse.json(article);

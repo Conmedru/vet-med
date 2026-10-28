@@ -1,17 +1,21 @@
 import Link from "next/link"
-import { animalCategoryGroups, getCategorySlug } from "@/lib/data"
+import { getRubricsByKind, PET_SLUGS } from "@/lib/rubrics"
 import { NewsletterForm } from "@/components/shared"
+
+const animals = getRubricsByKind("animal")
 
 const footerSections: { name: string; href: string; indent?: boolean }[] = [
   { name: "Питомцы", href: "/category/pets" },
-  ...( animalCategoryGroups["Питомцы"] || []).map((cat) => ({
-    name: `— ${cat}`,
-    href: `/category/${getCategorySlug(cat)}`,
+  ...animals.filter((r) => PET_SLUGS.includes(r.slug)).map((r) => ({
+    name: `— ${r.name}`,
+    href: `/category/${r.slug}`,
     indent: true,
   })),
-  { name: "Экзоты", href: "/category/exotics" },
-  { name: "С/х животные", href: "/category/farm-animals" },
-  { name: "Нутрициология", href: "/category/nutrition" },
+  ...animals.filter((r) => !PET_SLUGS.includes(r.slug)).map((r) => ({
+    name: r.shortName || r.name,
+    href: `/category/${r.slug}`,
+  })),
+  ...getRubricsByKind("section").map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
   { name: "Все новости", href: "/news" },
 ]
 

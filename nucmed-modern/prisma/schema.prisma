@@ -79,6 +79,7 @@ model Article {
   excerpt             String?
   category            String?
   tags                String[]          @default([])
+  rubrics             String[]          @default([]) // slugs from lib/rubrics.ts
   significanceScore   Int?
   language            String            @default("en")
   authors             String[]          @default([])
@@ -105,6 +106,7 @@ model Article {
   @@index([sourceId])
   @@index([status])
   @@index([category])
+  @@index([rubrics], type: Gin)
   @@index([publishedAt])
   @@index([scheduledAt])
   @@index([contentHash])

@@ -14,7 +14,7 @@ export { estimateReadingTime, getArticleUrl, getArticleTitle, getArticleDate } f
 // Re-export queries from main file (for backward compatibility)
 export {
   getPublishedArticles,
-  getArticlesByCategory,
+  getArticlesByRubrics,
   getFeaturedArticles,
   getEditorialFeaturedArticles,
   getTrendingArticles,

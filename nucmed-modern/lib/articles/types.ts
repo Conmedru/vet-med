@@ -22,6 +22,7 @@ export interface DBArticle {
   content?: string | null;
   category: string | null;
   tags: string[];
+  rubrics?: string[];
   coverImageUrl: string | null;
   publishedAt: Date | null;
   originalPublishedAt: Date | null;

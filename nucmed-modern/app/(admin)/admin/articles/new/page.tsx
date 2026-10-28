@@ -25,7 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 import { CATEGORIES } from "@/lib/schemas/article";
-import { ANIMAL_CATEGORIES, NOSOLOGIES, SPECIAL_SECTIONS } from "@/lib/config/constants";
+import { RubricPicker } from "@/components/admin/rubric-picker";
+import { primaryRubricName } from "@/lib/rubrics";
 
 export default function NewArticlePage() {
   const router = useRouter();
@@ -40,7 +41,8 @@ export default function NewArticlePage() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
+  const [rubrics, setRubrics] = useState<string[]>([]);
+  const category = primaryRubricName(rubrics) || "";
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
@@ -69,7 +71,7 @@ export default function NewArticlePage() {
           title,
           excerpt: excerpt || undefined,
           content,
-          category: category || undefined,
+          rubrics,
           tags,
           externalUrl: externalUrl || undefined,
           coverImageUrl: coverImageUrl || undefined,
@@ -459,29 +461,8 @@ export default function NewArticlePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Категория</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                >
-                  <option value="">Выберите категорию</option>
-                  <optgroup label="По виду животного">
-                    {ANIMAL_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Нозологии">
-                    {NOSOLOGIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Специальные разделы">
-                    {SPECIAL_SECTIONS.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </optgroup>
-                </select>
+                <label className="text-sm font-medium mb-1 block">Рубрики</label>
+                <RubricPicker value={rubrics} onChange={setRubrics} />
               </div>
 
               {/* Significance Score */}

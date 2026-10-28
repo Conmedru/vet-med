@@ -45,10 +45,11 @@ export interface ReplicateResponse {
  */
 export async function callReplicateAI(
   prompt: string,
-  model: ReplicateModel = "claude-4-sonnet"
+  model: ReplicateModel = "claude-4-sonnet",
+  options: { systemPrompt?: string; maxTokens?: number } = {}
 ): Promise<ReplicateResponse> {
   return withRetry(
-    () => _callReplicateAI(prompt, model),
+    () => _callReplicateAI(prompt, model, options),
     {
       maxAttempts: 3,
       initialDelayMs: 2000,
@@ -76,7 +77,8 @@ const SYSTEM_PROMPT = PROCESSING_SYSTEM_PROMPT;
  */
 async function _callReplicateAI(
   prompt: string,
-  model: ReplicateModel
+  model: ReplicateModel,
+  options: { systemPrompt?: string; maxTokens?: number }
 ): Promise<ReplicateResponse> {
   const apiToken = process.env.REPLICATE_API_TOKEN;
 
@@ -92,8 +94,8 @@ async function _callReplicateAI(
 
   const input = {
     prompt: prompt,
-    system_prompt: SYSTEM_PROMPT,
-    max_tokens: 4096,
+    system_prompt: options.systemPrompt ?? SYSTEM_PROMPT,
+    max_tokens: options.maxTokens ?? 4096,
   };
 
   // Official models (e.g. anthropic/*) use predictions.create with { model } field (not { version })

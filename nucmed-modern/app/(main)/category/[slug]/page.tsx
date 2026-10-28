@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation"
-import { getCategoryBySlug, isSpecialSection, isAnimalCategory } from "@/lib/data"
-import { getPublishedArticles, getArticlesByCategory } from "@/lib/articles"
+import { notFound, permanentRedirect } from "next/navigation"
+import { getRubric, LEGACY_RUBRIC_REDIRECTS, PET_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
+import { getPublishedArticles, getArticlesByRubrics } from "@/lib/articles"
 import { DBArticleCard, DBArticleSidebar } from "@/components/articles"
 import { CategorySubscribeButton } from "@/components/shared"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
@@ -21,14 +21,29 @@ interface CategoryPageProps {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
 
+const ALL_DESCRIPTION = "Полный архив новостей, исследований и клинических случаев ветеринарной медицины."
+
+/** Rubric page: a rubric from lib/rubrics, the "pets" group or the full archive */
+function resolvePage(slug: string) {
+  if (slug === "all") {
+    return { title: "Все материалы", badge: "Архив", description: ALL_DESCRIPTION, rubricSlugs: null }
+  }
+  if (slug === "pets") {
+    return { title: "Питомцы", badge: "Животные", description: "Кошки, собаки, грызуны и декоративные птицы.", rubricSlugs: PET_SLUGS }
+  }
+  const rubric = getRubric(slug)
+  if (!rubric) return null
+  return { title: rubric.name, badge: RUBRIC_KIND_LABELS[rubric.kind], description: rubric.description, rubricSlugs: [rubric.slug] }
+}
+
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { slug } = await params
   
-  const categoryName = getCategoryBySlug(slug)
-  const title = slug === "all" ? "Все материалы" : categoryName || "Категория"
+  const page = resolvePage(slug)
+  const title = page?.title || "Категория"
   const description = slug === "all"
-    ? "Полный архив новостей, исследований и клинических случаев ветеринарной медицины."
-    : `Статьи и новости в категории «${title}»: последние исследования, клинические случаи и обзоры.`;
+    ? ALL_DESCRIPTION
+    : `${page?.description || ""} Статьи и новости в рубрике «${title}».`.trim();
   
   return {
     title: `${title} | VetMed`,
@@ -50,20 +65,21 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params
   
-  // Find category by transliterated slug
-  const categoryName = getCategoryBySlug(slug)
+  const page = resolvePage(slug)
 
-  if (!categoryName && slug !== "all") {
+  if (!page) {
+    const target = LEGACY_RUBRIC_REDIRECTS[slug]
+    if (target) permanentRedirect(`/category/${target}`)
     notFound()
   }
 
-  const displayTitle = slug === "all" ? "Все материалы" : categoryName
+  const displayTitle = page.title
 
   const [sidebarArticles, filteredArticles] = await Promise.all([
     getPublishedArticles(15),
-    slug === "all"
-      ? getPublishedArticles(50)
-      : getArticlesByCategory(categoryName || slug, 50),
+    page.rubricSlugs
+      ? getArticlesByRubrics(page.rubricSlugs, 50)
+      : getPublishedArticles(50),
   ])
   const allArticles = sidebarArticles
 
@@ -73,7 +89,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         
         {/* LEFT COLUMN: Global Sidebar (Sticky) */}
         <aside className="lg:col-span-3 hidden lg:block">
-          <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-hidden">
+          <div className="sticky top-36 h-[calc(100vh-11rem)] overflow-hidden">
             <FadeIn delay={0.1}>
               <DBArticleSidebar articles={allArticles} />
             </FadeIn>
@@ -85,7 +101,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <Breadcrumbs 
             items={[
               { label: "Новости", href: "/news" },
-              { label: displayTitle || "Категория" }
+              { label: displayTitle }
             ]}
           />
           <FadeIn className="flex flex-col gap-4 border-b pb-6">
@@ -93,7 +109,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                    <Badge variant="outline" className="text-primary border-primary/20">
-                     {slug === "all" ? "Архив" : (categoryName && isAnimalCategory(categoryName) ? "Животные" : categoryName && isSpecialSection(categoryName) ? "Спецраздел" : "Специальность")}
+                     {page.badge}
                    </Badge>
                    <span className="text-sm text-muted-foreground">{filteredArticles.length} статей</span>
                 </div>
@@ -101,15 +117,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight capitalize">
                     {displayTitle}
                   </h1>
-                  {slug !== "all" && categoryName && (
-                    <CategorySubscribeButton category={categoryName} />
+                  {slug !== "all" && (
+                    <CategorySubscribeButton category={displayTitle} />
                   )}
                 </div>
                 <p className="text-muted-foreground mt-3 text-lg max-w-2xl">
-                  {slug === "all" 
-                    ? "Полный архив новостей, исследований и клинических случаев в области ветеринарной медицины."
-                    : `Подборка актуальных материалов, исследований и новостей в категории «${displayTitle}».`
-                  }
+                  {page.description}
                 </p>
               </div>
             </div>

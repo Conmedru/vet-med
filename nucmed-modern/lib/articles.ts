@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { FARM_SLUG, NON_FARM_ANIMAL_SLUGS } from "@/lib/rubrics";
 import { PAGINATION, CACHE, CONTENT } from "@/lib/config";
 
 /**
@@ -12,6 +14,7 @@ export interface DBArticle {
   excerpt: string | null;
   category: string | null;
   tags: string[];
+  rubrics: string[];
   coverImageUrl: string | null;
   publishedAt: Date | null;
   originalPublishedAt: Date | null;
@@ -31,6 +34,7 @@ const articleSelect = {
   excerpt: true,
   category: true,
   tags: true,
+  rubrics: true,
   coverImageUrl: true,
   publishedAt: true,
   originalPublishedAt: true,
@@ -38,6 +42,25 @@ const articleSelect = {
   significanceScore: true,
   source: { select: { name: true, slug: true } },
 } as const;
+
+const ARTICLE_COLUMNS = Prisma.sql`
+        a."id",
+        a."slug",
+        a."title",
+        a."titleOriginal",
+        a."excerpt",
+        a."category",
+        a."tags",
+        a."rubrics",
+        a."coverImageUrl",
+        a."publishedAt",
+        a."originalPublishedAt",
+        a."createdAt",
+        a."significanceScore",
+        json_build_object('name', s."name", 'slug', s."slug") as source`;
+
+// Farm-only articles are shown only in the farm-animals rubric (client requirement)
+export const NOT_FARM_ONLY = Prisma.sql`NOT (${FARM_SLUG} = ANY(a."rubrics") AND NOT (a."rubrics" && ${NON_FARM_ANIMAL_SLUGS}::text[]))`;
 
 // Base64 images are too large for Next.js Data Cache (2MB limit),
 // so we disable caching for list fetching functions until S3 is configured.
@@ -48,23 +71,10 @@ const articleSelect = {
 export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_ARTICLES) => {
   try {
     const articles = await prisma.$queryRaw<DBArticle[]>`
-      SELECT 
-        a."id",
-        a."slug",
-        a."title",
-        a."titleOriginal",
-        a."excerpt",
-        a."category",
-        a."tags",
-        a."coverImageUrl",
-        a."publishedAt",
-        a."originalPublishedAt",
-        a."createdAt",
-        a."significanceScore",
-        json_build_object('name', s."name", 'slug', s."slug") as source
+      SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
-      WHERE a."status" = 'PUBLISHED'
+      WHERE a."status" = 'PUBLISHED' AND ${NOT_FARM_ONLY}
       ORDER BY COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
@@ -75,32 +85,24 @@ export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_AR
   }
 };
 
-export const getArticlesByCategory = async (category: string, limit = 50) => {
+/**
+ * Articles of one or several rubrics (any match). Farm-only articles are excluded
+ * unless the farm-animals rubric itself is requested.
+ */
+export const getArticlesByRubrics = async (slugs: string[], limit = 50) => {
   try {
+    const farmFilter = slugs.includes(FARM_SLUG) ? Prisma.empty : Prisma.sql`AND ${NOT_FARM_ONLY}`;
     const articles = await prisma.$queryRaw<DBArticle[]>`
-      SELECT 
-        a."id",
-        a."slug",
-        a."title",
-        a."titleOriginal",
-        a."excerpt",
-        a."category",
-        a."tags",
-        a."coverImageUrl",
-        a."publishedAt",
-        a."originalPublishedAt",
-        a."createdAt",
-        a."significanceScore",
-        json_build_object('name', s."name", 'slug', s."slug") as source
+      SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
-      WHERE a."status" = 'PUBLISHED' AND LOWER(a."category") = LOWER(${category})
+      WHERE a."status" = 'PUBLISHED' AND a."rubrics" && ${slugs}::text[] ${farmFilter}
       ORDER BY COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
     return articles;
   } catch (error) {
-    console.error("Failed to fetch articles by category:", error);
+    console.error("Failed to fetch articles by rubrics:", error);
     return [];
   }
 };
@@ -109,23 +111,10 @@ export const getFeaturedArticles = async (limit = PAGINATION.FEATURED_ARTICLES) 
   try {
     const minScore = CONTENT.MIN_SIGNIFICANCE_SCORE;
     const articles = await prisma.$queryRaw<DBArticle[]>`
-      SELECT 
-        a."id",
-        a."slug",
-        a."title",
-        a."titleOriginal",
-        a."excerpt",
-        a."category",
-        a."tags",
-        a."coverImageUrl",
-        a."publishedAt",
-        a."originalPublishedAt",
-        a."createdAt",
-        a."significanceScore",
-        json_build_object('name', s."name", 'slug', s."slug") as source
+      SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
-      WHERE a."status" = 'PUBLISHED' AND a."significanceScore" >= ${minScore}
+      WHERE a."status" = 'PUBLISHED' AND a."significanceScore" >= ${minScore} AND ${NOT_FARM_ONLY}
       ORDER BY a."significanceScore" DESC, COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
@@ -147,23 +136,11 @@ export const getEditorialFeaturedArticles = async (
     const minScore = CONTENT.MIN_SIGNIFICANCE_SCORE;
     const freshnessThreshold = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000);
     const freshArticles = await prisma.$queryRaw<DBArticle[]>`
-      SELECT 
-        a."id",
-        a."slug",
-        a."title",
-        a."titleOriginal",
-        a."excerpt",
-        a."category",
-        a."tags",
-        a."coverImageUrl",
-        a."publishedAt",
-        a."originalPublishedAt",
-        a."createdAt",
-        a."significanceScore",
-        json_build_object('name', s."name", 'slug', s."slug") as source
+      SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
       WHERE a."status" = 'PUBLISHED'
+        AND ${NOT_FARM_ONLY}
         AND a."significanceScore" >= ${minScore}
         AND COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") >= ${freshnessThreshold}
       ORDER BY a."significanceScore" DESC, COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
@@ -187,23 +164,10 @@ export const getEditorialFeaturedArticles = async (
 export const getTrendingArticles = async (limit = PAGINATION.TRENDING_ARTICLES) => {
   try {
     const articles = await prisma.$queryRaw<DBArticle[]>`
-      SELECT 
-        a."id",
-        a."slug",
-        a."title",
-        a."titleOriginal",
-        a."excerpt",
-        a."category",
-        a."tags",
-        a."coverImageUrl",
-        a."publishedAt",
-        a."originalPublishedAt",
-        a."createdAt",
-        a."significanceScore",
-        json_build_object('name', s."name", 'slug', s."slug") as source
+      SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
-      WHERE a."status" = 'PUBLISHED'
+      WHERE a."status" = 'PUBLISHED' AND ${NOT_FARM_ONLY}
       ORDER BY COALESCE(a."publishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;

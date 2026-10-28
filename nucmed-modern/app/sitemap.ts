@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { categories, getCategorySlug } from '@/lib/data'
+import { RUBRICS } from '@/lib/rubrics'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -23,8 +23,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-    const categoryUrls = categories.map((category) => ({
-      url: `${BASE_URL}/category/${getCategorySlug(category)}`,
+    const categoryUrls = ['pets', ...RUBRICS.map((r) => r.slug)].map((slug) => ({
+      url: `${BASE_URL}/category/${slug}`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.7,
