@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { isValidSpecialtySlug, OTHER_SPECIALTY_SLUG } from "@/lib/data/specialties";
 
+// Letters (any alphabet), spaces, hyphen, apostrophe, dot: names end up in emails and pages
+const PERSON_NAME = /^\p{L}[\p{L}\s'’.-]*$/u;
+
 // Пароль: минимум 8 символов — баланс между безопасностью и тем, что
 // аудитория (практикующие врачи) не должна страдать от вычурных требований.
 const PasswordSchema = z
@@ -10,9 +13,9 @@ const PasswordSchema = z
 
 export const RegisterSchema = z
   .object({
-    lastName: z.string().trim().min(1, "Укажите фамилию").max(120),
-    firstName: z.string().trim().min(1, "Укажите имя").max(120),
-    middleName: z.string().trim().min(1, "Укажите отчество").max(120),
+    lastName: z.string().trim().min(1, "Укажите фамилию").max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф"),
+    firstName: z.string().trim().min(1, "Укажите имя").max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф"),
+    middleName: z.string().trim().min(1, "Укажите отчество").max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф"),
     specialty: z.string().trim().min(1, "Укажите специальность"),
     specialtyOther: z.string().trim().max(200).optional(),
     email: z.string().trim().toLowerCase().email("Некорректный email").max(200),
@@ -70,9 +73,9 @@ export const ResetPasswordSchema = z
 
 export const ProfileUpdateSchema = z
   .object({
-    lastName: z.string().trim().min(1).max(120).optional(),
-    firstName: z.string().trim().min(1).max(120).optional(),
-    middleName: z.string().trim().min(1).max(120).optional(),
+    lastName: z.string().trim().min(1).max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф").optional(),
+    firstName: z.string().trim().min(1).max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф").optional(),
+    middleName: z.string().trim().min(1).max(120).regex(PERSON_NAME, "Только буквы, пробел, дефис и апостроф").optional(),
     specialty: z.string().trim().min(1).optional(),
     specialtyOther: z.string().trim().max(200).optional(),
     phone: z.string().trim().max(30).optional().or(z.literal("")),
