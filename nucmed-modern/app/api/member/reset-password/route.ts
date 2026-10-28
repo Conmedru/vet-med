@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPasswordAsync } from "@/lib/auth/utils";
 import { hashToken } from "@/lib/auth/member-session";
 import { ResetPasswordSchema } from "@/lib/schemas/member";
+import { resetRateLimitPrefix } from "@/lib/auth/rate-limit";
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -41,6 +42,10 @@ export async function POST(request: NextRequest) {
     // на случай, если пароль восстанавливали из-за компрометации аккаунта.
     prisma.memberSession.deleteMany({ where: { memberId: record.memberId } }),
   ]);
+
+  // The owner proved access to the mailbox: lift any login lockout on the account
+  const member = await prisma.member.findUnique({ where: { id: record.memberId }, select: { email: true } });
+  if (member) resetRateLimitPrefix(`login-fail:${member.email}|`);
 
   return NextResponse.json({ success: true });
 }

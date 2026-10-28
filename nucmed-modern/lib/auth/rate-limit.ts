@@ -36,26 +36,44 @@ export function checkRateLimit(
   return { allowed: true, retryAfterMs: 0 };
 }
 
-/** Is the key over its limit, without counting this request (for failure-only counters) */
-export function isRateLimited(key: string, limit: number): { limited: boolean; retryAfterMs: number } {
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt < Date.now()) return { limited: false, retryAfterMs: 0 };
-  return { limited: bucket.count >= limit, retryAfterMs: bucket.resetAt - Date.now() };
-}
-
-/** Count one failure (e.g. a wrong password) */
-export function recordFailure(key: string, windowMs: number): void {
+/**
+ * Reserve one attempt (e.g. a password check) if the key is under its limit. Synchronous, so
+ * concurrent requests cannot all pass the check before the first failure is recorded.
+ * Give the attempt back with releaseAttempt when it succeeds.
+ */
+export function reserveAttempt(key: string, limit: number, windowMs: number): { allowed: boolean; retryAfterMs: number } {
   const now = Date.now();
   const bucket = buckets.get(key);
   if (!bucket || bucket.resetAt < now) {
     buckets.set(key, { count: 1, resetAt: now + windowMs });
-  } else {
-    bucket.count += 1;
+    return { allowed: true, retryAfterMs: 0 };
   }
+  if (bucket.count >= limit) {
+    return { allowed: false, retryAfterMs: bucket.resetAt - now };
+  }
+  bucket.count += 1;
+  return { allowed: true, retryAfterMs: 0 };
+}
+
+export function releaseAttempt(key: string): void {
+  const bucket = buckets.get(key);
+  if (bucket && bucket.count > 0) bucket.count -= 1;
 }
 
 export function resetRateLimit(key: string): void {
   buckets.delete(key);
+}
+
+/** Drop all counters whose key starts with the prefix (e.g. after a password reset) */
+export function resetRateLimitPrefix(prefix: string): void {
+  for (const key of buckets.keys()) {
+    if (key.startsWith(prefix)) buckets.delete(key);
+  }
+}
+
+/** Counter key for failed logins: per account, or per account + IP */
+export function loginFailureKey(email: string, ip?: string): string {
+  return ip ? `login-fail:${email}|ip:${ip}` : `login-fail:${email}|all`;
 }
 
 export function getClientIp(headers: Headers): string {

@@ -3,12 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/utils";
 import { createMemberSession, setMemberSessionCookie } from "@/lib/auth/member-session";
 import { LoginSchema } from "@/lib/schemas/member";
-import { checkRateLimit, getClientIp, isRateLimited, recordFailure, resetRateLimit } from "@/lib/auth/rate-limit";
+import { checkRateLimit, getClientIp, loginFailureKey, releaseAttempt, reserveAttempt, resetRateLimit } from "@/lib/auth/rate-limit";
 import { getSpecialtyName } from "@/lib/data/specialties";
 
 const LOGIN_FAIL_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_FAILS_PER_IP = 10;
-const LOGIN_FAILS_PER_ACCOUNT = 100;
+const LOGIN_FAILS_PER_ACCOUNT = 20;
 
 // bcrypt hash of a random string (cost 12), compared against when the account does not exist
 const DUMMY_PASSWORD_HASH = "$2b$12$1kzxu6WSfQer0GgOxJVABedlyHUjoRhTX7jg31s5cWTInKUJR0aJe";
@@ -40,38 +40,36 @@ export async function POST(request: NextRequest) {
 
   const { email, password } = result.data;
 
-  // Failed-password limits. Only failures count and a successful login resets them, so a stranger
-  // cannot lock a vet out: the strict limit is per account + IP, the per-account one is high and
-  // only stops distributed guessing.
-  const pairKey = `login-fail:${email}:${ip}`;
-  const accountKey = `login-fail:${email}`;
-  const pair = isRateLimited(pairKey, LOGIN_FAILS_PER_IP);
-  const account = isRateLimited(accountKey, LOGIN_FAILS_PER_ACCOUNT);
-  if (pair.limited || account.limited) {
+  // Failed-password limits: every attempt is reserved before the (slow) bcrypt check and given
+  // back on success, so only failures stay counted and parallel requests cannot slip past the limit.
+  // Strict per account + IP; per account 20 per 15 min against guessing from many IPs.
+  // If someone deliberately locks a vet out, a password reset by email clears the counters.
+  const pairKey = loginFailureKey(email, ip);
+  const accountKey = loginFailureKey(email);
+  const pair = reserveAttempt(pairKey, LOGIN_FAILS_PER_IP, LOGIN_FAIL_WINDOW_MS);
+  const account = pair.allowed ? reserveAttempt(accountKey, LOGIN_FAILS_PER_ACCOUNT, LOGIN_FAIL_WINDOW_MS) : pair;
+  if (!pair.allowed || !account.allowed) {
+    if (pair.allowed) releaseAttempt(pairKey);
     return NextResponse.json(
-      { error: "Слишком много неудачных попыток входа. Попробуйте позже." },
+      { error: "Слишком много неудачных попыток входа. Попробуйте позже или восстановите пароль." },
       { status: 429, headers: { "Retry-After": String(Math.ceil(Math.max(pair.retryAfterMs, account.retryAfterMs) / 1000)) } }
     );
   }
-  const recordLoginFailure = () => {
-    recordFailure(pairKey, LOGIN_FAIL_WINDOW_MS);
-    recordFailure(accountKey, LOGIN_FAIL_WINDOW_MS);
-  };
 
   const member = await prisma.member.findUnique({ where: { email } });
   if (!member || member.status !== "ACTIVE") {
     // Same bcrypt work as for a real account, so response time does not reveal registered emails
     await verifyPassword(password, DUMMY_PASSWORD_HASH);
-    recordLoginFailure();
     return NextResponse.json({ error: "Неверный email или пароль" }, { status: 401 });
   }
 
   const valid = await verifyPassword(password, member.passwordHash);
   if (!valid) {
-    recordLoginFailure();
     return NextResponse.json({ error: "Неверный email или пароль" }, { status: 401 });
   }
+  // Success: this attempt was not a failure
   resetRateLimit(pairKey);
+  releaseAttempt(accountKey);
 
   const userAgent = request.headers.get("user-agent") || undefined;
   const session = await createMemberSession(member.id, { userAgent, ipAddress: ip });
