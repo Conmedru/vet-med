@@ -12,9 +12,18 @@ interface RouteParams {
 
 /**
  * GET /api/articles/[id]
- * Получить статью по ID (публичный endpoint)
+ * Получить статью по ID для админки. Требует авторизации: ответ содержит черновики,
+ * исходный текст и полный текст закрытых (isGated) материалов.
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  const user = await getAuthUser();
+  if (!user) {
+    const auth = validateAuthWithDevBypass(request, validateAdminAuth);
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+  }
+
   const { id } = await params;
 
   try {

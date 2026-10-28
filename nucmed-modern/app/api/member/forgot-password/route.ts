@@ -32,6 +32,11 @@ export async function POST(request: NextRequest) {
 
   const { email } = result.data;
 
+  // Per-account limit: protects the mailbox from a flood of reset emails sent from many IPs
+  if (!checkRateLimit(`forgot-password-account:${email}`, { limit: 3, windowMs: 60 * 60 * 1000 }).allowed) {
+    return NextResponse.json({ error: "Слишком много попыток. Попробуйте позже." }, { status: 429 });
+  }
+
   // Ответ одинаков независимо от того, найден ли аккаунт — иначе форма
   // становится инструментом для проверки, зарегистрирован ли конкретный врач.
   const genericResponse = NextResponse.json({
