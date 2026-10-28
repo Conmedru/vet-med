@@ -16,6 +16,8 @@ const footerSections: { name: string; href: string; indent?: boolean }[] = [
     href: `/category/${r.slug}`,
   })),
   ...getRubricsByKind("section").map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
+  { name: "Гайдлайны и справочники", href: "/guidelines" },
+  { name: "Калькуляторы и шкалы", href: "/calculators" },
   { name: "Все новости", href: "/news" },
 ]
 

@@ -1,12 +1,13 @@
 import { notFound, permanentRedirect } from "next/navigation"
 import { getRubric, LEGACY_RUBRIC_REDIRECTS, PET_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
 import { getPublishedArticles, getArticlesByRubrics } from "@/lib/articles"
+import { getGuidelinesByRubric } from "@/lib/guidelines"
 import { DBArticleCard, DBArticleSidebar } from "@/components/articles"
 import { CategorySubscribeButton } from "@/components/shared"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { Button } from "@/components/ui/button"
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/fade-in"
-import { TrendingUp } from "lucide-react"
+import { BookOpen, ExternalLink, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
@@ -82,6 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       : getPublishedArticles(50),
   ])
   const allArticles = sidebarArticles
+  const guidelines = page.rubricSlugs ? getGuidelinesByRubric(page.rubricSlugs) : []
 
   return (
     <div className="container py-8 md:py-12 min-h-screen">
@@ -127,6 +129,31 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </div>
             </div>
           </FadeIn>
+
+          {guidelines.length > 0 && (
+            <FadeIn delay={0.15} className="bg-muted/30 p-5 rounded-xl border">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex items-center gap-2 font-bold">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h2>Гайдлайны по теме</h2>
+                </div>
+                <Link href={page.rubricSlugs!.length === 1 ? `/guidelines?rubric=${page.rubricSlugs![0]}` : "/guidelines"} className="text-sm text-primary hover:underline whitespace-nowrap">
+                  Все гайдлайны →
+                </Link>
+              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                {guidelines.slice(0, 6).map((g) => (
+                  <li key={g.url}>
+                    <a href={g.url} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary transition-colors">
+                      {g.title}
+                      {g.language === "ru" && <span className="ml-1.5 text-xs text-primary">рус.</span>}
+                      <ExternalLink className="inline h-3 w-3 ml-1 -mt-0.5 text-muted-foreground" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </FadeIn>
+          )}
 
           {filteredArticles.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

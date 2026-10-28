@@ -33,6 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Static pages (excluding /privacy and /terms - they have noindex)
     const staticPages = [
       { url: `${BASE_URL}/news`, priority: 0.9 },
+      { url: `${BASE_URL}/guidelines`, priority: 0.7 },
+      { url: `${BASE_URL}/calculators`, priority: 0.7 },
       { url: `${BASE_URL}/about`, priority: 0.5 },
       { url: `${BASE_URL}/contact`, priority: 0.5 },
     ].map(page => ({

@@ -51,7 +51,11 @@ const dropdowns: MenuDropdown[] = [
   { id: "diagnostics", label: "Диагностика", groups: [{ links: getRubricsByKind("diagnostics").map(rubricLink) }] },
 ]
 
-const sectionLinks: MenuLink[] = getRubricsByKind("section").map(rubricLink)
+const sectionLinks: MenuLink[] = [
+  ...getRubricsByKind("section").map(rubricLink),
+  { name: "Гайдлайны", href: "/guidelines" },
+  { name: "Калькуляторы", href: "/calculators" },
+]
 
 const dropdownHrefs = (d: MenuDropdown) => d.groups.flatMap((g) => g.links.map((l) => l.href))
 
