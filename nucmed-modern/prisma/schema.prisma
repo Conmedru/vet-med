@@ -473,6 +473,7 @@ model Member {
 
   sessions MemberSession[]
   tokens   MemberToken[]
+  devices  MemberDevice[]
 
   @@index([status])
   @@index([createdAt])
@@ -509,6 +510,20 @@ model MemberToken {
   @@index([memberId, type])
   @@index([expiresAt])
   @@map("member_tokens")
+}
+
+// Browser that has logged in successfully: exempt from the strict account-wide login limit.
+// Random token in a cookie, only its sha256 here; revoked on password reset/change.
+model MemberDevice {
+  id         String   @id @default(cuid())
+  memberId   String
+  tokenHash  String   @unique
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+  @@map("member_devices")
 }
 
 enum MemberStatus {

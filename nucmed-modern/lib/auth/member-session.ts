@@ -142,26 +142,19 @@ export async function invalidateOtherMemberSessions(memberId: string): Promise<v
 }
 
 // ─── Known device ────────────────────────────────────────────────
-// After a successful login the browser gets a signed cookie for that email. A device that has
-// logged in before is not blocked by the account-wide failure limit, so a stranger hammering
-// the account from many IPs cannot lock the vet out of their own browser.
+// After a successful login the browser gets a random device token (only its sha256 is stored,
+// bound to the member). Known devices get a higher account-wide failure limit, so a stranger
+// hammering the account from many IPs does not lock the vet out of their own browser.
+// Tokens are revoked on password reset and change.
 
 const KNOWN_DEVICE_COOKIE = "convet_device";
-const KNOWN_DEVICE_DAYS = 365;
+const KNOWN_DEVICE_DAYS = 180;
 
-function deviceSecret(): string | null {
-  return process.env.MEMBER_DEVICE_SECRET || process.env.CRON_SECRET || null;
-}
-
-function deviceSignature(email: string, secret: string): string {
-  return crypto.createHmac("sha256", secret).update(`known-device:${email.toLowerCase()}`).digest("hex");
-}
-
-export async function setKnownDeviceCookie(email: string): Promise<void> {
-  const secret = deviceSecret();
-  if (!secret) return;
+export async function rememberDevice(memberId: string): Promise<void> {
+  const token = generateMemberToken();
+  await prisma.memberDevice.create({ data: { memberId, tokenHash: hashToken(token) } });
   const cookieStore = await cookies();
-  cookieStore.set(KNOWN_DEVICE_COOKIE, deviceSignature(email, secret), {
+  cookieStore.set(KNOWN_DEVICE_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -170,13 +163,25 @@ export async function setKnownDeviceCookie(email: string): Promise<void> {
   });
 }
 
+/** Has this browser logged into the account with this email before (and not been revoked)? */
 export async function isKnownDevice(email: string): Promise<boolean> {
-  const secret = deviceSecret();
-  if (!secret) return false;
   const cookieStore = await cookies();
-  const value = cookieStore.get(KNOWN_DEVICE_COOKIE)?.value;
-  if (!value) return false;
-  const expected = Buffer.from(deviceSignature(email, secret));
-  const actual = Buffer.from(value);
-  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  const token = cookieStore.get(KNOWN_DEVICE_COOKIE)?.value;
+  if (!token) return false;
+
+  const device = await prisma.memberDevice.findUnique({
+    where: { tokenHash: hashToken(token) },
+    select: { id: true, createdAt: true, member: { select: { email: true } } },
+  });
+  const maxAgeMs = KNOWN_DEVICE_DAYS * 24 * 60 * 60 * 1000;
+  if (!device || device.member.email !== email.toLowerCase() || Date.now() - device.createdAt.getTime() > maxAgeMs) {
+    return false;
+  }
+
+  prisma.memberDevice.update({ where: { id: device.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+  return true;
+}
+
+export async function revokeMemberDevices(memberId: string): Promise<void> {
+  await prisma.memberDevice.deleteMany({ where: { memberId } });
 }

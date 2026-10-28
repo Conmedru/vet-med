@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPasswordAsync, verifyPassword } from "@/lib/auth/utils";
-import { invalidateOtherMemberSessions, MemberAuthError, requireMember } from "@/lib/auth/member-session";
+import { invalidateOtherMemberSessions, MemberAuthError, rememberDevice, requireMember, revokeMemberDevices } from "@/lib/auth/member-session";
 import { checkRateLimit } from "@/lib/auth/rate-limit";
 import { ChangePasswordSchema } from "@/lib/schemas/member";
 
@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
       data: { passwordHash: await hashPasswordAsync(result.data.newPassword) },
     });
     await invalidateOtherMemberSessions(member.id);
+    // Device trust is tied to the old password; this browser is trusted again
+    await revokeMemberDevices(member.id);
+    await rememberDevice(member.id);
 
     return NextResponse.json({ success: true });
   } catch (e) {

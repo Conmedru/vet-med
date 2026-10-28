@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
     // Восстановление пароля обесценивает все текущие сессии — стандартная защита
     // на случай, если пароль восстанавливали из-за компрометации аккаунта.
     prisma.memberSession.deleteMany({ where: { memberId: record.memberId } }),
+    // Device trust is tied to the old password
+    prisma.memberDevice.deleteMany({ where: { memberId: record.memberId } }),
   ]);
 
   // The owner proved access to the mailbox: lift any login lockout on the account

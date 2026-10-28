@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/utils";
-import { createMemberSession, isKnownDevice, setKnownDeviceCookie, setMemberSessionCookie } from "@/lib/auth/member-session";
+import { createMemberSession, isKnownDevice, rememberDevice, setMemberSessionCookie } from "@/lib/auth/member-session";
 import { LoginSchema } from "@/lib/schemas/member";
 import { checkRateLimit, getClientIp, loginFailureKey, releaseAttempt, reserveAttempt, resetRateLimit } from "@/lib/auth/rate-limit";
 import { getSpecialtyName } from "@/lib/data/specialties";
@@ -9,6 +9,7 @@ import { getSpecialtyName } from "@/lib/data/specialties";
 const LOGIN_FAIL_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_FAILS_PER_IP = 10;
 const LOGIN_FAILS_PER_ACCOUNT = 20;
+const LOGIN_FAILS_PER_ACCOUNT_KNOWN_DEVICE = 100;
 
 // bcrypt hash of a random string (cost 12), compared against when the account does not exist
 const DUMMY_PASSWORD_HASH = "$2b$12$1kzxu6WSfQer0GgOxJVABedlyHUjoRhTX7jg31s5cWTInKUJR0aJe";
@@ -42,17 +43,16 @@ export async function POST(request: NextRequest) {
 
   // Failed-password limits: every attempt is reserved before the (slow) bcrypt check and given
   // back on success, so only failures stay counted and parallel requests cannot slip past the limit.
-  // Strict per account + IP; per account 20 per 15 min against guessing from many IPs — not applied
-  // to browsers that logged in before. A password reset by email also clears the counters.
+  // Strict per account + IP; per account 20 per 15 min against guessing from many IPs, with a
+  // separate higher budget for browsers that logged in before. A password reset clears the counters.
   const pairKey = loginFailureKey(email, ip);
-  const accountKey = loginFailureKey(email);
   const pair = reserveAttempt(pairKey, LOGIN_FAILS_PER_IP, LOGIN_FAIL_WINDOW_MS);
-  // A browser that has logged into this account before skips the account-wide limit
+  // A browser that has logged into this account before has its own, higher account-wide limit
   const knownDevice = await isKnownDevice(email);
-  const account =
-    pair.allowed && !knownDevice
-      ? reserveAttempt(accountKey, LOGIN_FAILS_PER_ACCOUNT, LOGIN_FAIL_WINDOW_MS)
-      : pair;
+  const accountKey = loginFailureKey(email) + (knownDevice ? "|known" : "");
+  const account = pair.allowed
+    ? reserveAttempt(accountKey, knownDevice ? LOGIN_FAILS_PER_ACCOUNT_KNOWN_DEVICE : LOGIN_FAILS_PER_ACCOUNT, LOGIN_FAIL_WINDOW_MS)
+    : pair;
   if (!pair.allowed || !account.allowed) {
     if (pair.allowed) releaseAttempt(pairKey);
     return NextResponse.json(
@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
   }
   // Success: this attempt was not a failure
   resetRateLimit(pairKey);
-  if (!knownDevice) releaseAttempt(accountKey);
-  await setKnownDeviceCookie(email);
+  releaseAttempt(accountKey);
+  if (!knownDevice) await rememberDevice(member.id);
 
   const userAgent = request.headers.get("user-agent") || undefined;
   const session = await createMemberSession(member.id, { userAgent, ipAddress: ip });
