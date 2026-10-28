@@ -13,6 +13,13 @@ const httpUrl = z
   .max(2000)
   .refine((url) => /^https?:\/\//i.test(url), "Only http(s) links are allowed");
 
+const MAX_EVENT_DAYS = 60;
+const endDateInRange = (value: { eventDate?: Date; endDate?: Date | null }) =>
+  !value.eventDate ||
+  !value.endDate ||
+  (value.endDate >= value.eventDate && value.endDate.getTime() - value.eventDate.getTime() <= MAX_EVENT_DAYS * 86_400_000);
+const endDateMessage = { message: `Дата окончания должна быть не раньше начала и не позже чем через ${MAX_EVENT_DAYS} дней`, path: ["endDate"] };
+
 export const EventCreateSchema = z
   .object({
     title: z.string().trim().min(1).max(300),
@@ -24,7 +31,8 @@ export const EventCreateSchema = z
     location: z.preprocess(emptyToNull, z.string().trim().max(500).nullable().optional()),
     isOnline: z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .refine(endDateInRange, endDateMessage);
 
 export const EventUpdateSchema = z
   .object({
@@ -38,7 +46,8 @@ export const EventUpdateSchema = z
     isOnline: z.boolean().optional(),
     isActive: z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .refine(endDateInRange, endDateMessage);
 
 export const EventApiItemSchema = z.object({
   id: z.string(),

@@ -3,6 +3,7 @@ import { EVENT_SCRAPERS, type ScrapedEvent } from "./scrapers";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_DAYS_AHEAD = 400;
+const MAX_EVENT_DAYS = 60;
 
 // Organizers' own sites first: their copy of an event wins over the aggregators' one
 const PRIORITY = ["proplan", "avzvet", "avc", "expomap", "zooinform"];
@@ -14,6 +15,21 @@ const FARM_EVENT =
 
 export function isFarmEvent(event: { title: string; description: string | null }): boolean {
   return FARM_EVENT.test(`${event.title} ${event.description || ""}`);
+}
+
+// Expomap lists pet shows worldwide: abroad only veterinary events are relevant for the audience
+const RU_CIS_COUNTRIES = ["Россия", "Беларусь", "Казахстан", "Узбекистан", "Кыргызстан", "Киргизия", "Армения", "Азербайджан", "Таджикистан"];
+const VET_EVENT = /ветерин|\bvet|vétérin|veterin/i;
+
+function isForeignNonVet(sourceType: string, event: { title: string; description: string | null; location: string | null }): boolean {
+  if (sourceType !== "expomap" || !event.location) return false;
+  const country = event.location.split(",").pop()!.trim();
+  return !RU_CIS_COUNTRIES.includes(country) && !VET_EVENT.test(`${event.title} ${event.description || ""}`);
+}
+
+/** Events the site does not show: farm animals anywhere, non-veterinary events abroad */
+function isOutOfScope(sourceType: string, event: ScrapedEvent): boolean {
+  return isFarmEvent(event) || isForeignNonVet(sourceType, event);
 }
 
 /** Title words for duplicate detection: lowercase, ё→е, no punctuation, no years */
@@ -47,7 +63,7 @@ export interface EventSyncResult {
   created: number;
   updated: number;
   duplicates: number;
-  /** Farm-animal events, not imported */
+  /** Out-of-scope events (farm animals, non-veterinary abroad), not imported */
   skipped: number;
   error?: string;
 }
@@ -83,17 +99,17 @@ export async function syncScrapedEvents(): Promise<EventSyncResult[]> {
     const upcoming = events.filter((e) => (e.endDate ?? e.eventDate) >= today && e.eventDate <= horizon);
     result.fetched = upcoming.length;
 
-    // Hide farm events stored before the filter existed (editor's decisions are kept)
-    const farmIds = upcoming.filter(isFarmEvent).map((e) => e.externalId);
-    if (farmIds.length > 0) {
+    // Hide out-of-scope events stored before the filters existed (editor's decisions are kept)
+    const outOfScopeIds = upcoming.filter((e) => isOutOfScope(scraper.sourceType, e)).map((e) => e.externalId);
+    if (outOfScopeIds.length > 0) {
       await prisma.event.updateMany({
-        where: { sourceType: scraper.sourceType, externalId: { in: farmIds }, isActive: true, manualEditedAt: null },
+        where: { sourceType: scraper.sourceType, externalId: { in: outOfScopeIds }, isActive: true, manualEditedAt: null },
         data: { isActive: false },
       });
     }
 
     for (const event of upcoming) {
-      if (isFarmEvent(event)) {
+      if (isOutOfScope(scraper.sourceType, event)) {
         result.skipped++;
         continue;
       }
@@ -107,7 +123,11 @@ export async function syncScrapedEvents(): Promise<EventSyncResult[]> {
       const data = {
         title: event.title,
         eventDate: event.eventDate,
-        endDate: event.endDate && event.endDate > event.eventDate ? event.endDate : null,
+        // Scraped end dates are trusted only for a plausible event length
+        endDate:
+          event.endDate && event.endDate > event.eventDate && event.endDate.getTime() - event.eventDate.getTime() <= MAX_EVENT_DAYS * DAY_MS
+            ? event.endDate
+            : null,
         location: event.location,
         isOnline: event.isOnline,
         linkUrl: event.linkUrl,
@@ -140,7 +160,7 @@ export async function syncScrapedEvents(): Promise<EventSyncResult[]> {
     }
 
     console.log(
-      `[Events] ${scraper.name}: ${result.fetched} upcoming, ${result.created} new, ${result.updated} updated, ${result.duplicates} duplicates, ${result.skipped} farm skipped`
+      `[Events] ${scraper.name}: ${result.fetched} upcoming, ${result.created} new, ${result.updated} updated, ${result.duplicates} duplicates, ${result.skipped} out of scope`
     );
   }
 

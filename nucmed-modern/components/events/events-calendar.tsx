@@ -148,13 +148,15 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
     });
   }, [currentMonth, events, vetDates]);
 
-  // Multi-day events are shown on every day of their range
+  // Multi-day events are shown on every day of their range within the month
   const eventsByDate = useMemo(() => {
     const nextMap = new Map<string, EventApiItem[]>();
+    const monthStart = getMonthDate(currentMonth);
+    const monthEnd = Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0);
 
     events.forEach((event) => {
-      const start = new Date(event.eventDate).getTime();
-      const end = event.endDate ? new Date(event.endDate).getTime() : start;
+      const start = Math.max(new Date(event.eventDate).getTime(), monthStart.getTime());
+      const end = Math.min(event.endDate ? new Date(event.endDate).getTime() : start, monthEnd);
       for (let time = start; time <= end; time += DAY_MS) {
         const dateKey = getDateKey(new Date(time));
         const dayEvents = nextMap.get(dateKey) || [];
@@ -164,7 +166,7 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
     });
 
     return nextMap;
-  }, [events]);
+  }, [events, currentMonth]);
 
   const vetDatesByDate = useMemo(() => {
     const nextMap = new Map<string, VetDate[]>();
