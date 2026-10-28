@@ -7,7 +7,10 @@ const UNISENDER_FROM_NAME = process.env.UNISENDER_FROM_NAME || "Conmed";
 const UNISENDER_LOGIN = process.env.UNISENDER_LOGIN;
 const BASE_URL = "https://api.unisender.com/ru/api";
 
-export const DEFAULT_LIST_ID = process.env.UNISENDER_LIST_ID || "7";
+// The Unisender account is shared with onco-compass and Neuro 2.0 (their lists: 3 onco, 5 neuro).
+// Our list is fixed in code on purpose: UNISENDER_LIST_ID in the env pointed to other projects' lists.
+export const VET_LIST_ID = "7"; // vet-digest
+export const DEFAULT_LIST_ID = VET_LIST_ID;
 
 if (!UNISENDER_API_KEY) {
   console.warn("WARNING: Unisender API key not found in env (checked UNISENDER and UNISENDER_API_KEY)");

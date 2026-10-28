@@ -59,19 +59,8 @@ export async function sendNewArticleNotification(articleId: string) {
   }
   console.log(`[Newsletter] Found article: ${article.title || article.titleOriginal}`);
 
-  let listId = DEFAULT_LIST_ID;
-  if (!listId) {
-    // Try to fetch default list
-    try {
-      const lists = await unisender.getLists();
-      if (lists.result && lists.result.length > 0) {
-        listId = lists.result[0].id;
-        console.log(`[Newsletter] Using default list ID: ${listId}`);
-      }
-    } catch (e) {
-      console.error("Failed to fetch Unisender lists:", e);
-    }
-  }
+  // Never fall back to "the first list": the Unisender account is shared with other projects
+  const listId = DEFAULT_LIST_ID;
 
   if (!listId) {
     console.warn("UNISENDER_LIST_ID not set and no lists found, skipping notification");
@@ -128,19 +117,8 @@ export async function sendNewArticleNotification(articleId: string) {
 }
 
 export async function sendWeeklyDigest(digest: NewsletterDigest) {
-  let listId = DEFAULT_LIST_ID;
-  if (!listId) {
-    // Try to fetch default list
-    try {
-      const lists = await unisender.getLists();
-      if (lists.result && lists.result.length > 0) {
-        listId = lists.result[0].id;
-        console.log(`[Newsletter] Using default list ID: ${listId}`);
-      }
-    } catch (e) {
-      console.error("Failed to fetch Unisender lists:", e);
-    }
-  }
+  // Never fall back to "the first list": the Unisender account is shared with other projects
+  const listId = DEFAULT_LIST_ID;
 
   if (!listId) {
     console.warn("UNISENDER_LIST_ID not set, skipping digest sending");

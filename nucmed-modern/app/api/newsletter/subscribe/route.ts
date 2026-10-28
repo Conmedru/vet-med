@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { unisender } from "@/lib/unisender";
+import { unisender, VET_LIST_ID } from "@/lib/unisender";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -54,19 +54,10 @@ export async function POST(request: NextRequest) {
 
     // Sync to Unisender for email delivery
     try {
-      let listId = process.env.UNISENDER_LIST_ID;
-      if (!listId) {
-        const listsResponse = await unisender.getLists();
-        if (listsResponse.result && Array.isArray(listsResponse.result) && listsResponse.result.length > 0) {
-          listId = String(listsResponse.result[0].id);
-        }
-      }
-
-      if (listId) {
-        await unisender.subscribe(email, listId, {
-          SUBSCRIPTION_TYPE: type,
-        });
-      }
+      // Our own list only (shared Unisender account, see lib/unisender.ts)
+      await unisender.subscribe(email, VET_LIST_ID, {
+        SUBSCRIPTION_TYPE: type,
+      });
     } catch (e) {
       console.error("[Subscribe] Unisender sync failed (non-fatal):", e);
     }
