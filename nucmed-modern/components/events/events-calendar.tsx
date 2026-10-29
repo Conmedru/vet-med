@@ -189,7 +189,7 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
 
   return (
     <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-5">
-      <div className="rounded-2xl border border-stone-200/70 bg-white p-4 shadow-sm sm:p-5">
+      <div className="rounded-[28px] border border-white/80 bg-white/65 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-2xl sm:p-6">
         <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
@@ -202,7 +202,7 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-stone-100 bg-stone-50/70 p-3.5 sm:p-4">
+        <div className="mt-4 rounded-[20px] border border-white/80 bg-white/70 p-3.5 sm:p-4">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
@@ -289,7 +289,7 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200/70 bg-white p-4 shadow-sm sm:p-5">
+      <div className="rounded-[28px] border border-white/80 bg-white/65 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-2xl sm:p-6">
         <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">На выбранную дату</div>

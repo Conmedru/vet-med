@@ -28,7 +28,7 @@ export function DigestTab() {
   }
 
   return (
-    <div className="max-w-2xl rounded-xl border bg-card p-6">
+    <div className="max-w-2xl rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-6">
       <div className="flex items-start gap-4">
         <div className="rounded-lg bg-primary/10 p-2.5">
           <Mail className="h-5 w-5 text-primary" />

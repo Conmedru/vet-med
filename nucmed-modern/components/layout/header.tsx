@@ -50,20 +50,34 @@ const dropdowns: MenuDropdown[] = [
   },
   { id: "specialties", label: "Специализации", groups: [{ links: getRubricsByKind("specialty").map(rubricLink) }] },
   { id: "diagnostics", label: "Диагностика", groups: [{ links: getRubricsByKind("diagnostics").map(rubricLink) }] },
+  {
+    id: "sections",
+    label: "Разделы",
+    groups: [
+      { links: getRubricsByKind("section").map(rubricLink) },
+      { title: "Справочники", links: [{ name: "Гайдлайны", href: "/guidelines" }, { name: "Калькуляторы", href: "/calculators" }] },
+    ],
+  },
 ]
 
 const sectionLinks: MenuLink[] = [
-  ...getRubricsByKind("section").map(rubricLink),
   { name: "Гайдлайны", href: "/guidelines" },
   { name: "Калькуляторы", href: "/calculators" },
 ]
 
 const dropdownHrefs = (d: MenuDropdown) => d.groups.flatMap((g) => g.links.map((l) => l.href))
 
+const navItem = "flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 xl:px-3 py-2 text-[14px] font-medium transition-colors"
+
+/**
+ * Site header: one row on desktop, transparent over the page top and frosted glass once the
+ * page scrolls. Menus open on click/Enter and close on Esc, outside click and navigation.
+ */
 export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
   const [openDropdown, setOpenDropdown] = React.useState<string | null>(null)
   const [openMobileGroup, setOpenMobileGroup] = React.useState<string | null>(null)
+  const [scrolled, setScrolled] = React.useState(false)
   const pathname = usePathname()
   const navRef = React.useRef<HTMLElement>(null)
 
@@ -73,75 +87,72 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         setOpenDropdown(null)
       }
     }
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenDropdown(null)
+        setIsMobileMenuOpen(false)
+      }
+    }
+    function handleScroll() {
+      setScrolled(window.scrollY > 8)
+    }
+    handleScroll()
     document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleKey)
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleKey)
+      window.removeEventListener("scroll", handleScroll)
+    }
   }, [])
 
+  // Close menus after client-side navigation
+  React.useEffect(() => {
+    setOpenDropdown(null)
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
+  const solid = scrolled || isMobileMenuOpen
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-20 flex items-center justify-between gap-2 md:gap-4">
-        {/* Left: Logo */}
-        <div className="flex items-center min-w-0">
-          <Link href="/" className="shrink min-w-0 flex items-center">
-            <img
-              src="/con-vet-logo.png"
-              alt="CON-VET.ru"
-              className="w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-[320px] h-auto max-h-[40px] md:max-h-[50px] lg:max-h-[64px] object-contain"
-            />
-          </Link>
-        </div>
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300",
+        solid
+          ? "border-white/70 bg-white/70 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_10px_30px_-24px_rgba(11,42,51,0.45)] backdrop-blur-2xl backdrop-saturate-150"
+          : "border-transparent bg-transparent"
+      )}
+    >
+      <div className="container flex h-[72px] items-center gap-3">
+        <Link href="/" className="shrink-0">
+          <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-8 w-auto md:h-9" />
+        </Link>
 
-        {/* Right: Search + Subscribe + Mobile menu */}
-        <div className="flex items-center gap-2 shrink-0">
-          <SearchDialog />
-
-          <SubscribeDialog />
-
-          <MemberMenu />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Открыть меню"
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            <span className="sr-only">Меню</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Desktop Navigation (second row) */}
-      <div className="hidden lg:block border-t border-border/50">
-        <nav ref={navRef} className="container h-12 flex items-center gap-1">
+        {/* Desktop navigation */}
+        <nav ref={navRef} className="ml-6 hidden min-w-0 flex-1 items-center gap-0.5 xl:flex" aria-label="Разделы сайта">
           {dropdowns.map((dropdown) => {
             const isOpen = openDropdown === dropdown.id
             const isActive = dropdownHrefs(dropdown).includes(pathname)
             return (
               <div key={dropdown.id} className="relative">
                 <button
+                  type="button"
+                  aria-expanded={isOpen}
                   onClick={() => setOpenDropdown(isOpen ? null : dropdown.id)}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 xl:px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                    isOpen || isActive
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  )}
+                  className={cn(navItem, isOpen ? "bg-white text-foreground shadow-sm" : isActive ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
                 >
                   {dropdown.label}
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
                 </button>
 
                 {isOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-72 max-h-[70vh] overflow-y-auto rounded-lg border bg-popover p-2 shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute left-0 top-[calc(100%+10px)] z-50 max-h-[70vh] w-72 overflow-y-auto rounded-[20px] border border-border bg-white p-2 shadow-[0_24px_60px_-20px_rgba(11,42,51,0.35)] animate-in fade-in zoom-in-95 duration-100">
                     {dropdown.groups.map((group, index) => (
                       <React.Fragment key={group.title || index}>
-                        {index > 0 && <div className="my-2 border-t border-border/50" />}
+                        {index > 0 && <div className="my-2 border-t border-border/60" />}
                         {group.title && (
-                          <div className="px-2.5 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {group.title}
-                          </div>
+                          <div className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.title}</div>
                         )}
                         {group.links.map((link) => {
                           const Icon = link.icon
@@ -151,13 +162,11 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                               href={link.href}
                               onClick={() => setOpenDropdown(null)}
                               className={cn(
-                                "flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors",
-                                pathname === link.href
-                                  ? "bg-primary/10 text-primary font-medium"
-                                  : "text-foreground hover:bg-muted"
+                                "flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors",
+                                pathname === link.href ? "bg-secondary font-medium text-primary" : "text-foreground hover:bg-secondary"
                               )}
                             >
-                              {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                              {Icon && <Icon className="h-4 w-4 text-primary" />}
                               {link.name}
                             </Link>
                           )
@@ -174,135 +183,100 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
             <Link
               key={link.href}
               href={link.href}
-              className={cn(
-                "px-2.5 xl:px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                pathname === link.href
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
+              className={cn(navItem, "hidden 2xl:flex", pathname === link.href ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
             >
               {link.name}
             </Link>
           ))}
 
           {FEATURES.PUBLIC_JOURNAL && (
-            <Link
-              href="/journal"
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                pathname === "/journal"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
+            <Link href="/journal" className={cn(navItem, pathname === "/journal" ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
               Журнал
             </Link>
           )}
         </nav>
+
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <SearchDialog />
+          <MemberMenu />
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-foreground hover:bg-white/80 xl:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile navigation */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t bg-background max-h-[calc(100vh-5rem)] overflow-y-auto">
-          <div className="container py-4 space-y-1">
+        <div className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-white/70 xl:hidden">
+          <div className="container space-y-4 py-4">
             {dropdowns.map((dropdown) => {
               const isOpen = openMobileGroup === dropdown.id
-              const isActive = dropdownHrefs(dropdown).includes(pathname)
               return (
                 <div key={dropdown.id}>
                   <button
+                    type="button"
+                    aria-expanded={isOpen}
                     onClick={() => setOpenMobileGroup(isOpen ? null : dropdown.id)}
-                    className={cn(
-                      "w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
-                      isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                    )}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[15px] font-semibold text-foreground hover:bg-white/70"
                   >
                     {dropdown.label}
                     <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
                   </button>
-
                   {isOpen && (
-                    <div className="pl-4 space-y-0.5">
-                      {dropdown.groups.flatMap((group) => group.links).map((link) => {
-                        const Icon = link.icon
-                        return (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className={cn(
-                              "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors",
-                              pathname === link.href ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {Icon && <Icon className="h-4 w-4" />}
-                            {link.name}
-                          </Link>
-                        )
-                      })}
+                    <div className="flex flex-wrap gap-1.5 px-2 pb-2 pt-1">
+                      {dropdown.groups.flatMap((group) => group.links).map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className={cn(
+                            "rounded-full px-3 py-1.5 text-[13px] ring-1 transition-colors",
+                            pathname === link.href ? "bg-primary text-primary-foreground ring-primary" : "bg-white text-foreground ring-border"
+                          )}
+                        >
+                          {link.name}
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>
               )
             })}
 
-            {sectionLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "block px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
-                  pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            <div className="grid gap-1 border-t border-border/60 pt-3">
+              {FEATURES.PUBLIC_JOURNAL && (
+                <Link href="/journal" className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
+                  Журнал
+                </Link>
+              )}
+            </div>
 
-            {FEATURES.PUBLIC_JOURNAL && (
-              <Link
-                href="/journal"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "block px-3 py-2.5 text-sm rounded-md transition-colors",
-                  pathname === "/journal" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
-                )}
-              >
-                Журнал
-              </Link>
-            )}
-
-            <div className="pt-3 md:hidden">
+            <div className="md:hidden">
               <MemberMenu mobile />
             </div>
 
-            {/* Trending tags in mobile */}
+            <SubscribeDialog trigger={<Button variant="outline" className="w-full rounded-xl">Подписаться на дайджест</Button>} />
+
             {trendingTags.length > 0 && (
-              <>
-                <div className="pt-3 pb-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Популярные теги
-                </div>
+              <div>
+                <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Популярные теги</div>
                 <div className="flex flex-wrap gap-2 px-3">
                   {trendingTags.slice(0, 6).map((tag) => (
                     <Link
                       key={tag}
                       href={`/news?tag=${encodeURIComponent(tag)}`}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-2.5 py-1 text-xs bg-muted text-muted-foreground hover:text-primary rounded-md transition-colors"
+                      className="rounded-lg bg-white/70 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-primary"
                     >
                       #{tag}
                     </Link>
                   ))}
                 </div>
-
-                {/* Subscribe button in mobile */}
-                <div className="pt-4 mt-4 border-t sm:hidden">
-                  <SubscribeDialog
-                    trigger={<Button className="w-full">Подписаться</Button>}
-                  />
-                </div>
-              </>
+              </div>
             )}
           </div>
         </div>

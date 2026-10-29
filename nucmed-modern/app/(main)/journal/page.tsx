@@ -23,7 +23,7 @@ export default async function JournalPage() {
       </div>
 
       {issues.length === 0 ? (
-        <div className="rounded-2xl border border-stone-200 bg-white p-10 text-center">
+        <div className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-10 text-center">
           <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-600">Пока нет опубликованных выпусков</p>
         </div>
@@ -35,7 +35,7 @@ export default async function JournalPage() {
             return (
               <article
                 key={issue.id}
-                className="rounded-2xl border border-stone-200 overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl overflow-hidden transition-shadow hover:shadow-md"
               >
                 <div className="aspect-[4/5] bg-stone-100">
                   <img

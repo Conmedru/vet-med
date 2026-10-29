@@ -6,7 +6,6 @@ import { Search, FileText, Loader2, X } from "lucide-react"
 import Link from "next/link"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -105,19 +104,15 @@ export function SearchDialog() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        className={cn(
-          "relative h-9 w-9 p-0 xl:h-10 xl:w-80 xl:justify-start xl:px-3 xl:py-2 text-muted-foreground hover:text-foreground"
-        )}
+      <button
+        type="button"
+        aria-label="Поиск (⌘K)"
+        title="Поиск (⌘K)"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-white/80"
         onClick={() => setOpen(true)}
       >
-        <Search className="h-4 w-4 xl:mr-2" />
-        <span className="hidden xl:inline-flex">Поиск...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </Button>
+        <Search className="h-[18px] w-[18px]" />
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent

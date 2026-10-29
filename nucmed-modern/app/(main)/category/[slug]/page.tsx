@@ -91,7 +91,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         
         {/* LEFT COLUMN: Global Sidebar (Sticky) */}
         <aside className="lg:col-span-3 hidden lg:block">
-          <div className="sticky top-36 h-[calc(100vh-11rem)] overflow-hidden">
+          <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-hidden">
             <FadeIn delay={0.1}>
               <DBArticleSidebar articles={allArticles} />
             </FadeIn>
@@ -106,17 +106,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               { label: displayTitle }
             ]}
           />
-          <FadeIn className="flex flex-col gap-4 border-b pb-6">
+          <FadeIn className="flex flex-col gap-4 pb-2">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                   <Badge variant="outline" className="text-primary border-primary/20">
+                   <Badge variant="outline" className="rounded-full border-white/80 bg-white/70 text-primary">
                      {page.badge}
                    </Badge>
                    <span className="text-sm text-muted-foreground">{filteredArticles.length} статей</span>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
-                  <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight capitalize">
+                  <h1 className="text-3xl md:text-5xl font-extrabold tracking-[-0.03em] capitalize">
                     {displayTitle}
                   </h1>
                   {slug !== "all" && (
@@ -131,7 +131,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </FadeIn>
 
           {guidelines.length > 0 && (
-            <FadeIn delay={0.15} className="bg-muted/30 p-5 rounded-xl border">
+            <FadeIn delay={0.15} className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-5 md:p-6">
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2 font-bold">
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -174,7 +174,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                
                {/* Right sidebar for category specific or trending in category */}
                <div className="lg:col-span-4 hidden lg:flex flex-col gap-6">
-                  <FadeIn delay={0.3} className="bg-muted/30 p-6 rounded-xl border">
+                  <FadeIn delay={0.3} className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-6">
                     <div className="flex items-center gap-2 mb-4 font-bold">
                        <TrendingUp className="h-4 w-4 text-primary" />
                        <h3>Популярное в рубрике</h3>
@@ -198,7 +198,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                </div>
             </div>
           ) : (
-            <FadeIn delay={0.2} className="py-20 text-center bg-muted/20 rounded-xl border border-dashed">
+            <FadeIn delay={0.2} className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl py-20 text-center">
               <h3 className="text-xl font-semibold mb-2">В этой категории пока нет материалов</h3>
               <p className="text-muted-foreground mb-6">Мы работаем над новыми статьями. Загляните позже!</p>
               <Button asChild>

@@ -4,93 +4,74 @@ import { NewsletterForm } from "@/components/shared"
 
 const animals = getRubricsByKind("animal")
 
-const footerSections: { name: string; href: string; indent?: boolean }[] = [
-  { name: "Питомцы", href: "/category/pets" },
-  ...animals.filter((r) => PET_SLUGS.includes(r.slug)).map((r) => ({
-    name: `— ${r.name}`,
-    href: `/category/${r.slug}`,
-    indent: true,
-  })),
-  ...animals.filter((r) => !PET_SLUGS.includes(r.slug)).map((r) => ({
-    name: r.shortName || r.name,
-    href: `/category/${r.slug}`,
-  })),
-  ...getRubricsByKind("section").map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
-  { name: "Гайдлайны и справочники", href: "/guidelines" },
-  { name: "Калькуляторы и шкалы", href: "/calculators" },
-  { name: "Все новости", href: "/news" },
+const columns: { title: string; links: { name: string; href: string }[] }[] = [
+  {
+    title: "Животные",
+    links: [
+      { name: "Все питомцы", href: "/category/pets" },
+      ...animals.filter((r) => PET_SLUGS.includes(r.slug)).map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
+      ...animals.filter((r) => !PET_SLUGS.includes(r.slug)).map((r) => ({ name: r.shortName || r.name, href: `/category/${r.slug}` })),
+    ],
+  },
+  {
+    title: "Разделы",
+    links: [
+      ...getRubricsByKind("section").map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
+      { name: "Гайдлайны и справочники", href: "/guidelines" },
+      { name: "Калькуляторы и шкалы", href: "/calculators" },
+      { name: "Все новости", href: "/news" },
+    ],
+  },
+  {
+    title: "О проекте",
+    links: [
+      { name: "О нас", href: "/about" },
+      { name: "Контакты", href: "/contact" },
+      { name: "Политика конфиденциальности", href: "/privacy" },
+      { name: "Условия использования", href: "/terms" },
+    ],
+  },
 ]
 
 export function Footer() {
   return (
-    <footer className="bg-muted/50 border-t">
-      <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
-            <a href="/" className="flex items-center">
-              <img
-                src="/con-vet-logo.png"
-                alt="CON-VET.ru"
-                className="w-[280px] md:w-[350px] h-auto max-h-[80px] object-contain"
-              />
-            </a>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Ведущий портал ветеринарной медицины. Новости и исследования в области диагностики, лечения и профилактики заболеваний животных для ветеринарных специалистов.
-            </p>
-          </div>
+    <footer className="relative isolate mt-16 overflow-hidden bg-gradient-to-br from-[#0b2a33] via-[#0b3f4c] to-[#14305a] text-white">
+      <div aria-hidden className="absolute -left-24 top-0 -z-10 h-80 w-80 rounded-full bg-[#22c3d6] opacity-25 blur-[100px]" />
+      <div aria-hidden className="absolute -right-24 bottom-0 -z-10 h-80 w-80 rounded-full bg-[#8b7bff] opacity-25 blur-[100px]" />
 
-          <div>
-            <h3 className="font-semibold mb-4">Разделы</h3>
-            <ul className="space-y-2 text-sm">
-              {footerSections.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={`transition-colors hover:text-primary ${"indent" in item && item.indent ? "text-muted-foreground/70 pl-2" : "text-muted-foreground"}`}
-                  >
-                    {item.name}
+      <div className="container grid grid-cols-1 gap-10 py-14 md:grid-cols-2 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <Link href="/" className="inline-block rounded-2xl bg-white p-2">
+            <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-8 w-auto" />
+          </Link>
+          <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/75">
+            Новости и исследования ветеринарной медицины для практикующих врачей: диагностика, лечение и профилактика заболеваний животных.
+          </p>
+          <div className="mt-6 max-w-sm rounded-[20px] border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+            <div className="mb-3 text-[14px] font-semibold">Дайджест по понедельникам</div>
+            <NewsletterForm />
+          </div>
+        </div>
+
+        {columns.map((column, index) => (
+          <div key={column.title} className={`lg:col-span-2 ${index === 0 ? "lg:col-start-7" : ""}`}>
+            <div className="text-[13px] font-semibold uppercase tracking-[0.06em] text-white/55">{column.title}</div>
+            <ul className="mt-3 space-y-2">
+              {column.links.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-[15px] text-white/85 transition-colors hover:text-white">
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
+        ))}
+      </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">Информация</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  О нас
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Контакты
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  Политика конфиденциальности
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  Условия использования
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Подписка</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Получайте самые важные новости недели прямо на почту.
-            </p>
-            <NewsletterForm />
-          </div>
-        </div>
-        <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} CON-VET.ru — Ветеринарная медицина. Все права защищены.</p>
+      <div className="border-t border-white/10">
+        <div className="container py-5 text-[13px] text-white/55">
+          © {new Date().getFullYear()} CON-VET.ru — ветеринарная медицина. Материалы для специалистов.
         </div>
       </div>
     </footer>

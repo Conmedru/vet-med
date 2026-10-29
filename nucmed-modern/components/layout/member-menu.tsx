@@ -46,11 +46,10 @@ export function MemberMenu({ mobile }: { mobile?: boolean }) {
     }
     return (
       <div className="hidden md:flex items-center gap-[8px]">
-        <Link href="/login" className="btn btn-ghost h-[38px] gap-[6px]">
-          <LogIn size={15} />
+        <Link href="/login" className="btn h-[40px] px-3 text-[var(--ink)] hover:bg-white/70">
           Войти
         </Link>
-        <Link href="/register" className="btn btn-primary h-[38px]">
+        <Link href="/register" className="btn btn-primary h-[40px]">
           Регистрация
         </Link>
       </div>

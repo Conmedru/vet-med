@@ -3,7 +3,6 @@
 import Link from "next/link"
 import useSWR from "swr"
 import { ArrowRight, Loader2, SlidersHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { DBArticleCard } from "@/components/articles"
 import type { DBArticle } from "@/lib/articles"
 import { useMemberSession } from "@/lib/hooks/use-member-session"
@@ -26,24 +25,27 @@ export function PersonalFeedSection() {
 
   if (!member) {
     return (
-      <section className="rounded-2xl border bg-primary/5 p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5">
-        <div className="rounded-xl bg-primary/10 p-3 w-fit">
-          <SlidersHorizontal className="h-6 w-6 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-bold">Соберите ленту под себя</h2>
-          <p className="text-muted-foreground mt-1">
-            Зарегистрируйтесь бесплатно: выберите животных, специализации и методы диагностики — и получайте только
-            нужные вам материалы, а по понедельникам — дайджест недели.
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button asChild>
-            <Link href="/register">Зарегистрироваться</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/login">Войти</Link>
-          </Button>
+      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0e7490] via-[#0b5b70] to-[#123a63] p-6 text-white md:p-8">
+        <div aria-hidden className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#5eead4] opacity-30 blur-3xl" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-center">
+          <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/15 backdrop-blur-md">
+            <SlidersHorizontal className="h-6 w-6" />
+          </span>
+          <div className="flex-1">
+            <h2 className="text-[22px] font-bold leading-snug">Соберите ленту под себя</h2>
+            <p className="mt-1 text-white/80">
+              Зарегистрируйтесь бесплатно: выберите животных, специализации и методы диагностики — и получайте только
+              нужные вам материалы, а по понедельникам — дайджест недели.
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Link href="/register" className="rounded-xl bg-white px-5 py-2.5 text-[14px] font-semibold text-[#0b4553] hover:bg-white/90">
+              Зарегистрироваться
+            </Link>
+            <Link href="/login" className="rounded-xl border border-white/30 px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-white/10">
+              Войти
+            </Link>
+          </div>
         </div>
       </section>
     )
@@ -53,8 +55,8 @@ export function PersonalFeedSection() {
 
   return (
     <section>
-      <div className="flex items-center justify-between gap-4 border-b pb-3 mb-6">
-        <h2 className="text-2xl font-bold">Моя лента</h2>
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <h2 className="text-[26px] font-bold tracking-[-0.02em] md:text-[32px]">Моя лента</h2>
         <Link href="/account" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
           {data?.personalized ? "Вся лента" : "Настроить ленту"} <ArrowRight className="h-4 w-4" />
         </Link>

@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import { Figtree, Noto_Sans } from "next/font/google";
+import { Onest } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const figtree = Figtree({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
-});
-
-const notoSans = Noto_Sans({
+// One family for the whole site; --font-serif is kept as an alias for components that still ask for it
+const onest = Onest({
   subsets: ["latin", "cyrillic"],
-  variable: "--font-serif",
-  weight: ["400", "500", "700"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
@@ -60,8 +56,7 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased flex flex-col",
-          figtree.variable,
-          notoSans.variable
+          onest.variable
         )}
       >
         <ThemeProvider

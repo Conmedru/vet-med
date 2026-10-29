@@ -29,9 +29,9 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
 
   if (variant === "horizontal") {
     return (
-      <Card className="flex flex-col md:flex-row overflow-hidden hover:shadow-md transition-shadow duration-300 border-none bg-transparent shadow-none">
+      <Card className="flex flex-col md:flex-row gap-4 overflow-hidden rounded-[24px] border border-white/80 bg-white/60 p-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-shadow duration-300 hover:shadow-md">
         {article.coverImageUrl && (
-          <div className="relative w-full md:w-1/3 aspect-video md:aspect-auto bg-muted overflow-hidden rounded-lg">
+          <div className="relative w-full md:w-1/3 aspect-video md:aspect-auto md:min-h-[140px] bg-muted overflow-hidden rounded-[18px]">
             <Image
               src={article.coverImageUrl}
               alt={title}
@@ -41,7 +41,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             />
           </div>
         )}
-        <div className={`flex flex-col justify-center p-4 ${article.coverImageUrl ? "md:w-2/3" : "w-full"}`}>
+        <div className={`flex flex-col justify-center px-1 py-2 md:py-1 ${article.coverImageUrl ? "md:w-2/3" : "w-full"}`}>
           <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
             {article.category && (
               <Badge variant="secondary" className="hover:bg-secondary/80">
@@ -55,7 +55,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             </span>
           </div>
           <Link href={articleUrl} className="group">
-            <h3 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+            <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
               {title}
             </h3>
           </Link>
@@ -103,7 +103,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             <span className="text-primary">{article.category || "Новости"}</span>
           </div>
           <Link href={articleUrl}>
-            <h4 className="font-serif font-semibold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
+            <h4 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
               {title}
             </h4>
           </Link>
@@ -116,10 +116,10 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
   }
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col border-none shadow-sm ring-1 ring-border/50">
+    <Card className="h-full flex flex-col overflow-hidden rounded-[24px] border border-white/80 bg-white/65 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl transition-shadow duration-300 hover:shadow-lg">
       {article.coverImageUrl && (
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-          <Badge className="absolute top-3 left-3 z-10 bg-background/90 text-foreground backdrop-blur-sm hover:bg-background/100">
+          <Badge className="absolute top-3 left-3 z-10 rounded-full border border-white/50 bg-white/30 text-white backdrop-blur-md hover:bg-white/40 [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
             {article.category || "Новости"}
           </Badge>
           <Image
@@ -136,7 +136,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
           <Badge className="absolute top-3 left-3 z-10 bg-background/90 text-foreground backdrop-blur-sm">
             {article.category || "Новости"}
           </Badge>
-          <span className="text-4xl font-serif font-bold text-primary/20">н</span>
+          <span className="text-4xl font-bold text-primary/20">н</span>
         </div>
       )}
       <CardContent className="flex-1 p-5">
@@ -152,7 +152,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
           </span>
         </div>
         <Link href={articleUrl} className="group">
-          <h3 className="text-lg font-serif font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+          <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
             {title}
           </h3>
         </Link>
@@ -162,7 +162,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
           </p>
         )}
       </CardContent>
-      <CardFooter className="p-5 pt-0 mt-auto flex items-center justify-between border-t bg-muted/20 px-5 py-3">
+      <CardFooter className="mt-auto flex items-center justify-between border-t border-border/60 px-5 py-3">
         <div className="flex items-center gap-2 text-xs font-medium">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="text-muted-foreground">{article.source?.name || "VetMed"}</span>

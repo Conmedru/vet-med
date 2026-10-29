@@ -54,7 +54,7 @@ export default async function GuidelinesPage({ searchParams }: { searchParams: P
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {group.items.map((item) => (
-                <article key={item.url} className="flex flex-col rounded-xl border bg-card p-5">
+                <article key={item.url} className="flex flex-col rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-5">
                   <div className="flex items-center gap-2 mb-2 text-xs">
                     <Badge variant={item.language === "ru" ? "default" : "outline"}>
                       {item.language === "ru" ? "На русском" : "English"}

@@ -56,7 +56,7 @@ export default async function CalculatorsPage({ searchParams }: { searchParams: 
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex gap-4 rounded-xl border bg-card p-5 hover:border-primary/40 transition-colors"
+                  className="group flex gap-4 rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-5 transition-colors hover:bg-white/80"
                 >
                   <Calculator className="h-5 w-5 shrink-0 text-primary mt-0.5" />
                   <div className="min-w-0">
