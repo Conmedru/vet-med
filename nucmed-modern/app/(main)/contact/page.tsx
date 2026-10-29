@@ -25,21 +25,15 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <p>
-              <strong>Общие вопросы:</strong><br />
-              <a href="mailto:info@con-vet.ru" className="text-primary hover:underline">
-                info@con-vet.ru
-              </a>
-            </p>
-            <p>
-              <strong>Редакция:</strong><br />
-              <a href="mailto:editor@con-vet.ru" className="text-primary hover:underline">
-                editor@con-vet.ru
+              <strong>Редакция и общие вопросы:</strong><br />
+              <a href="mailto:content@con-vet.ru" className="text-primary hover:underline">
+                content@con-vet.ru
               </a>
             </p>
             <p>
               <strong>Реклама и партнёрство:</strong><br />
-              <a href="mailto:partner@con-vet.ru" className="text-primary hover:underline">
-                partner@con-vet.ru
+              <a href="mailto:sale@con-vet.ru" className="text-primary hover:underline">
+                sale@con-vet.ru
               </a>
             </p>
           </CardContent>
@@ -70,7 +64,7 @@ export default function ContactPage() {
         <h3>Предложить новость</h3>
         <p>
           Если вы хотите предложить тему для публикации или у вас есть эксклюзивная информация
-          в области ветеринарной медицины, напишите на <a href="mailto:editor@con-vet.ru">editor@con-vet.ru</a>
+          в области ветеринарной медицины, напишите на <a href="mailto:content@con-vet.ru">content@con-vet.ru</a>
           с темой письма «Предложение новости».
         </p>
 
@@ -84,7 +78,7 @@ export default function ContactPage() {
         <p>
           Мы открыты к партнёрству с ветеринарными клиниками, исследовательскими центрами,
           фармацевтическими компаниями и профессиональными организациями.
-          Обсудим возможности сотрудничества на <a href="mailto:partner@con-vet.ru">partner@con-vet.ru</a>.
+          Обсудим возможности сотрудничества на <a href="mailto:sale@con-vet.ru">sale@con-vet.ru</a>.
         </p>
 
         <h3>Подписка на рассылку</h3>

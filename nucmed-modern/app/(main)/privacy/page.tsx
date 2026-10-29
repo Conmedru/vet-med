@@ -86,7 +86,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Для реализации этих прав свяжитесь с нами по адресу{" "}
-          <a href="mailto:privacy@con-vet.ru" className="text-primary hover:underline">privacy@con-vet.ru</a>.
+          <a href="mailto:content@con-vet.ru" className="text-primary hover:underline">content@con-vet.ru</a>.
         </p>
 
         <h2>8. Изменения политики</h2>
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         <h2>9. Контакты</h2>
         <p>
           По вопросам, связанным с обработкой персональных данных, обращайтесь:<br />
-          Email: <a href="mailto:privacy@con-vet.ru" className="text-primary hover:underline">privacy@con-vet.ru</a>
+          Email: <a href="mailto:content@con-vet.ru" className="text-primary hover:underline">content@con-vet.ru</a>
         </p>
       </div>
     </div>

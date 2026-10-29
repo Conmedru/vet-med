@@ -137,7 +137,7 @@ const BASE_TEMPLATE = (title: string, preheader: string, content: string) => `
                                                     <div style="font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #656565;" class="em-font-Inter-Regular">Все права защищены.</div>
                                                 </td></tr></table>
                                             <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="left" class="em-mob-text-align-left" style="padding-bottom: 20px;">
-                                        <a href="mailto:info@con-vet.ru" target="_blank" style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; text-decoration: underline; color: #656565;">Поддержка</a>
+                                        <a href="mailto:content@con-vet.ru" target="_blank" style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; text-decoration: underline; color: #656565;">Поддержка</a>
                                         <span style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #A3ADBB;">&nbsp; &nbsp; &nbsp;<a href="${SITE_URL}/newsletter/preferences" target="_blank" style="text-decoration: underline solid; color: #656565;">Настроить подписку</a>&nbsp; &nbsp; &nbsp;<a href="{{UnsubscribeUrl}}" target="_blank" style="text-decoration: underline solid; color: #656565;">Отписаться</a></span>
                                     </td></tr></table></td>
                                             <td>

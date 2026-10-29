@@ -2,8 +2,10 @@ import { CACHE } from "@/lib/config";
 import { format } from "date-fns";
 
 const UNISENDER_API_KEY = process.env.UNISENDER || process.env.UNISENDER_API_KEY;
-const UNISENDER_FROM_EMAIL = process.env.UNISENDER_FROM_EMAIL || "conmed.ru@outlook.com";
-const UNISENDER_FROM_NAME = process.env.UNISENDER_FROM_NAME || "Conmed";
+// Sender of the digest and service emails (client, 2026-10-29): info@con-vet.ru, verified in
+// Unisender with SPF/DKIM on con-vet.ru. The env overrides it until the mailbox is ready.
+const UNISENDER_FROM_EMAIL = process.env.UNISENDER_FROM_EMAIL || "info@con-vet.ru";
+const UNISENDER_FROM_NAME = process.env.UNISENDER_FROM_NAME || "CON-VET.ru";
 const UNISENDER_LOGIN = process.env.UNISENDER_LOGIN;
 const BASE_URL = "https://api.unisender.com/ru/api";
 

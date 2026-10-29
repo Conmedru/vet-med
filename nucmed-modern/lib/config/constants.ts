@@ -53,7 +53,7 @@ export const SOCIAL = {
 } as const;
 
 export const CONTACT = {
-  EMAIL: 'info@con-vet.ru',
+  EMAIL: 'content@con-vet.ru',
   PHONE: '+7 (495) 000-00-00',
   ADDRESS: 'Москва, Россия',
 } as const;
