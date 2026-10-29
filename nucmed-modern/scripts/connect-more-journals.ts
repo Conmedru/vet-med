@@ -9,6 +9,8 @@
  * Veterinary Science (ijvets.com) — аннотации только за защитой от ботов; Актуальные вопросы
  * ветеринарной биологии (avvb.ru) — только PDF номеров; Ветеринарный фармакологический
  * вестник (vfvrn.ru) — сайт не отвечает; Sokoto J Vet Sci — сайт не отвечает.
+ * Отключены: Wiley Veterinary Record (дубль Veterinary Record) и Archives of Animal Nutrition
+ * (Taylor & Francis): RSS отдаёт 403, в Crossref нет аннотаций, страницы статей закрыты для ботов.
  */
 import { PrismaClient } from "@prisma/client";
 
@@ -34,6 +36,10 @@ const journals: { name: string; slug: string; url: string; region?: "ru" | "fore
   { name: "Open Veterinary Science", slug: "open-vet-science", url: "https://www.degruyterbrill.com/journal/key/ovs/html", ...crossref("2544-8951", { maxAgeDays: 30 }) },
   // Зарубежные — OAI-PMH (OJS)
   { name: "Archives of Veterinary Science", slug: "archives-vet-science", url: "https://revistas.ufpr.br/veterinary", ...oai("https://revistas.ufpr.br/veterinary/oai", "en") },
+
+  // Замена сломанных источников (RSS Wiley и Taylor & Francis отдают 403, Playwright SCIRP ничего не собирал)
+  { name: "Veterinary Record", slug: "vet-record", url: "https://bvajournals.onlinelibrary.wiley.com/journal/20427670", ...crossref("2042-7670"), deactivate: ["wiley-vet-record", "tandfonline-rfan"] },
+  { name: "SCIRP Open Journal of Veterinary Medicine", slug: "scirp-ojvm", url: "https://www.scirp.org/journal/ojvm/", ...crossref("2165-3364", { maxAgeDays: 30 }) },
 
   // Российские — OAI-PMH, русские аннотации
   { name: "Ученые записки Казанской академии ветеринарной медицины им. Н.Э. Баумана", slug: "vetzapiski", url: "https://vetzapiski.ru", region: "ru", ...oai("https://vetzapiski.ru/index.php/vestnik/oai", "ru") },
