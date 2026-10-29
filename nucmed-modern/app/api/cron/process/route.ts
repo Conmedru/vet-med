@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth/cron";
 import { prisma } from "@/lib/prisma";
-import { processAndGenerateCover } from "@/lib/ai/process-article";
+import { generateAndSaveCover, processAndGenerateCover } from "@/lib/ai/process-article";
 
 const BATCH_SIZE = 3;
 const COOLDOWN_MS = 12_000;
 const MAX_RETRIES = 3;
+/** Articles that went out without a cover get one per run, newest first */
+const COVER_BACKFILL_PER_RUN = 2;
+const COVER_BACKFILL_DAYS = 60;
 
 /**
  * GET /api/cron/process
@@ -56,12 +59,15 @@ export async function GET(request: NextRequest) {
 
     const articlesToProcess = [...ingestedArticles, ...failedArticles];
 
+    const coversFilled = await backfillCovers();
+
     if (articlesToProcess.length === 0) {
       console.log("[Cron Process] No articles to process");
       return NextResponse.json({
         success: true,
         processed: 0,
         failed: 0,
+        coversFilled,
         message: "No articles to process",
       });
     }
@@ -118,6 +124,7 @@ export async function GET(request: NextRequest) {
       success: true,
       processed,
       failed,
+      coversFilled,
       total: articlesToProcess.length,
       results,
     });
@@ -135,3 +142,32 @@ export async function GET(request: NextRequest) {
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
+
+/**
+ * Published or scheduled articles without a cover (cover generation failed while
+ * processing, e.g. Replicate out of credits). Failures are logged and retried next run.
+ */
+async function backfillCovers(): Promise<number> {
+  const since = new Date(Date.now() - COVER_BACKFILL_DAYS * 24 * 60 * 60 * 1000);
+  const missing = await prisma.article.findMany({
+    where: {
+      status: { in: ["PUBLISHED", "SCHEDULED"] },
+      coverImageUrl: null,
+      title: { not: null },
+      OR: [{ publishedAt: { gte: since } }, { scheduledAt: { gte: since } }],
+    },
+    orderBy: { updatedAt: "desc" },
+    take: COVER_BACKFILL_PER_RUN,
+    select: { id: true, title: true, excerpt: true, category: true },
+  });
+  let filled = 0;
+  for (const a of missing) {
+    try {
+      if (await generateAndSaveCover(a.id, a.title!, a.excerpt || "", a.category || "Общая ветеринария")) filled++;
+    } catch (error) {
+      console.error(`[Cron Process] Cover backfill failed for ${a.id}:`, error);
+    }
+  }
+  if (filled) console.log(`[Cron Process] Filled ${filled} missing cover(s)`);
+  return filled;
+}

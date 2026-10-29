@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ArrowUpRight, Bird, BookOpen, Calculator, CalendarDays, Cat, Dog, MapPin, Rabbit, Salad, Stethoscope, Syringe, Turtle, type LucideIcon } from "lucide-react";
+import { PawPrint, ArrowRight, ArrowUpRight, Bird, BookOpen, Calculator, CalendarDays, Cat, Dog, MapPin, Rabbit, Salad, Stethoscope, Syringe, Turtle, type LucideIcon } from "lucide-react";
 import { formatDateUTC } from "@/lib/utils/date";
 import type { DBArticle } from "@/lib/articles";
 import type { EventApiItem } from "@/lib/schemas/events";
@@ -39,6 +39,20 @@ export function plural(n: number, forms: [string, string, string]) {
  * Ready (frosted glass panels tinted by color behind them), Sleeve/Playful (glossy gradient squircle icons),
  * Vivid/Stocketa (soft colour washes on a light canvas). Brand teal stays the anchor; each gradient keeps one role.
  */
+/**
+ * Placeholder for an article whose cover is missing (generation failed; cron/process
+ * fills it later): brand gradient with soft light and the CON-VET paw, not a black block.
+ */
+export function CoverFallback({ className = "" }: { className?: string }) {
+  return (
+    <div aria-hidden className={`absolute inset-0 overflow-hidden bg-gradient-to-br from-[#0e7490] via-[#0b5b70] to-[#123a63] ${className}`}>
+      <div className="absolute -right-10 -top-10 h-2/3 w-2/3 rounded-full bg-[#5eead4] opacity-30 blur-3xl" />
+      <div className="absolute -bottom-12 -left-8 h-1/2 w-1/2 rounded-full bg-[#a78bfa] opacity-30 blur-3xl" />
+      <PawPrint className="absolute left-1/2 top-[38%] h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 text-white/25" strokeWidth={1.4} />
+    </div>
+  );
+}
+
 export const GRADIENTS = {
   lavender: { tile: "from-[#efeaff] via-[#e6e4ff] to-[#d9e6ff]", icon: "from-[#8b7bff] to-[#5b4fd1]", glow: "shadow-[0_10px_24px_-8px_rgba(91,79,209,0.55)]", ink: "text-[#2f2775]" },
   sky: { tile: "from-[#e6f1ff] via-[#dcecff] to-[#d4f3ff]", icon: "from-[#4aa8ff] to-[#2563eb]", glow: "shadow-[0_10px_24px_-8px_rgba(37,99,235,0.5)]", ink: "text-[#173a7a]" },
@@ -92,6 +106,7 @@ export function Card({ article, lead = false }: { article: DBArticle; lead?: boo
   return (
     <Link href={articleHref(article)} className="group flex h-full flex-col">
       <div className={`relative overflow-hidden rounded-[22px] bg-[#e6eef0] ${lead ? "aspect-[16/10]" : "aspect-[4/3]"}`}>
+        {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && (
           <Image src={article.coverImageUrl} alt="" fill sizes={lead ? "(max-width: 1024px) 100vw, 60vw" : "(max-width: 768px) 100vw, 33vw"} className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
         )}
@@ -117,6 +132,11 @@ export function Card({ article, lead = false }: { article: DBArticle; lead?: boo
 export function Row({ article }: { article: DBArticle }) {
   return (
     <Link href={articleHref(article)} className="group flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white/70">
+      {!article.coverImageUrl && (
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px]">
+          <CoverFallback />
+        </div>
+      )}
       {article.coverImageUrl && (
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#e6eef0]">
           <Image src={article.coverImageUrl} alt="" fill sizes="64px" className="object-cover" />
@@ -134,6 +154,7 @@ export function Row({ article }: { article: DBArticle }) {
 export function LeadStory({ article }: { article: DBArticle }) {
   return (
     <Link href={articleHref(article)} className="group relative block h-full min-h-[460px] overflow-hidden rounded-[28px] bg-[#0b2a33] md:min-h-[540px]">
+      {!article.coverImageUrl && <CoverFallback />}
       {article.coverImageUrl && (
         <Image src={article.coverImageUrl} alt="" fill priority sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
       )}

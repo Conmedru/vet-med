@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { formatDateUTC } from "@/lib/utils/date";
 import type { DBArticle } from "@/lib/articles";
-import { GLASS, GRADIENTS, Heading, articleDate, articleHref, articleTitle, rubricLabel } from "./kit";
+import { CoverFallback, GLASS, GRADIENTS, Heading, articleDate, articleHref, articleTitle, rubricLabel } from "./kit";
 import { RailScroller } from "./rail-scroller";
 
 /**
@@ -15,7 +15,8 @@ export function SplitFeature({ article, tone, reverse = false, kicker, compact =
   const g = GRADIENTS[tone];
   return (
     <Link href={articleHref(article)} className="group grid grid-cols-1 overflow-hidden rounded-[32px] md:grid-cols-2">
-      <div className={`relative min-h-[300px] bg-[#0b2a33] md:min-h-[460px] ${reverse ? "md:order-2" : ""}`}>
+      <div className={`relative min-h-[300px] overflow-hidden bg-[#0b2a33] md:min-h-[460px] ${reverse ? "md:order-2" : ""}`}>
+        {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && (
           <Image src={article.coverImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
         )}
@@ -40,6 +41,7 @@ export function RailCard({ article }: { article: DBArticle }) {
   return (
     <Link href={articleHref(article)} className="group w-[260px] shrink-0 snap-start md:w-[300px]">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#0b2a33]">
+        {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && <Image src={article.coverImageUrl} alt="" fill sizes="300px" className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />}
         <div className="absolute inset-0 bg-gradient-to-t from-[#06222b]/85 via-transparent to-transparent" />
         <span className="absolute left-3 top-3 rounded-full border border-white/40 bg-white/20 px-3 py-1 text-[12px] font-semibold text-white backdrop-blur-md">{rubricLabel(article)}</span>

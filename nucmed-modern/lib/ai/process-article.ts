@@ -315,9 +315,11 @@ export async function processAndGenerateCover(
 }
 
 /**
- * Generate AI cover and save to S3/DB
+ * Generate AI cover and save to S3/DB.
+ * Also used by cron/process to fill covers that failed during processing
+ * (e.g. Replicate out of credits): such articles were scheduled without an image.
  */
-async function generateAndSaveCover(
+export async function generateAndSaveCover(
   articleId: string,
   title: string,
   excerpt: string,
