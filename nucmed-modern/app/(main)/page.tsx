@@ -6,13 +6,13 @@ import { PersonalFeedSection } from "@/components/home/personal-feed-section"
 import { JournalBanner } from "@/components/journal"
 import {
   AnimalStrip,
+  ClinicalCases,
+  FeedList,
   CalculatorsPanel,
   EventsPanel,
-  GLASS,
   GuidelinesPanel,
   Heading,
   NewsletterBand,
-  Row,
   SectionTiles,
 } from "@/components/glass/kit"
 import { Rail, SplitFeature } from "@/components/glass/magazine"
@@ -27,8 +27,9 @@ export const dynamic = "force-dynamic"
 export const revalidate = 60
 
 /**
- * Home, «Журнал» layout: lead split feature, animal navigation, full-bleed topic rails,
- * a second feature with upcoming events, sections, the month calendar and references.
+ * Home, «Журнал» layout. Pets only (client, 2026-10-29: farm animals only in their own
+ * section): lead feature, animal navigation, pets feed, clinical cases, a second feature
+ * with upcoming events, sections, diagnostics rail, the month calendar and references.
  */
 export default async function Home() {
   const currentEventsMonth = getCurrentMonthKey()
@@ -66,8 +67,20 @@ export default async function Home() {
 
   const { featured, articles, counts } = data
   const rest = articles.filter((a) => a.id !== featured.id)
-  const second = data.specialties.find((a) => a.id !== featured.id) || rest[0]
-  const latest = rest.filter((a) => a.id !== second?.id).slice(0, 8)
+  const caseIds = new Set(data.clinicalCases.map((a) => a.id))
+  const second = data.specialties.find((a) => a.id !== featured.id && !caseIds.has(a.id)) || rest[0]
+  // Not more than 3 articles of one source in the feed: Frontiers publishes the most and
+  // made the home page look like a single-source site (client, 2026-10-29)
+  const perSource = new Map<string, number>()
+  const feed = rest
+    .filter((a) => a.id !== second?.id && !caseIds.has(a.id))
+    .filter((a) => {
+      const key = a.source?.slug ?? "manual"
+      const n = perSource.get(key) ?? 0
+      perSource.set(key, n + 1)
+      return n < 3
+    })
+    .slice(0, 10)
   const sponsored = sponsoredPosts[0]
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru"
@@ -104,7 +117,23 @@ export default async function Home() {
           <AnimalStrip counts={counts} />
         </div>
 
-        <Rail kicker="Животные" title="Собаки, кошки и другие питомцы" href="/category/pets" articles={data.pets} />
+        {/* Pets feed (client: like onco-compass, latest articles about all pets) */}
+        <section>
+          <Heading kicker="Кошки, собаки, грызуны, птицы, экзоты" title="Свежее о питомцах" href="/category/pets" />
+          <FeedList articles={feed} />
+          {sponsored && (
+            <div className="mt-4 rounded-[24px] border border-white/80 bg-white/60 px-4 backdrop-blur-xl md:px-6">
+              <SponsoredPostCard post={sponsored} variant="row" />
+            </div>
+          )}
+          <div className="mt-5 flex justify-center">
+            <Link href="/category/pets" className="rounded-xl border border-white/80 bg-white/70 px-5 py-2.5 text-[14px] font-semibold text-foreground backdrop-blur-xl hover:bg-white">
+              Открыть полную ленту
+            </Link>
+          </div>
+        </section>
+
+        <ClinicalCases articles={data.clinicalCases} />
 
         {second && (
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -117,27 +146,11 @@ export default async function Home() {
           </section>
         )}
 
-        <Rail kicker="Специализации" title="Онкология, неврология, кардиология" href="/category/oncology" articles={data.specialties} />
-
         <PersonalFeedSection />
 
         <SectionTiles counts={counts} title="Разделы и сервисы" />
 
         <Rail kicker="Диагностика" title="УЗИ, рентген, лаборатория" href="/category/radiology" articles={data.diagnostics} />
-
-        <section>
-          <Heading title="Последние новости" href="/news" />
-          <div className={`${GLASS} grid grid-cols-1 gap-x-4 p-3 md:grid-cols-2 md:p-4`}>
-            {latest.map((article) => (
-              <Row key={article.id} article={article} />
-            ))}
-          </div>
-          {sponsored && (
-            <div className={`${GLASS} mt-4 px-4 md:px-6`}>
-              <SponsoredPostCard post={sponsored} variant="row" />
-            </div>
-          )}
-        </section>
 
         <section>
           <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} initialVetDates={eventsMonth.vetDates} />

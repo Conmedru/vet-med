@@ -457,3 +457,55 @@ export function GradientTile({ tile, counts, className = "", size = "md" }: { ti
     </Link>
   );
 }
+
+/**
+ * «Свежая лента» like onco-compass: two columns of numbered headline rows with a
+ * thumbnail, rubric, date and source; one link to the full feed below.
+ */
+export function FeedList({ articles }: { articles: DBArticle[] }) {
+  return (
+    <div className={`${GLASS} grid grid-cols-1 gap-x-8 px-4 py-2 md:grid-cols-2 md:px-6`}>
+      {articles.map((article, i) => (
+        <Link
+          key={article.id}
+          href={articleHref(article)}
+          className="group flex items-start gap-4 border-b border-[#0b2a33]/[0.07] py-4 last:border-b-0 md:[&:nth-last-child(2):nth-child(odd)]:border-b-0"
+        >
+          <span className="w-6 shrink-0 pt-1 text-right text-[13px] font-semibold tabular-nums text-[#0e7490]/70">{String(i + 1).padStart(2, "0")}</span>
+          <div className="relative h-[72px] w-[96px] shrink-0 overflow-hidden rounded-[14px] bg-[#e6eef0]">
+            {article.coverImageUrl ? (
+              <Image src={article.coverImageUrl} alt="" fill sizes="96px" className="object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+            ) : (
+              <CoverFallback />
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="text-[12px] font-semibold text-[#0e7490]">{rubricLabel(article)}</div>
+            <h3 className="mt-0.5 line-clamp-2 text-[16px] font-semibold leading-snug text-[#0b2a33] group-hover:text-[#0e7490]">{articleTitle(article)}</h3>
+            <div className="mt-1 text-[12px] text-[#6b8189]">
+              {formatDateUTC(articleDate(article), "d MMMM")}
+              {article.source?.name && <> · {article.source.name}</>}
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** Clinical cases: 2–3 latest as cards with a lavender «Клинический случай» chip */
+export function ClinicalCases({ articles }: { articles: DBArticle[] }) {
+  if (articles.length === 0) return null;
+  return (
+    <section>
+      <Heading kicker="Из практики" title="Клинические случаи" href="/category/clinical-cases" />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {articles.slice(0, 3).map((article) => (
+          <div key={article.id} className={`${GLASS} p-3`}>
+            <Card article={article} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

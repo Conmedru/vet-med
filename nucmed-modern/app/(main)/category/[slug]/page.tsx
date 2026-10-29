@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation"
-import { getRubric, LEGACY_RUBRIC_REDIRECTS, PET_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
+import { getRubric, LEGACY_RUBRIC_REDIRECTS, NON_FARM_ANIMAL_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
 import { getPublishedArticles, getArticlesByRubrics } from "@/lib/articles"
 import { getGuidelinesByRubric } from "@/lib/guidelines"
 import { DBArticleCard, DBArticleSidebar } from "@/components/articles"
@@ -30,7 +30,7 @@ function resolvePage(slug: string) {
     return { title: "Все материалы", badge: "Архив", description: ALL_DESCRIPTION, rubricSlugs: null }
   }
   if (slug === "pets") {
-    return { title: "Питомцы", badge: "Животные", description: "Кошки, собаки, грызуны и декоративные птицы.", rubricSlugs: PET_SLUGS }
+    return { title: "Питомцы", badge: "Животные", description: "Кошки, собаки, грызуны, декоративные птицы и экзоты.", rubricSlugs: NON_FARM_ANIMAL_SLUGS }
   }
   const rubric = getRubric(slug)
   if (!rubric) return null

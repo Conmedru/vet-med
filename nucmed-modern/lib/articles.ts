@@ -62,6 +62,16 @@ const ARTICLE_COLUMNS = Prisma.sql`
 // Farm-only articles are shown only in the farm-animals rubric (client requirement)
 export const NOT_FARM_ONLY = Prisma.sql`NOT (${FARM_SLUG} = ANY(a."rubrics") AND NOT (a."rubrics" && ${NON_FARM_ANIMAL_SLUGS}::text[]))`;
 
+// Not tagged with farm animals at all (mixed farm+pet articles too): rubric pages other than farm
+export const NO_FARM = Prisma.sql`NOT (${FARM_SLUG} = ANY(a."rubrics"))`;
+
+// About pets (cats, dogs, rodents, decorative birds, exotics) and not about farm animals at all:
+// the home page shows only such articles (client, 2026-10-29: «на самые видные места — питомцы»)
+export const PETS_ONLY = Prisma.sql`a."rubrics" && ${NON_FARM_ANIMAL_SLUGS}::text[] AND NOT (${FARM_SLUG} = ANY(a."rubrics"))`;
+
+/** Latest pet articles for the home page */
+export const getPetArticles = (limit = 20) => getArticlesByRubrics(NON_FARM_ANIMAL_SLUGS, limit, { petsOnly: true });
+
 // Base64 images are too large for Next.js Data Cache (2MB limit),
 // so we disable caching for list fetching functions until S3 is configured.
 
@@ -89,9 +99,13 @@ export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_AR
  * Articles of one or several rubrics (any match). Farm-only articles are excluded
  * unless the farm-animals rubric itself is requested.
  */
-export const getArticlesByRubrics = async (slugs: string[], limit = 50) => {
+export const getArticlesByRubrics = async (slugs: string[], limit = 50, options: { petsOnly?: boolean } = {}) => {
   try {
-    const farmFilter = slugs.includes(FARM_SLUG) ? Prisma.empty : Prisma.sql`AND ${NOT_FARM_ONLY}`;
+    // Farm rubric page: only its articles. Any other rubric: nothing tagged farm at all
+    // (client: farm animals only in their own section). petsOnly: must be about pets too.
+    const farmFilter = options.petsOnly
+      ? Prisma.sql`AND ${PETS_ONLY}`
+      : slugs.includes(FARM_SLUG) ? Prisma.empty : Prisma.sql`AND ${NO_FARM}`;
     const articles = await prisma.$queryRaw<DBArticle[]>`
       SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a

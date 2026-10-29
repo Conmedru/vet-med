@@ -232,7 +232,7 @@ GOAL: Stunning, professional photograph-quality image WITHOUT text, people, or a
 
 CORE RULE — ANIMALS FIRST:
 - If the article mentions ANY animal species → the image MUST feature that real animal as the main subject, photographed in a realistic, natural or clinical setting.
-- If no specific animal is mentioned → choose the most contextually fitting animal (e.g. nutrition → dog or cat eating; cardiology → a golden retriever with stethoscope nearby; parasitology → a close-up of a tick on animal fur).
+- If no specific animal is mentioned → choose the most contextually fitting animal (e.g. nutrition → a dog or cat eating at home; parasitology → a close-up of a tick on animal fur).
 - Only if the topic is genuinely abstract (e.g. molecular biology, pure chemistry) → use a close-up macro of biological tissue or a subtle animal-themed scientific still life.
 
 STRICTLY FORBIDDEN:
@@ -245,10 +245,11 @@ PHOTOGRAPHY STYLE:
 - Photorealistic, National Geographic quality, Canon EOS R5 or similar DSLR/mirrorless
 - Natural or soft studio lighting, shallow depth of field (bokeh background)
 - Sharp focus on the animal subject, cinematic color grading
-- Settings: clinic, nature habitat, farm, wildlife reserve, or clean white/dark studio
+- Settings: mostly everyday life — home, sofa, garden, park, walk, window light, studio portrait; a veterinary clinic only when the topic is a procedure or examination
+- VARIETY: use the suggested breed and setting from the request unless the article names a specific breed or species
 
 ANIMAL SELECTION BY TOPIC:
-- Dogs/cats/small pets → show the specific breed if mentioned, otherwise golden retriever or tabby cat
+- Dogs/cats/small pets → the breed named in the article, otherwise the suggested breed from the request (never default to a golden retriever)
 - Horses/equine → muscular horse in field or stable, dramatic natural light
 - Farm/livestock → cow, sheep, or pig in farm setting, golden hour light
 - Exotic/reptile → lizard, snake, or parrot with vivid colors, macro detail
@@ -260,7 +261,7 @@ ANIMAL SELECTION BY TOPIC:
 RULES:
 - Length: 30-50 words
 - English language only
-- Start with the animal and setting: "A photorealistic close-up of a [animal]...", "A golden retriever lying on a veterinary examination table...", "A majestic horse grazing..."
+- Start with the animal and setting: "A photorealistic close-up of a [breed] [animal]...", "A [breed] resting on a sofa by the window...", "A majestic horse grazing..."
 - Always end with: "photorealistic, National Geographic style, 8k, cinematic lighting, shallow depth of field"
 
 OUTPUT FORMAT:
@@ -268,6 +269,32 @@ Return ONLY a valid JSON object:
 {
   "prompt": "A photorealistic..."
 }`;
+
+// Covers came out as golden retrievers in a clinic again and again (client, 2026-10-29):
+// the code picks a breed and a setting so neighbouring articles look different.
+const COVER_DOG_BREEDS = [
+  "border collie", "dachshund", "French bulldog", "German shepherd", "beagle", "Labrador retriever (black)",
+  "Siberian husky", "Yorkshire terrier", "pug", "Jack Russell terrier", "Australian shepherd", "corgi",
+  "Doberman", "Shiba Inu", "poodle", "Cavalier King Charles spaniel", "mixed-breed rescue dog", "Samoyed",
+  "Dalmatian", "boxer", "Chihuahua", "Weimaraner", "Bernese mountain dog", "Spitz",
+];
+const COVER_CAT_BREEDS = [
+  "British shorthair", "Maine Coon", "Siamese", "tabby domestic cat", "Sphynx", "Bengal", "Scottish fold",
+  "Persian", "black domestic cat", "ginger cat", "Russian blue", "Ragdoll", "tortoiseshell cat", "Norwegian forest cat",
+];
+const COVER_SETTINGS = [
+  "cozy living room with window light", "on a sofa at home", "green garden", "city park on a walk", "autumn leaves outdoors",
+  "kitchen floor at home", "clean studio portrait, soft light", "on a bed with soft blankets", "snowy yard",
+  "sunny balcony", "forest trail", "veterinary clinic (only if the topic is a procedure)",
+];
+
+function coverVariety(seedText: string) {
+  // Stable per article, varied across articles
+  let h = 0;
+  for (const ch of seedText) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const pick = <T,>(list: T[], salt: number) => list[(h + salt * 2654435761) % list.length];
+  return { dog: pick(COVER_DOG_BREEDS, 1), cat: pick(COVER_CAT_BREEDS, 2), setting: pick(COVER_SETTINGS, 3) };
+}
 
 /**
  * Генерация промпта для обложки статьи через LLM
@@ -277,11 +304,16 @@ export async function generateCoverPrompt(
   excerpt: string,
   category: string
 ): Promise<string> {
+  const variety = coverVariety(title);
   const userPrompt = `Article Title: "${title}"
 Category: ${category}
 Excerpt: ${excerpt}
 
-Create a prompt for an abstract visualization of this article.`;
+Suggested dog breed (if the image shows a dog and the article names none): ${variety.dog}
+Suggested cat breed (if the image shows a cat and the article names none): ${variety.cat}
+Suggested setting (unless the topic needs a clinic): ${variety.setting}
+
+Create a prompt for a photorealistic cover of this article.`;
 
   const apiToken = process.env.REPLICATE_API_TOKEN;
   if (!apiToken) {
