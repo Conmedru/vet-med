@@ -125,6 +125,18 @@ export async function ingestSource(sourceId: string, options?: { autoProcess?: b
         continue;
       }
 
+      // The same paper from another source (e.g. DOAJ and Crossref both list it): one article per DOI
+      if (article.externalId.startsWith('doi:')) {
+        const sameDoi = await prisma.article.findFirst({
+          where: { externalId: article.externalId },
+          select: { id: true },
+        });
+        if (sameDoi) {
+          result.duplicates++;
+          continue;
+        }
+      }
+
       // Create new article with INGESTED status (retry on slug collision)
       const baseSlug = generateSlug(article.title);
       let createdArticle;

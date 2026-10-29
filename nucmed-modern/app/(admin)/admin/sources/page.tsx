@@ -59,6 +59,8 @@ const adapterLabels: Record<string, string> = {
   html: "HTML Scraper",
   playwright: "Playwright",
   doaj: "DOAJ",
+  crossref: "Crossref",
+  oai: "OAI-PMH",
 };
 
 const healthConfig: Record<string, { icon: typeof CheckCircle; color: string; bg: string }> = {

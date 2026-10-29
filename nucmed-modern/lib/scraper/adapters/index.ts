@@ -2,6 +2,8 @@ import { BaseAdapter, SourceConfig } from '../types';
 import { RSSAdapter } from './rss';
 import { PlaywrightAdapter } from './playwright';
 import { DoajAdapter } from './doaj';
+import { CrossrefAdapter } from './crossref';
+import { OaiAdapter } from './oai';
 
 export function getAdapter(config: SourceConfig): BaseAdapter {
   switch (config.adapterType) {
@@ -12,6 +14,10 @@ export function getAdapter(config: SourceConfig): BaseAdapter {
       return new PlaywrightAdapter(config);
     case 'doaj':
       return new DoajAdapter(config);
+    case 'crossref':
+      return new CrossrefAdapter(config);
+    case 'oai':
+      return new OaiAdapter(config);
     default:
       throw new Error(`Unknown adapter type: ${config.adapterType}`);
   }
