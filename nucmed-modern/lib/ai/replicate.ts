@@ -79,7 +79,7 @@ function callWithRetry(
   return withRetry(
     () => _callReplicateAI(prompt, model, options),
     {
-      maxAttempts: 3,
+      maxAttempts: 4,
       initialDelayMs: 2000,
       retryableErrors: [
         "ECONNRESET",
@@ -90,6 +90,8 @@ function callWithRetry(
         "503",
         "502",
         "timeout",
+        "Empty model output",
+        "Prediction interrupted",
       ],
       onRetry: (attempt, error, delay) => {
         console.warn(`[Replicate] Retry ${attempt}, next in ${delay}ms: ${error.message}`);
@@ -165,6 +167,11 @@ async function _callReplicateAI(
     outputText = output;
   } else {
     outputText = JSON.stringify(output);
+  }
+
+  // Replicate sometimes «succeeds» with zero output tokens: a transient fault, retried by callWithRetry
+  if (!outputText || !outputText.trim() || outputText === "null") {
+    throw new Error("Empty model output");
   }
 
   // Расчёт стоимости (приблизительно)
