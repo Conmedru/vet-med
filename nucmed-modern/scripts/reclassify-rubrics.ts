@@ -79,7 +79,11 @@ async function main() {
   let failed = 0;
   for (const [i, article] of articles.entries()) {
     try {
-      const response = await callReplicateAI(buildPrompt(article), model, { systemPrompt: SYSTEM_PROMPT, maxTokens: 300 });
+      // Some articles get an empty answer from Sonnet on Replicate every time: Haiku as a fallback
+      const response = await callReplicateAI(buildPrompt(article), model, { systemPrompt: SYSTEM_PROMPT, maxTokens: 2048 }).catch((error) => {
+        if (!(error instanceof Error) || !error.message.includes("Empty model output") || model === "claude-4.5-haiku") throw error;
+        return callReplicateAI(buildPrompt(article), "claude-4.5-haiku", { systemPrompt: SYSTEM_PROMPT, maxTokens: 2048 });
+      });
       const rubrics = rubricsFromAI(parsePartialJson(response.output).rubrics);
       const category = primaryRubricName(rubrics) || article.category;
 
