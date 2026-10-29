@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { RUBRICS } from "@/lib/rubrics"
+import { PUBLIC_RUBRICS } from "@/lib/rubrics"
 import { cn } from "@/lib/utils"
 
 /** Rubric chips for catalog pages (guidelines, calculators): ?rubric=<slug> */
@@ -12,7 +12,7 @@ export function RubricFilter({
   available: string[]
   active?: string
 }) {
-  const rubrics = RUBRICS.filter((r) => available.includes(r.slug))
+  const rubrics = PUBLIC_RUBRICS.filter((r) => available.includes(r.slug))
   const chip = "px-3 py-1.5 text-sm rounded-full border transition-colors whitespace-nowrap"
 
   return (

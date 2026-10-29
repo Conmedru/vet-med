@@ -59,7 +59,8 @@ const ARTICLE_COLUMNS = Prisma.sql`
         a."significanceScore",
         json_build_object('name', s."name", 'slug', s."slug") as source`;
 
-// Farm-only articles are shown only in the farm-animals rubric (client requirement)
+// Farm-only articles are not shown anywhere on the site (client, 2026-10-29). The pipeline
+// also never publishes them; this guard covers articles published before that.
 export const NOT_FARM_ONLY = Prisma.sql`NOT (${FARM_SLUG} = ANY(a."rubrics") AND NOT (a."rubrics" && ${NON_FARM_ANIMAL_SLUGS}::text[]))`;
 
 // Base64 images are too large for Next.js Data Cache (2MB limit),
@@ -86,12 +87,11 @@ export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_AR
 };
 
 /**
- * Articles of one or several rubrics (any match). Farm-only articles are excluded
- * unless the farm-animals rubric itself is requested.
+ * Articles of one or several rubrics (any match). Farm-only articles are always excluded.
  */
 export const getArticlesByRubrics = async (slugs: string[], limit = 50) => {
   try {
-    const farmFilter = slugs.includes(FARM_SLUG) ? Prisma.empty : Prisma.sql`AND ${NOT_FARM_ONLY}`;
+    const farmFilter = Prisma.sql`AND ${NOT_FARM_ONLY}`;
     const articles = await prisma.$queryRaw<DBArticle[]>`
       SELECT ${ARTICLE_COLUMNS}
       FROM "articles" a

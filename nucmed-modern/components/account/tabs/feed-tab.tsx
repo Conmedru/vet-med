@@ -77,7 +77,7 @@ export function FeedTab() {
               ? "Показываем материалы по выбранным рубрикам."
               : "Рубрики не выбраны — показываем все материалы."}
           </p>
-          <RubricPicker value={rubrics} onChange={changeRubrics} warnMissing={false} />
+          <RubricPicker value={rubrics} onChange={changeRubrics} warnMissing={false} includeHidden={false} />
         </div>
       </aside>
     </div>

@@ -5,8 +5,7 @@ import { getArticlesByRubrics, getPublishedArticles } from "@/lib/articles";
 /**
  * GET /api/member/feed — personal feed of a registered vet.
  *
- * Articles of the member's rubrics (any match); farm-only articles appear only when
- * the farm-animals rubric is chosen. Without rubrics — the general feed, so a fresh
+ * Articles of the member's rubrics (any match); farm-only articles never appear. Without rubrics — the general feed, so a fresh
  * account does not look broken.
  */
 export async function GET(request: NextRequest) {

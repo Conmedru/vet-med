@@ -21,7 +21,7 @@ import { withRetry } from "@/lib/utils/retry";
 import { parsePartialJson } from "@/lib/utils/json";
 import { scheduleNewArticle } from "@/lib/articles/scheduler";
 import { buildArticleProcessingUserPrompt, PROCESSING_PROMPT_VERSION } from "@/lib/ai/prompts";
-import { rubricsFromAI, primaryRubricName } from "@/lib/rubrics";
+import { isFarmOnly, rubricsFromAI, primaryRubricName } from "@/lib/rubrics";
 
 export interface ProcessingResult {
   success: boolean;
@@ -49,6 +49,8 @@ const MAX_GENERATIONS = 2;
 /** Same limit as app/api/cron/process */
 const MAX_PROCESS_RETRIES = 3;
 const NO_SOURCE_MARKER = "no-source:";
+/** processingError of farm-only articles archived by the pipeline (and scripts/hide-farm-articles.ts) */
+export const FARM_ONLY_MARKER = "farm-only:";
 
 /**
  * Marker in processingError of an article held by the checks. Admin and every
@@ -174,6 +176,29 @@ export async function processAndGenerateCover(
         continue;
       }
       result = parsed;
+
+      // Farm animals are not published (client, 2026-10-29): stop before the fact-check and cover
+      const parsedRubrics = rubricsFromAI(parsed.rubrics);
+      if (isFarmOnly(parsedRubrics)) {
+        await prisma.article.update({
+          where: { id: articleId },
+          data: {
+            title: parsed.title,
+            content: parsed.content,
+            excerpt: parsed.excerpt,
+            rubrics: parsedRubrics,
+            category: primaryRubricName(parsedRubrics) || "С/х животные",
+            status: "ARCHIVED",
+            aiModel: aiResponse.model,
+            aiPromptVersion: PROCESSING_PROMPT_VERSION,
+            processingCostUsd: costUsd,
+            processingError: `${FARM_ONLY_MARKER} статья только о с/х животных — на сайте не публикуется`,
+          },
+        });
+        await logRejection(articleId, "farm-only", "farm animals only");
+        console.log(`[Process] ARCHIVED ${articleId}: farm animals only`);
+        return { success: true, articleId, title: parsed.title, coverGenerated: false, held: true };
+      }
 
       fidelity = checkFidelity({ source: fidelitySource, output: `${parsed.title}\n${parsed.excerpt ?? ""}\n${parsed.content}` });
       factCheck = null;

@@ -13,6 +13,11 @@ export interface Rubric {
   shortName?: string;
   /** What belongs to the rubric — shown on the rubric page and given to the AI */
   description: string;
+  /**
+   * Not shown on the site at all (client, 2026-10-29: farm animals are not published).
+   * Still used by the AI so such articles can be recognised and kept off the site.
+   */
+  hidden?: boolean;
 }
 
 export const RUBRICS: Rubric[] = [
@@ -28,6 +33,7 @@ export const RUBRICS: Rubric[] = [
     shortName: "С/х животные",
     kind: "animal",
     description: "КРС, свиньи, мелкий рогатый скот, лошади, птицеводство (куры, утки, индейки), кролиководство, аквакультура.",
+    hidden: true,
   },
 
   // Специализации
@@ -81,11 +87,21 @@ export function getRubric(slug: string): Rubric | undefined {
   return bySlug.get(slug);
 }
 
-export function getRubricsByKind(kind: RubricKind): Rubric[] {
-  return RUBRICS.filter((r) => r.kind === kind);
+/** Rubric that has a public page and can be chosen by readers */
+export function getPublicRubric(slug: string): Rubric | undefined {
+  const rubric = bySlug.get(slug);
+  return rubric && !rubric.hidden ? rubric : undefined;
 }
 
-/** Article is about farm animals only — hidden everywhere except the farm-animals rubric */
+/** Rubrics shown on the site: menu, footer, filters, sitemap, reader settings */
+export const PUBLIC_RUBRICS: Rubric[] = RUBRICS.filter((r) => !r.hidden);
+
+/** Public rubrics of a kind; includeHidden — for the AI prompt and the admin picker */
+export function getRubricsByKind(kind: RubricKind, options: { includeHidden?: boolean } = {}): Rubric[] {
+  return RUBRICS.filter((r) => r.kind === kind && (options.includeHidden || !r.hidden));
+}
+
+/** Article is about farm animals only — never published (client: farm animals are not on the site) */
 export function isFarmOnly(rubrics: string[]): boolean {
   return rubrics.includes(FARM_SLUG) && !rubrics.some((s) => NON_FARM_ANIMAL_SLUGS.includes(s));
 }
@@ -115,10 +131,10 @@ export function primaryRubricName(rubrics: string[]): string | null {
   return rubric ? rubric.shortName || rubric.name : null;
 }
 
-/** Article rubrics as known Rubric objects, in taxonomy order */
+/** Article rubrics shown to readers, in taxonomy order (hidden rubrics left out) */
 export function articleRubrics(rubrics: string[] | null | undefined): Rubric[] {
   const set = new Set(rubrics || []);
-  return RUBRICS.filter((r) => set.has(r.slug));
+  return PUBLIC_RUBRICS.filter((r) => set.has(r.slug));
 }
 
 /**
