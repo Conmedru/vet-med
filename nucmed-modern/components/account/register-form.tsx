@@ -144,7 +144,7 @@ export function RegisterForm() {
             className="input"
             value={specialtyOther}
             onChange={(e) => setSpecialtyOther(e.target.value)}
-            placeholder="Например: медицинская физика"
+            placeholder="Например: ихтиопатология"
           />
         </Field>
       )}

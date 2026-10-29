@@ -25,7 +25,7 @@ export const RegisterSchema = z
     password: PasswordSchema,
     interests: z.array(z.string().trim().min(1).max(120)).max(20).optional().default([]),
     consentHealthcare: z.literal(true, {
-      message: "Необходимо подтвердить, что вы специалист здравоохранения",
+      message: "Необходимо подтвердить, что вы ветеринарный специалист",
     }),
     consentPd152: z.literal(true, {
       message: "Необходимо согласие на обработку персональных данных",

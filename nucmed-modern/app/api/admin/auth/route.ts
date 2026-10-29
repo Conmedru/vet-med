@@ -2,17 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, createSession, setSessionCookie } from "@/lib/auth";
+import { getClientIp, loginFailureKey, releaseAttempt, reserveAttempt, resetRateLimit } from "@/lib/auth/rate-limit";
 
 /**
  * POST /api/admin/auth
  * Production-ready authentication with sessions
  */
+// Failed admin logins: per account+IP and per account (a stolen-password spray from many IPs)
+const ADMIN_FAIL_WINDOW_MS = 15 * 60 * 1000;
+const ADMIN_FAILS_PER_IP = 5;
+const ADMIN_FAILS_PER_ACCOUNT = 15;
+// bcrypt of a random string: unknown emails cost the same time as wrong passwords
+const DUMMY_PASSWORD_HASH = "$2b$12$1kzxu6WSfQer0GgOxJVABedlyHUjoRhTX7jg31s5cWTInKUJR0aJe";
+
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-    
-    console.log("[Auth] Login attempt:", { email, hasPassword: !!password });
-    
+    const body = await request.json().catch(() => ({}));
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
@@ -20,37 +28,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const ip = getClientIp(request.headers);
+    const pairKey = `admin-${loginFailureKey(email, ip)}`;
+    const accountKey = `admin-${loginFailureKey(email)}`;
+    const pair = reserveAttempt(pairKey, ADMIN_FAILS_PER_IP, ADMIN_FAIL_WINDOW_MS);
+    const account = pair.allowed ? reserveAttempt(accountKey, ADMIN_FAILS_PER_ACCOUNT, ADMIN_FAIL_WINDOW_MS) : pair;
+    if (!pair.allowed || !account.allowed) {
+      if (pair.allowed) releaseAttempt(pairKey);
+      return NextResponse.json(
+        { error: "Too many attempts, try again later" },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(Math.max(pair.retryAfterMs, account.retryAfterMs) / 1000)) } }
+      );
+    }
 
-    if (!user) {
-      console.log("[Auth] User not found:", email);
+    const user = await prisma.user.findUnique({ where: { email } });
+    const passwordValid = user
+      ? await verifyPassword(password, user.passwordHash)
+      : (await verifyPassword(password, DUMMY_PASSWORD_HASH), false);
+
+    if (!user || !passwordValid || user.status !== "ACTIVE") {
+      console.warn("[Auth] Admin login failed", { ip });
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    console.log("[Auth] User found:", { id: user.id, email: user.email, hasPasswordHash: !!user.passwordHash });
-
-    // Verify password
-    const passwordValid = await verifyPassword(password, user.passwordHash);
-    console.log("[Auth] Password verification:", { valid: passwordValid, hashFormat: user.passwordHash?.startsWith("$2") ? "bcrypt" : "pbkdf2" });
-    
-    if (!passwordValid) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
-      );
-    }
+    // Success: the attempts were not failures
+    resetRateLimit(pairKey);
+    releaseAttempt(accountKey);
 
     // Create session
     const userAgent = request.headers.get("user-agent") || undefined;
-    const ipAddress = request.headers.get("x-forwarded-for") || 
-                      request.headers.get("x-real-ip") || 
-                      "127.0.0.1";
+    const ipAddress = ip;
 
     const session = await createSession(user.id, { userAgent, ipAddress });
 

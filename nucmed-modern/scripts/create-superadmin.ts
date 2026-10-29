@@ -1,54 +1,34 @@
+/**
+ * Создаёт или сбрасывает пароль суперадмина админки.
+ *
+ *   npx tsx scripts/create-superadmin.ts editor@con-vet.ru
+ *
+ * Пароль генерируется случайный и печатается один раз — передайте его владельцу
+ * учётки и попросите сменить. Зашитых паролей и учёток здесь быть не должно.
+ */
+import { randomBytes } from "crypto";
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
+import { hashPassword } from "../lib/auth/utils";
 
 const prisma = new PrismaClient();
 
-/**
- * Replicating the hashPassword logic from lib/auth/utils.ts
- * as running complex imports in standalone tsx scripts can sometimes be tricky
- */
-function hashPassword(password: string): string {
-    const salt = crypto.randomBytes(16).toString("hex");
-    const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
-    return `${salt}:${hash}`;
-}
-
 async function main() {
-    const email = "superadmin@neurology.today";
-    const password = "super-neurology-2026";
-    const role = "SUPER_ADMIN";
-
-    console.log(`Updating ${role} user with correct hash: ${email}...`);
-
-    try {
-        const passwordHash = hashPassword(password);
-
-        const user = await prisma.user.upsert({
-            where: { email },
-            update: {
-                passwordHash,
-                role: role as any,
-                status: "ACTIVE",
-                emailVerified: true,
-            },
-            create: {
-                email,
-                passwordHash,
-                role: role as any,
-                status: "ACTIVE",
-                emailVerified: true,
-                name: "Super Admin",
-            },
-        });
-
-        console.log("Superadmin user updated successfully with correct algorithm.");
-        console.log(`Email: ${email}`);
-        console.log(`Password: ${password}`);
-    } catch (error) {
-        console.error("Failed to update superadmin:", error);
-    } finally {
-        await prisma.$disconnect();
-    }
+  const email = process.argv[2]?.trim().toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    console.error("Usage: npx tsx scripts/create-superadmin.ts <email>");
+    process.exitCode = 1;
+    return;
+  }
+  const password = randomBytes(18).toString("base64url");
+  await prisma.user.upsert({
+    where: { email },
+    update: { passwordHash: hashPassword(password), role: "SUPER_ADMIN", status: "ACTIVE", emailVerified: true },
+    create: { email, passwordHash: hashPassword(password), name: "Administrator", role: "SUPER_ADMIN", status: "ACTIVE", emailVerified: true },
+  });
+  // Old sessions of this account must not survive a password reset
+  await prisma.session.deleteMany({ where: { user: { email } } });
+  console.log(`Superadmin ready: ${email}`);
+  console.log(`One-time password: ${password}`);
 }
 
-main();
+main().finally(() => prisma.$disconnect());

@@ -357,9 +357,9 @@ function DigestTab() {
           <div>
               <h3 className="text-sm font-semibold text-amber-800">Требуется проверка отправителя</h3>
               <p className="text-sm text-amber-700 mt-1">
-                  Для корректной отправки рассылок убедитесь, что email <strong>info@nucmed.ru</strong> (или другой, указанный в настройках) верифицирован в личном кабинете Unisender. Иначе рассылки будут возвращаться с ошибкой "The email has not been checked yet".
+                  Для корректной отправки рассылок убедитесь, что адрес отправителя из настроек (UNISENDER_FROM_EMAIL, на домене con-vet.ru) верифицирован в личном кабинете Unisender. Иначе рассылки будут возвращаться с ошибкой "The email has not been checked yet".
               </p>
-              <a href="https://cp.unisender.com/ru/v5/settings/senders" target="_blank" className="text-xs font-medium text-amber-800 underline mt-2 inline-block">Перейти к настройке отправителей →</a>
+              <a href="https://cp.unisender.com/ru/v5/settings/senders" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-amber-800 underline mt-2 inline-block">Перейти к настройке отправителей →</a>
           </div>
       </div>
 

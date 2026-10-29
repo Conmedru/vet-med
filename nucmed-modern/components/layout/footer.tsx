@@ -41,8 +41,8 @@ export function Footer() {
 
       <div className="container grid grid-cols-1 gap-10 py-14 md:grid-cols-2 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <Link href="/" className="inline-block rounded-2xl bg-white p-2">
-            <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-8 w-auto" />
+          <Link href="/" className="inline-block">
+            <img src="/con-vet-logo-white.png" alt="CON-VET.ru" className="h-7 w-auto md:h-8" />
           </Link>
           <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/75">
             Новости и исследования ветеринарной медицины для практикующих врачей: диагностика, лечение и профилактика заболеваний животных.
