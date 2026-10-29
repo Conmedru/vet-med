@@ -156,7 +156,7 @@ async function getManualSource() {
       data: {
         name: "Редакция",
         slug: MANUAL_SOURCE_SLUG,
-        url: "https://vetmed.ru",
+        url: "https://con-vet.ru",
         adapterType: "manual",
         isActive: true,
       },

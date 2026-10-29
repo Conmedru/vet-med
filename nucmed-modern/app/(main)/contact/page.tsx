@@ -3,8 +3,8 @@ import { Mail, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Контакты | VetMed",
-  description: "Свяжитесь с редакцией VetMed — вопросы, предложения, сотрудничество.",
+  title: "Контакты",
+  description: "Свяжитесь с редакцией CON-VET.ru — вопросы, предложения, сотрудничество.",
 };
 
 export default function ContactPage() {
@@ -26,20 +26,20 @@ export default function ContactPage() {
           <CardContent className="space-y-2">
             <p>
               <strong>Общие вопросы:</strong><br />
-              <a href="mailto:info@vetmed.ru" className="text-primary hover:underline">
-                info@vetmed.ru
+              <a href="mailto:info@con-vet.ru" className="text-primary hover:underline">
+                info@con-vet.ru
               </a>
             </p>
             <p>
               <strong>Редакция:</strong><br />
-              <a href="mailto:editor@vetmed.ru" className="text-primary hover:underline">
-                editor@vetmed.ru
+              <a href="mailto:editor@con-vet.ru" className="text-primary hover:underline">
+                editor@con-vet.ru
               </a>
             </p>
             <p>
               <strong>Реклама и партнёрство:</strong><br />
-              <a href="mailto:partner@vetmed.ru" className="text-primary hover:underline">
-                partner@vetmed.ru
+              <a href="mailto:partner@con-vet.ru" className="text-primary hover:underline">
+                partner@con-vet.ru
               </a>
             </p>
           </CardContent>
@@ -70,7 +70,7 @@ export default function ContactPage() {
         <h3>Предложить новость</h3>
         <p>
           Если вы хотите предложить тему для публикации или у вас есть эксклюзивная информация
-          в области ветеринарной медицины, напишите на <a href="mailto:editor@vetmed.ru">editor@vetmed.ru</a>
+          в области ветеринарной медицины, напишите на <a href="mailto:editor@con-vet.ru">editor@con-vet.ru</a>
           с темой письма «Предложение новости».
         </p>
 
@@ -84,7 +84,7 @@ export default function ContactPage() {
         <p>
           Мы открыты к партнёрству с ветеринарными клиниками, исследовательскими центрами,
           фармацевтическими компаниями и профессиональными организациями.
-          Обсудим возможности сотрудничества на <a href="mailto:partner@vetmed.ru">partner@vetmed.ru</a>.
+          Обсудим возможности сотрудничества на <a href="mailto:partner@con-vet.ru">partner@con-vet.ru</a>.
         </p>
 
         <h3>Подписка на рассылку</h3>

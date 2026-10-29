@@ -607,7 +607,7 @@ export default function AdminJournalPage() {
                   value={form.title}
                   onChange={(e) => onFieldChange("title", e.target.value)}
                   className="w-full px-3 py-2.5 border border-stone-200 rounded-xl focus:ring-2 focus:ring-stone-900 focus:border-stone-900 outline-none transition-shadow"
-                  placeholder="VetMed Journal — весна 2026…"
+                  placeholder="CON-VET.ru Journal — весна 2026…"
                   name="title"
                   autoComplete="off"
                   required

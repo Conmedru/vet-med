@@ -165,7 +165,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
       <CardFooter className="mt-auto flex items-center justify-between border-t border-border/60 px-5 py-3">
         <div className="flex items-center gap-2 text-xs font-medium">
           <User className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">{article.source?.name || "VetMed"}</span>
+          <span className="text-muted-foreground">{article.source?.name || "CON-VET.ru"}</span>
         </div>
       </CardFooter>
     </Card>

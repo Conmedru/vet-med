@@ -89,7 +89,7 @@ export default function AuthPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@vetmed.ru"
+                  placeholder="admin@con-vet.ru"
                   required
                   disabled={isLoading}
                 />

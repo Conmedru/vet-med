@@ -12,13 +12,13 @@ const onest = Onest({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "VetMed — Ветеринарная медицина: новости и исследования",
-    template: "%s | VetMed",
+    default: "CON-VET.ru — ветеринарная медицина: новости и исследования",
+    template: "%s | CON-VET.ru",
   },
   description: "Ведущий портал ветеринарной медицины: хирургия, терапия, кардиология, онкология, дерматология и последние достижения в лечении животных.",
   keywords: ["ветеринарная медицина", "новости ветеринарии", "лечение животных", "ветеринарный журнал", "ветеринарные исследования"],
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ru_RU",
     url: SITE_URL,
-    siteName: "VetMed",
-    title: "VetMed — Ветеринарная медицина",
+    siteName: "CON-VET.ru",
+    title: "CON-VET.ru — ветеринарная медицина",
     description: "Ведущий портал ветеринарной медицины с новостями, исследованиями и клиническими случаями.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "VetMed — Ветеринарная медицина",
+    title: "CON-VET.ru — ветеринарная медицина",
     description: "Новости и исследования ветеринарной медицины.",
   },
   robots: {

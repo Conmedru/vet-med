@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "О нас | VetMed",
-  description: "Узнайте больше о портале VetMed — ведущем источнике новостей ветеринарной медицины.",
+  title: "О нас",
+  description: "Узнайте больше о портале CON-VET.ru — ведущем источнике новостей ветеринарной медицины.",
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
 
       <div className="prose prose-lg max-w-none">
         <p className="text-xl text-muted-foreground mb-8">
-          <strong>VetMed</strong> — ведущий информационный портал,
+          <strong>CON-VET.ru</strong> — ведущий информационный портал,
           посвящённый ветеринарной медицине, лечению и профилактике заболеваний животных.
         </p>
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
         <h2>Связаться с нами</h2>
         <p>
           Есть вопросы, предложения или хотите сотрудничать?
-          Напишите нам на <a href="mailto:info@vetmed.ru" className="text-primary hover:underline">info@vetmed.ru</a>
+          Напишите нам на <a href="mailto:info@con-vet.ru" className="text-primary hover:underline">info@con-vet.ru</a>
           или посетите страницу <a href="/contact" className="text-primary hover:underline">Контакты</a>.
         </p>
       </div>

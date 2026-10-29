@@ -20,8 +20,8 @@ import type { Image as PrismaImage } from "@prisma/client";
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
-const SITE_NAME = "VetMed";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
+const SITE_NAME = "CON-VET.ru";
 
 /** Breadcrumb link for the article's main rubric (old articles fall back to the category) */
 function categoryHref(article: { rubrics: string[]; category: string | null }): string | null {
@@ -203,7 +203,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `${title} | ${SITE_NAME}`;
 
   return {
-    title: seoTitle,
+    // absolute: the root layout template would add «| CON-VET.ru» a second time
+    title: { absolute: seoTitle },
     description,
     keywords: article.tags?.length
       ? [...article.tags, article.category, "ветеринария", "животные"].filter(Boolean).join(", ")

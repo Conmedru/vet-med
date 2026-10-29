@@ -20,7 +20,7 @@ interface CategoryPageProps {
   }>
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 const ALL_DESCRIPTION = "Полный архив новостей, исследований и клинических случаев ветеринарной медицины."
 
@@ -47,13 +47,13 @@ export async function generateMetadata({ params }: CategoryPageProps) {
     : `${page?.description || ""} Статьи и новости в рубрике «${title}».`.trim();
   
   return {
-    title: `${title} | VetMed`,
+    title: `${title}`,
     description,
     openGraph: {
       title,
       description,
       url: `${SITE_URL}/category/${slug}`,
-      siteName: "VetMed",
+      siteName: "CON-VET.ru",
       locale: "ru_RU",
       type: "website",
     },

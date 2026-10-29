@@ -27,7 +27,7 @@ export function JournalBanner({ issue }: JournalBannerProps) {
       <Link
         href="/journal"
         className="group relative flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-8 lg:p-10 cursor-pointer"
-        aria-label={`Журнал VetMed — ${issue.title}`}
+        aria-label={`Журнал CON-VET.ru — ${issue.title}`}
       >
         {/* Cover image */}
         <div className="shrink-0 w-32 md:w-40 lg:w-48 aspect-[3/4] rounded-xl overflow-hidden shadow-2xl shadow-black/30 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-[1.03]">
@@ -50,7 +50,7 @@ export function JournalBanner({ issue }: JournalBannerProps) {
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold uppercase tracking-wider text-cyan-200 mb-3">
             <BookOpen className="w-3.5 h-3.5" />
-            Журнал VetMed
+            Журнал CON-VET.ru
           </div>
 
           {/* Title */}

@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'VetMed',
-    short_name: 'VetMed',
+    name: 'CON-VET.ru',
+    short_name: 'CON-VET.ru',
     description: 'Новости, исследования и практика ветеринарной медицины',
     start_url: '/',
     display: 'standalone',

@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Политика конфиденциальности | VetMed",
-  description: "Политика конфиденциальности и обработки персональных данных на сайте VetMed",
+  title: "Политика конфиденциальности",
+  description: "Политика конфиденциальности и обработки персональных данных на сайте CON-VET.ru",
   robots: {
     index: false,
     follow: false,
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
         <h2>1. Общие положения</h2>
         <p>
           Настоящая Политика конфиденциальности определяет порядок обработки и защиты
-          информации о пользователях сайта VetMed (далее — «Сайт»).
+          информации о пользователях сайта CON-VET.ru (далее — «Сайт»).
         </p>
         <p>
           Использование Сайта означает согласие пользователя с данной Политикой.
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Для реализации этих прав свяжитесь с нами по адресу{" "}
-          <a href="mailto:privacy@vetmed.ru" className="text-primary hover:underline">privacy@vetmed.ru</a>.
+          <a href="mailto:privacy@con-vet.ru" className="text-primary hover:underline">privacy@con-vet.ru</a>.
         </p>
 
         <h2>8. Изменения политики</h2>
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         <h2>9. Контакты</h2>
         <p>
           По вопросам, связанным с обработкой персональных данных, обращайтесь:<br />
-          Email: <a href="mailto:privacy@vetmed.ru" className="text-primary hover:underline">privacy@vetmed.ru</a>
+          Email: <a href="mailto:privacy@con-vet.ru" className="text-primary hover:underline">privacy@con-vet.ru</a>
         </p>
       </div>
     </div>

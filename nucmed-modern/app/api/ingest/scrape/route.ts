@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   return NextResponse.json({
-    name: "VetMed RSS Scraper",
+    name: "CON-VET.ru RSS Scraper",
     version: "1.0.0",
     usage: {
       "POST /api/ingest/scrape": "Scrape all active sources",

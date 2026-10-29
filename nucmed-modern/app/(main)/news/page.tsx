@@ -6,16 +6,16 @@ import { Pagination } from "@/components/ui/pagination-custom";
 import { NewsList, NewsFilters } from "@/components/articles";
 import type { Metadata } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vetmed.ru";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 export const metadata: Metadata = {
-  title: "Новости ветеринарной медицины | VetMed",
+  title: "Новости ветеринарной медицины",
   description: "Последние новости, исследования и клинические случаи в области ветеринарной медицины: хирургия, терапия, онкология, кардиология и другие специальности.",
   openGraph: {
     title: "Новости ветеринарной медицины",
     description: "Последние новости, исследования и клинические случаи ветеринарной медицины.",
     url: `${SITE_URL}/news`,
-    siteName: "VetMed",
+    siteName: "CON-VET.ru",
     locale: "ru_RU",
     type: "website",
   },

@@ -38,8 +38,8 @@ export interface NewsletterDigest {
   createdAt: Date;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://vetmed.ru';
-const SITE_NAME = 'VetMed';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru';
+const SITE_NAME = 'CON-VET.ru';
 
 export async function sendNewArticleNotification(articleId: string) {
   console.log(`[Newsletter] Starting notification for article: ${articleId}`);

@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   return NextResponse.json({
-    name: "VetMed Ingestion API",
+    name: "CON-VET.ru Ingestion API",
     version: "1.0.0",
     endpoints: {
       "POST /api/ingest": "Ingest single article",

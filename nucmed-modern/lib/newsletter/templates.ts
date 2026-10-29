@@ -3,8 +3,8 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 // Constants
-const SITE_NAME = 'VetMed';
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://vetmed.ru';
+const SITE_NAME = 'CON-VET.ru';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru';
 
 // User provided styles
 const HEAD_STYLES = `
@@ -137,7 +137,7 @@ const BASE_TEMPLATE = (title: string, preheader: string, content: string) => `
                                                     <div style="font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #656565;" class="em-font-Inter-Regular">Все права защищены.</div>
                                                 </td></tr></table>
                                             <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="left" class="em-mob-text-align-left" style="padding-bottom: 20px;">
-                                        <a href="mailto:info@vetmed.ru" target="_blank" style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; text-decoration: underline; color: #656565;">Поддержка</a>
+                                        <a href="mailto:info@con-vet.ru" target="_blank" style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; text-decoration: underline; color: #656565;">Поддержка</a>
                                         <span style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #A3ADBB;">&nbsp; &nbsp; &nbsp;<a href="${SITE_URL}/newsletter/preferences" target="_blank" style="text-decoration: underline solid; color: #656565;">Настроить подписку</a>&nbsp; &nbsp; &nbsp;<a href="{{UnsubscribeUrl}}" target="_blank" style="text-decoration: underline solid; color: #656565;">Отписаться</a></span>
                                     </td></tr></table></td>
                                             <td>
@@ -274,7 +274,7 @@ export function generateNotificationHtml(article: {
     category?: string | null;
 }): string {
     const subject = `Новая статья: ${article.title}`;
-    const preheader = article.excerpt ? article.excerpt.substring(0, 100) : 'Читайте новую статью на VetMed';
+    const preheader = article.excerpt ? article.excerpt.substring(0, 100) : 'Читайте новую статью на CON-VET.ru';
 
     const content = `
     <!-- Header Block -->

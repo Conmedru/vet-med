@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminRouteAuth } from "@/lib/auth";
 
 const DEFAULT_SETTINGS = {
-  site_name: "VetMed",
+  site_name: "CON-VET.ru",
   site_description: "Новости ветеринарной медицины",
   articles_per_page: 10,
   auto_publish: false,

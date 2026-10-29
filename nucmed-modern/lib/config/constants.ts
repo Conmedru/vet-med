@@ -1,7 +1,7 @@
 export const SITE = {
-  NAME: 'VetMed',
+  NAME: 'CON-VET.ru',
   NAME_EN: 'vetmed',
-  URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://vetmed.ru',
+  URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru',
   LOCALE: 'ru-RU',
 } as const;
 
@@ -53,7 +53,7 @@ export const SOCIAL = {
 } as const;
 
 export const CONTACT = {
-  EMAIL: 'info@vetmed.ru',
+  EMAIL: 'info@con-vet.ru',
   PHONE: '+7 (495) 000-00-00',
   ADDRESS: 'Москва, Россия',
 } as const;

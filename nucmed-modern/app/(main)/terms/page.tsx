@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Условия использования | VetMed",
-  description: "Условия использования сайта VetMed",
+  title: "Условия использования",
+  description: "Условия использования сайта CON-VET.ru",
   robots: {
     index: false,
     follow: false,
@@ -22,7 +22,7 @@ export default function TermsPage() {
         <h2>1. Общие положения</h2>
         <p>
           Настоящие Условия использования регулируют отношения между администрацией сайта
-          VetMed (далее — «Сайт», «мы») и пользователями Сайта (далее — «Пользователь», «вы»).
+          CON-VET.ru (далее — «Сайт», «мы») и пользователями Сайта (далее — «Пользователь», «вы»).
         </p>
         <p>
           Используя Сайт, вы подтверждаете своё согласие с настоящими Условиями.
@@ -40,7 +40,7 @@ export default function TermsPage() {
         </p>
         <ul>
           <li>Просматривать материалы для личного некоммерческого использования</li>
-          <li>Цитировать материалы с обязательной ссылкой на источник (VetMed)</li>
+          <li>Цитировать материалы с обязательной ссылкой на источник (CON-VET.ru)</li>
           <li>Делиться ссылками на материалы в социальных сетях</li>
         </ul>
         <p>
@@ -98,7 +98,7 @@ export default function TermsPage() {
         <h2>8. Контакты</h2>
         <p>
           По вопросам, связанным с настоящими Условиями, обращайтесь:<br />
-          Email: <a href="mailto:legal@vetmed.ru" className="text-primary hover:underline">legal@vetmed.ru</a>
+          Email: <a href="mailto:legal@con-vet.ru" className="text-primary hover:underline">legal@con-vet.ru</a>
         </p>
       </div>
     </div>
