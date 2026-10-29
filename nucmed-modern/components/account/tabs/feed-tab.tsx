@@ -67,7 +67,7 @@ export function FeedTab() {
       </div>
 
       <aside className="order-1 lg:order-2">
-        <div className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-5 lg:sticky lg:top-24">
+        <div className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-5 lg:sticky lg:top-32">
           <div className="flex items-center justify-between gap-2 mb-1">
             <h3 className="font-semibold">Моя лента</h3>
             {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}

@@ -50,20 +50,17 @@ const dropdowns: MenuDropdown[] = [
   },
   { id: "specialties", label: "Специализации", groups: [{ links: getRubricsByKind("specialty").map(rubricLink) }] },
   { id: "diagnostics", label: "Диагностика", groups: [{ links: getRubricsByKind("diagnostics").map(rubricLink) }] },
+  // Reference catalogs after the sections (client: «Вакцинация» right after «Нутрициология»,
+  // «Клинические случаи» as a big top-level section)
   {
-    id: "sections",
-    label: "Разделы",
-    groups: [
-      { links: getRubricsByKind("section").map(rubricLink) },
-      { title: "Справочники", links: [{ name: "Гайдлайны", href: "/guidelines" }, { name: "Калькуляторы", href: "/calculators" }] },
-    ],
+    id: "references",
+    label: "Справочники",
+    groups: [{ links: [{ name: "Гайдлайны и справочники", href: "/guidelines" }, { name: "Калькуляторы и шкалы", href: "/calculators" }] }],
   },
 ]
 
-const sectionLinks: MenuLink[] = [
-  { name: "Гайдлайны", href: "/guidelines" },
-  { name: "Калькуляторы", href: "/calculators" },
-]
+// Top-level sections: Нутрициология, Вакцинация, Клинические случаи
+const sectionLinks: MenuLink[] = getRubricsByKind("section").map(rubricLink)
 
 const dropdownHrefs = (d: MenuDropdown) => d.groups.flatMap((g) => g.links.map((l) => l.href))
 
@@ -115,6 +112,54 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
 
   const solid = scrolled || isMobileMenuOpen
 
+  const renderDropdown = (dropdown: MenuDropdown) => {
+    const isOpen = openDropdown === dropdown.id
+    const isActive = dropdownHrefs(dropdown).includes(pathname)
+    return (
+      <div key={dropdown.id} className="relative">
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          onClick={() => setOpenDropdown(isOpen ? null : dropdown.id)}
+          className={cn(navItem, isOpen ? "bg-white text-foreground shadow-sm" : isActive ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
+        >
+          {dropdown.label}
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
+        </button>
+
+        {isOpen && (
+          <div className="absolute left-0 top-[calc(100%+10px)] z-50 max-h-[70vh] w-72 overflow-y-auto rounded-[20px] border border-border bg-white p-2 shadow-[0_24px_60px_-20px_rgba(11,42,51,0.35)] animate-in fade-in zoom-in-95 duration-100">
+            {dropdown.groups.map((group, index) => (
+              <React.Fragment key={group.title || index}>
+                {index > 0 && <div className="my-2 border-t border-border/60" />}
+                {group.title && (
+                  <div className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.title}</div>
+                )}
+                {group.links.map((link) => {
+                  const Icon = link.icon
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setOpenDropdown(null)}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors",
+                        pathname === link.href ? "bg-secondary font-medium text-primary" : "text-foreground hover:bg-secondary"
+                      )}
+                    >
+                      {Icon && <Icon className="h-4 w-4 text-primary" />}
+                      {link.name}
+                    </Link>
+                  )
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <header
       className={cn(
@@ -124,77 +169,11 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
           : "border-transparent bg-transparent"
       )}
     >
-      <div className="container flex h-[72px] items-center gap-3">
+      <div className="container flex h-16 items-center gap-3 xl:h-[68px]">
         <Link href="/" className="shrink-0">
           <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-8 w-auto md:h-9" />
         </Link>
 
-        {/* Desktop navigation */}
-        <nav ref={navRef} className="ml-6 hidden min-w-0 flex-1 items-center gap-0.5 xl:flex" aria-label="Разделы сайта">
-          {dropdowns.map((dropdown) => {
-            const isOpen = openDropdown === dropdown.id
-            const isActive = dropdownHrefs(dropdown).includes(pathname)
-            return (
-              <div key={dropdown.id} className="relative">
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenDropdown(isOpen ? null : dropdown.id)}
-                  className={cn(navItem, isOpen ? "bg-white text-foreground shadow-sm" : isActive ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
-                >
-                  {dropdown.label}
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
-                </button>
-
-                {isOpen && (
-                  <div className="absolute left-0 top-[calc(100%+10px)] z-50 max-h-[70vh] w-72 overflow-y-auto rounded-[20px] border border-border bg-white p-2 shadow-[0_24px_60px_-20px_rgba(11,42,51,0.35)] animate-in fade-in zoom-in-95 duration-100">
-                    {dropdown.groups.map((group, index) => (
-                      <React.Fragment key={group.title || index}>
-                        {index > 0 && <div className="my-2 border-t border-border/60" />}
-                        {group.title && (
-                          <div className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.title}</div>
-                        )}
-                        {group.links.map((link) => {
-                          const Icon = link.icon
-                          return (
-                            <Link
-                              key={link.href}
-                              href={link.href}
-                              onClick={() => setOpenDropdown(null)}
-                              className={cn(
-                                "flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors",
-                                pathname === link.href ? "bg-secondary font-medium text-primary" : "text-foreground hover:bg-secondary"
-                              )}
-                            >
-                              {Icon && <Icon className="h-4 w-4 text-primary" />}
-                              {link.name}
-                            </Link>
-                          )
-                        })}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-          {sectionLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(navItem, "hidden 2xl:flex", pathname === link.href ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
-            >
-              {link.name}
-            </Link>
-          ))}
-
-          {FEATURES.PUBLIC_JOURNAL && (
-            <Link href="/journal" className={cn(navItem, pathname === "/journal" ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
-              Журнал
-            </Link>
-          )}
-        </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
           <SearchDialog />
@@ -211,9 +190,32 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         </div>
       </div>
 
+    {/* Desktop navigation: second row, seven sections do not fit next to search and sign-in */}
+      <nav ref={navRef} className="container hidden h-12 items-center gap-0.5 xl:flex" aria-label="Разделы сайта">
+        {dropdowns.slice(0, 3).map(renderDropdown)}
+
+        {sectionLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(navItem, pathname === link.href ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
+          >
+            {link.name}
+          </Link>
+        ))}
+
+        {dropdowns.slice(3).map(renderDropdown)}
+
+        {FEATURES.PUBLIC_JOURNAL && (
+          <Link href="/journal" className={cn(navItem, pathname === "/journal" ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
+            Журнал
+          </Link>
+        )}
+      </nav>
+
       {/* Mobile navigation */}
       {isMobileMenuOpen && (
-        <div className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-white/70 xl:hidden">
+        <div className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-white/70 xl:hidden">
           <div className="container space-y-4 py-4">
             {dropdowns.map((dropdown) => {
               const isOpen = openMobileGroup === dropdown.id
@@ -249,6 +251,11 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
             })}
 
             <div className="grid gap-1 border-t border-border/60 pt-3">
+              {sectionLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
+                  {link.name}
+                </Link>
+              ))}
               {FEATURES.PUBLIC_JOURNAL && (
                 <Link href="/journal" className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
                   Журнал

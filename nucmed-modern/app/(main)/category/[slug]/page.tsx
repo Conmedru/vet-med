@@ -91,7 +91,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         
         {/* LEFT COLUMN: Global Sidebar (Sticky) */}
         <aside className="lg:col-span-3 hidden lg:block">
-          <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-hidden">
+          <div className="sticky top-32 h-[calc(100vh-10rem)] overflow-hidden">
             <FadeIn delay={0.1}>
               <DBArticleSidebar articles={allArticles} />
             </FadeIn>
