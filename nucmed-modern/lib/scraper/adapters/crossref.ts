@@ -50,7 +50,8 @@ export class CrossrefAdapter extends BaseAdapter {
       const title = toPlainText(item.title?.[0]);
       if (!title || isNoticeTitle(title)) continue;
       let abstract = toPlainText(item.abstract);
-      const articleUrl = item.URL || `https://doi.org/${item.DOI}`;
+      // Only the DOI resolver: Crossref's URL field is publisher-supplied (SSRF); redirects are checked in fetchText
+      const articleUrl = `https://doi.org/${encodeURIComponent(item.DOI).replace(/%2F/gi, "/")}`;
 
       // Landing pages: sequential, capped per run — publishers rate-limit scrapers
       if (abstract.length < 150 && fromLanding && landingFetches < 25) {

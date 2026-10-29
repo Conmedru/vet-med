@@ -1,3 +1,7 @@
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
+import * as cheerio from "cheerio";
+
 /**
  * HTTP for scraper adapters: identifies the bot, times out, retries transient failures
  * (429, 5xx, network) with backoff and honours Retry-After. Polite by default: one
@@ -19,16 +23,62 @@ const BROWSER_UA =
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const MAX_REDIRECTS = 5;
+
+/** Loopback, private, link-local (cloud metadata), CGNAT, multicast and reserved ranges */
+function isPrivateAddress(address: string): boolean {
+  if (address.includes(":")) {
+    const a = address.toLowerCase();
+    if (a === "::1" || a === "::" || a.startsWith("fe8") || a.startsWith("fe9") || a.startsWith("fea") || a.startsWith("feb") || a.startsWith("fc") || a.startsWith("fd")) return true;
+    const mapped = a.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    return mapped ? isPrivateAddress(mapped[1]) : false;
+  }
+  const [a, b] = address.split(".").map(Number);
+  return (
+    a === 0 || a === 10 || a === 127 || a >= 224 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19))
+  );
+}
+
+/**
+ * URLs come from feeds and APIs we do not control: only public http(s) hosts may be fetched,
+ * checked after DNS resolution and again on every redirect hop (SSRF).
+ */
+async function assertPublicUrl(raw: string): Promise<URL> {
+  const url = new URL(raw);
+  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(`Blocked URL scheme: ${url.protocol}`);
+  if (url.username || url.password) throw new Error("Blocked URL with credentials");
+  const host = url.hostname.replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) throw new Error(`Blocked host: ${host}`);
+  const addresses = isIP(host) ? [host] : (await lookup(host, { all: true })).map((r) => r.address);
+  if (!addresses.length || addresses.some(isPrivateAddress)) throw new Error(`Blocked private address for ${host}`);
+  return url;
+}
+
 export async function fetchText(url: string, options: FetchTextOptions = {}): Promise<string> {
   const { accept = "*/*", timeoutMs = 30_000, retries = 2, browserUA = false } = options;
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(url, {
-        headers: { "User-Agent": browserUA ? BROWSER_UA : BOT_UA, Accept: accept },
-        signal: AbortSignal.timeout(timeoutMs),
-        redirect: "follow",
-      });
+      const signal = AbortSignal.timeout(timeoutMs);
+      let current = (await assertPublicUrl(url)).toString();
+      let response: Response | null = null;
+      for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+        response = await fetch(current, {
+          headers: { "User-Agent": browserUA ? BROWSER_UA : BOT_UA, Accept: accept },
+          signal,
+          redirect: "manual",
+        });
+        const location = response.status >= 300 && response.status < 400 ? response.headers.get("location") : null;
+        if (!location) break;
+        if (hop === MAX_REDIRECTS) throw new Error(`HTTP too many redirects for ${url}`);
+        current = (await assertPublicUrl(new URL(location, current).toString())).toString();
+      }
+      if (!response) throw new Error(`Request failed: ${url}`);
       if (response.ok) return await response.text();
       const transient = response.status === 429 || response.status >= 500;
       if (!transient || attempt === retries) {
@@ -38,7 +88,7 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
       await sleep(Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 60) * 1000 : 2000 * 2 ** attempt);
     } catch (error) {
       lastError = error;
-      if (error instanceof Error && error.message.startsWith("HTTP ")) throw error;
+      if (error instanceof Error && (error.message.startsWith("HTTP ") || error.message.startsWith("Blocked"))) throw error;
       if (attempt === retries) break;
       await sleep(2000 * 2 ** attempt);
     }
@@ -46,21 +96,17 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
   throw lastError instanceof Error ? lastError : new Error(`Request failed: ${url}`);
 }
 
-/** Plain text from HTML/JATS/XML fragments: tags removed, entities decoded, whitespace collapsed */
+/**
+ * Plain text from HTML/JATS/XML fragments. Parsed with cheerio (entities decoded by the
+ * parser, then text extracted), so decoded «&lt;script&gt;» can never become markup.
+ * The result is untrusted text: render it escaped.
+ */
 export function toPlainText(value: string | null | undefined): string {
   if (!value) return "";
-  return value
-    .replace(/<jats:title>[^<]*<\/jats:title>/gi, " ") // «Abstract» heading inside JATS
-    .replace(/<\/?[a-zA-Z][^<>]*>/g, " ")
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/\s+/g, " ")
-    .trim();
+  // A space before every tag keeps words apart across <br>, </p><p> and JATS elements
+  const $ = cheerio.load(`<root>${value.replace(/</g, " <")}</root>`, { xmlMode: true, decodeEntities: true } as cheerio.CheerioOptions);
+  $("jats\\:title, title").remove(); // «Abstract» heading inside JATS
+  return $("root").text().replace(/\s+/g, " ").trim();
 }
 
 /** Errata, retractions and editorial notes: not material for an article */
