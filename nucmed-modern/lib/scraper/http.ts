@@ -1,5 +1,6 @@
-import { lookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { lookup as dnsLookup, type LookupAddress } from "node:dns";
+import { BlockList, isIP } from "node:net";
+import { Agent, fetch as undiciFetch } from "undici";
 import * as cheerio from "cheerio";
 
 /**
@@ -25,37 +26,83 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const MAX_REDIRECTS = 5;
 
-/** Loopback, private, link-local (cloud metadata), CGNAT, multicast and reserved ranges */
-function isPrivateAddress(address: string): boolean {
-  if (address.includes(":")) {
-    const a = address.toLowerCase();
-    if (a === "::1" || a === "::" || a.startsWith("fe8") || a.startsWith("fe9") || a.startsWith("fea") || a.startsWith("feb") || a.startsWith("fc") || a.startsWith("fd")) return true;
-    const mapped = a.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-    return mapped ? isPrivateAddress(mapped[1]) : false;
+// Non-public ranges, checked on parsed addresses (no string matching). IPv4-mapped,
+// IPv4-compatible, NAT64 and 6to4 IPv6 addresses are reduced to their IPv4 first.
+const BLOCKED = new BlockList();
+for (const [net, prefix] of [
+  ["0.0.0.0", 8], ["10.0.0.0", 8], ["100.64.0.0", 10], ["127.0.0.0", 8], ["169.254.0.0", 16],
+  ["172.16.0.0", 12], ["192.0.0.0", 24], ["192.0.2.0", 24], ["192.168.0.0", 16], ["198.18.0.0", 15],
+  ["198.51.100.0", 24], ["203.0.113.0", 24], ["224.0.0.0", 4], ["240.0.0.0", 4],
+] as const) BLOCKED.addSubnet(net, prefix, "ipv4");
+for (const [net, prefix] of [
+  ["::", 128], ["::1", 128], ["fc00::", 7], ["fe80::", 10], ["ff00::", 8], ["2001:db8::", 32], ["100::", 64],
+] as const) BLOCKED.addSubnet(net, prefix, "ipv6");
+
+/** IPv4 embedded in an IPv6 address (::ffff:a.b.c.d, ::a.b.c.d, 64:ff9b::/96, 2002::/16), else null */
+function embeddedIPv4(address: string): string | null {
+  const words = expandIPv6(address);
+  if (!words) return null;
+  const v4 = (hi: number, lo: number) => `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+  const zero = (from: number, to: number) => words.slice(from, to).every((w) => w === 0);
+  if (zero(0, 5) && (words[5] === 0xffff || words[5] === 0)) return v4(words[6], words[7]); // mapped / compatible
+  if (words[0] === 0x64 && words[1] === 0xff9b && zero(2, 6)) return v4(words[6], words[7]); // NAT64
+  if (words[0] === 0x2002) return v4(words[1], words[2]); // 6to4
+  return null;
+}
+
+function expandIPv6(address: string): number[] | null {
+  let a = address.toLowerCase().split("%")[0];
+  const dotted = a.match(/(\d+\.\d+\.\d+\.\d+)$/);
+  if (dotted) {
+    const parts = dotted[1].split(".").map(Number);
+    a = a.slice(0, -dotted[1].length) + ((parts[0] << 8) | parts[1]).toString(16) + ":" + ((parts[2] << 8) | parts[3]).toString(16);
   }
-  const [a, b] = address.split(".").map(Number);
-  return (
-    a === 0 || a === 10 || a === 127 || a >= 224 ||
-    (a === 100 && b >= 64 && b <= 127) ||
-    (a === 169 && b === 254) ||
-    (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) ||
-    (a === 198 && (b === 18 || b === 19))
-  );
+  const [head, tail] = a.split("::");
+  const h = head ? head.split(":") : [];
+  const t = tail !== undefined ? (tail ? tail.split(":") : []) : [];
+  if (tail === undefined && h.length !== 8) return null;
+  const words = [...h, ...Array(8 - h.length - t.length).fill("0"), ...t].map((w) => parseInt(w, 16));
+  return words.length === 8 && words.every((w) => Number.isInteger(w) && w >= 0 && w <= 0xffff) ? words : null;
+}
+
+export function isPrivateAddress(address: string): boolean {
+  const family = isIP(address);
+  if (family === 4) return BLOCKED.check(address, "ipv4");
+  if (family === 6) {
+    const v4 = embeddedIPv4(address);
+    if (v4) return BLOCKED.check(v4, "ipv4");
+    return BLOCKED.check(address, "ipv6");
+  }
+  return true; // not an IP: never connect
 }
 
 /**
- * URLs come from feeds and APIs we do not control: only public http(s) hosts may be fetched,
- * checked after DNS resolution and again on every redirect hop (SSRF).
+ * The socket connects only to an address checked here (no second DNS lookup between the
+ * check and the connection — DNS rebinding).
  */
-async function assertPublicUrl(raw: string): Promise<URL> {
+const safeAgent = new Agent({
+  connect: {
+    lookup(hostname, options, callback) {
+      dnsLookup(hostname, { all: true }, (error, addresses) => {
+        if (error) return callback(error, "", 0);
+        const list = addresses as LookupAddress[];
+        const blocked = list.find((a) => isPrivateAddress(a.address));
+        if (!list.length || blocked) return callback(new Error(`Blocked private address for ${hostname}`), "", 0);
+        if ((options as { all?: boolean }).all) return (callback as unknown as (e: null, a: LookupAddress[]) => void)(null, list);
+        callback(null, list[0].address, list[0].family);
+      });
+    },
+  },
+});
+
+/** Scheme, credentials, host names and literal IPs; resolved names are checked in safeAgent */
+function assertPublicUrl(raw: string): URL {
   const url = new URL(raw);
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(`Blocked URL scheme: ${url.protocol}`);
   if (url.username || url.password) throw new Error("Blocked URL with credentials");
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) throw new Error(`Blocked host: ${host}`);
-  const addresses = isIP(host) ? [host] : (await lookup(host, { all: true })).map((r) => r.address);
-  if (!addresses.length || addresses.some(isPrivateAddress)) throw new Error(`Blocked private address for ${host}`);
+  if (isIP(host) && isPrivateAddress(host)) throw new Error(`Blocked private address for ${host}`);
   return url;
 }
 
@@ -65,18 +112,19 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const signal = AbortSignal.timeout(timeoutMs);
-      let current = (await assertPublicUrl(url)).toString();
+      let current = assertPublicUrl(url).toString();
       let response: Response | null = null;
       for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-        response = await fetch(current, {
+        response = (await undiciFetch(current, {
           headers: { "User-Agent": browserUA ? BROWSER_UA : BOT_UA, Accept: accept },
           signal,
           redirect: "manual",
-        });
+          dispatcher: safeAgent,
+        })) as unknown as Response;
         const location = response.status >= 300 && response.status < 400 ? response.headers.get("location") : null;
         if (!location) break;
         if (hop === MAX_REDIRECTS) throw new Error(`HTTP too many redirects for ${url}`);
-        current = (await assertPublicUrl(new URL(location, current).toString())).toString();
+        current = assertPublicUrl(new URL(location, current).toString()).toString();
       }
       if (!response) throw new Error(`Request failed: ${url}`);
       if (response.ok) return await response.text();
@@ -88,7 +136,8 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
       await sleep(Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 60) * 1000 : 2000 * 2 ** attempt);
     } catch (error) {
       lastError = error;
-      if (error instanceof Error && (error.message.startsWith("HTTP ") || error.message.startsWith("Blocked"))) throw error;
+      const blocked = (e: unknown): boolean => e instanceof Error && (e.message.startsWith("Blocked") || blocked((e as { cause?: unknown }).cause));
+      if (error instanceof Error && (error.message.startsWith("HTTP ") || blocked(error))) throw error;
       if (attempt === retries) break;
       await sleep(2000 * 2 ** attempt);
     }
