@@ -8,7 +8,7 @@ import { getRubricsByKind, type RubricKind } from "@/lib/rubrics";
 export const PROCESSING_PROMPT_VERSION = "v4.0-fidelity";
 
 function rubricList(kind: RubricKind): string {
-  return getRubricsByKind(kind, { includeHidden: true })
+  return getRubricsByKind(kind)
     .map((r) => `- ${r.slug} — ${r.name}: ${r.description}`)
     .join("\n");
 }

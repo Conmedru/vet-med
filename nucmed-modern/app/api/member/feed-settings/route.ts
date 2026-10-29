@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { MemberAuthError, requireMember } from "@/lib/auth/member-session";
 import { FeedSettingsSchema } from "@/lib/schemas/member";
-import { filterRubricSlugs, getPublicRubric } from "@/lib/rubrics";
+import { filterRubricSlugs } from "@/lib/rubrics";
 
 /** PATCH /api/member/feed-settings — feed rubrics and weekly digest */
 export async function PATCH(request: NextRequest) {
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest) {
     const updated = await prisma.member.update({
       where: { id: member.id },
       data: {
-        ...(rubrics !== undefined ? { rubrics: filterRubricSlugs(rubrics).filter((slug) => getPublicRubric(slug)) } : {}),
+        ...(rubrics !== undefined ? { rubrics: filterRubricSlugs(rubrics) } : {}),
         ...(digestEnabled !== undefined ? { digestEnabled } : {}),
         // Turning the digest on in the account is an explicit consent to the mailing
         ...(digestEnabled ? { consentMarketing: true } : {}),

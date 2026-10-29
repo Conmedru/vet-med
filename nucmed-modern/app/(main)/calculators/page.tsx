@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { RubricFilter } from "@/components/references/rubric-filter"
 import { CALCULATOR_SOURCES } from "@/lib/calculators"
-import { getPublicRubric, getRubric } from "@/lib/rubrics"
+import { getRubric } from "@/lib/rubrics"
 
 export const metadata: Metadata = {
   title: "Калькуляторы и шкалы",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function CalculatorsPage({ searchParams }: { searchParams: Promise<{ rubric?: string }> }) {
   const { rubric } = await searchParams
-  const active = rubric && getPublicRubric(rubric) ? rubric : undefined
+  const active = rubric && getRubric(rubric) ? rubric : undefined
 
   const available = [...new Set(CALCULATOR_SOURCES.flatMap((s) => s.items.flatMap((i) => i.rubrics)))]
   const sources = CALCULATOR_SOURCES.map((s) => ({

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { RubricFilter } from "@/components/references/rubric-filter"
 import { GUIDELINE_GROUPS } from "@/lib/guidelines"
-import { getPublicRubric, getRubric } from "@/lib/rubrics"
+import { getRubric } from "@/lib/rubrics"
 
 export const metadata: Metadata = {
   title: "Рекомендации и справочники",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function GuidelinesPage({ searchParams }: { searchParams: Promise<{ rubric?: string }> }) {
   const { rubric } = await searchParams
-  const active = rubric && getPublicRubric(rubric) ? rubric : undefined
+  const active = rubric && getRubric(rubric) ? rubric : undefined
 
   const available = [...new Set(GUIDELINE_GROUPS.flatMap((g) => g.items.flatMap((i) => i.rubrics)))]
   const groups = GUIDELINE_GROUPS.map((g) => ({

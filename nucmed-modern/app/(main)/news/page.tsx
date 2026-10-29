@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { FARM_SLUG, getPublicRubric, NON_FARM_ANIMAL_SLUGS, PUBLIC_RUBRICS } from "@/lib/rubrics";
+import { FARM_SLUG, getRubric, NON_FARM_ANIMAL_SLUGS, RUBRICS } from "@/lib/rubrics";
 import { Pagination } from "@/components/ui/pagination-custom";
 import { NewsList, NewsFilters } from "@/components/articles";
 import type { Metadata } from "next";
@@ -94,7 +94,7 @@ async function getPublishedArticles(
   const params: any[] = [];
   let paramIndex = 1;
 
-  if (category && getPublicRubric(category)) {
+  if (category && getRubric(category)) {
     conditions.push(`$${paramIndex} = ANY(a."rubrics")`);
     params.push(category);
     paramIndex++;
@@ -105,9 +105,11 @@ async function getPublishedArticles(
     paramIndex++;
   }
 
-  // Farm-only articles are not on the site (client, 2026-10-29)
-  const nonFarm = NON_FARM_ANIMAL_SLUGS.map((slug) => `'${slug}'`).join(", ");
-  conditions.push(`NOT ('${FARM_SLUG}' = ANY(a."rubrics") AND NOT (a."rubrics" && ARRAY[${nonFarm}]::text[]))`);
+  // Farm-only articles are shown only when the farm-animals rubric is selected
+  if (category !== FARM_SLUG) {
+    const nonFarm = NON_FARM_ANIMAL_SLUGS.map((slug) => `'${slug}'`).join(", ");
+    conditions.push(`NOT ('${FARM_SLUG}' = ANY(a."rubrics") AND NOT (a."rubrics" && ARRAY[${nonFarm}]::text[]))`);
+  }
 
   if (tag) {
     conditions.push(`$${paramIndex} = ANY(a."tags")`);
@@ -188,7 +190,7 @@ async function getFilterOptions() {
 
     const used = new Set(usedRubrics.map((r) => r.rubric));
     return {
-      rubrics: PUBLIC_RUBRICS.filter((r) => used.has(r.slug)).map(({ slug, name, kind }) => ({ slug, name, kind })),
+      rubrics: RUBRICS.filter((r) => used.has(r.slug)).map(({ slug, name, kind }) => ({ slug, name, kind })),
       popularTags: popularTags.map(t => t.tag),
     };
 }

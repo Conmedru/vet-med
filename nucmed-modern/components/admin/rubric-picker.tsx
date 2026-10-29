@@ -9,14 +9,11 @@ export function RubricPicker({
   value,
   onChange,
   warnMissing = true,
-  includeHidden = true,
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   /** Mark the required kinds (animal, specialty) when nothing is chosen there */
   warnMissing?: boolean;
-  /** Admin sees hidden rubrics (farm animals) to classify; readers do not */
-  includeHidden?: boolean;
 }) {
   const toggle = (slug: string) => {
     onChange(value.includes(slug) ? value.filter((s) => s !== slug) : [...value, slug]);
@@ -25,7 +22,7 @@ export function RubricPicker({
   return (
     <div className="space-y-4">
       {(Object.keys(RUBRIC_KIND_LABELS) as RubricKind[]).map((kind) => {
-        const rubrics = getRubricsByKind(kind, { includeHidden });
+        const rubrics = getRubricsByKind(kind);
         const missing = warnMissing && REQUIRED_KINDS.includes(kind) && !rubrics.some((r) => value.includes(r.slug));
         return (
           <div key={kind}>
