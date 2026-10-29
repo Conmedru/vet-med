@@ -11,7 +11,9 @@
     "start": "next start",
     "lint": "eslint",
     "demo:article-format": "tsx scripts/generate-article-demo.ts",
-    "migrate:covers": "tsx scripts/migrate-cover-images.ts"
+    "migrate:covers": "tsx scripts/migrate-cover-images.ts",
+    "test:fidelity": "tsx scripts/test-fidelity.ts",
+    "audit:fidelity": "tsx scripts/audit-fidelity.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

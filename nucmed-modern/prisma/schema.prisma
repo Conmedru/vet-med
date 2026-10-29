@@ -103,6 +103,8 @@ model Article {
   aiPromptVersion     String?
   processingCostUsd   Float?
   processingError     String?
+  /// Hallucination checks: rules (lib/ai/fidelity.ts) + model fact-checker (lib/ai/fact-check.ts)
+  factCheck           Json?
   originalPublishedAt DateTime?
   viewedAt            DateTime?
   scrapedAt           DateTime          @default(now())

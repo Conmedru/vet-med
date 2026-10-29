@@ -658,11 +658,21 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
 
           {/* Processing Error */}
           {article.processingError && (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-              <p className="text-sm text-red-700">
-                <strong>Ошибка обработки:</strong> {article.processingError}
-              </p>
-            </div>
+            article.processingError.startsWith("factcheck|") ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <p className="text-sm text-amber-800">
+                  <strong>Задержано проверкой по исходнику.</strong> Текст расходится с оригиналом, автоматически не публикуется.
+                  Сверьте с оригиналом, исправьте и опубликуйте вручную.
+                </p>
+                <p className="mt-2 text-sm text-amber-900">{article.processingError.slice("factcheck|".length)}</p>
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                <p className="text-sm text-red-700">
+                  <strong>Ошибка обработки:</strong> {article.processingError}
+                </p>
+              </div>
+            )
           )}
 
           {/* Processed Content Editor / Preview */}
