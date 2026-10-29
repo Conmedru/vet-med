@@ -23,8 +23,10 @@ export async function GET(request: NextRequest) {
     console.log("[Cron] Starting smart scheduled scrape...");
     
     // Получаем все активные источники
+    // Least recently scraped first, so a slow run never starves the tail of the list
     const sources = await prisma.source.findMany({
       where: { isActive: true },
+      orderBy: { lastScrapedAt: { sort: "asc", nulls: "first" } },
     });
 
     const now = new Date();
@@ -49,7 +51,9 @@ export async function GET(request: NextRequest) {
       // Пора обновлять
       console.log(`[Cron] Scraping ${source.name}...`);
       try {
-        const result = await ingestSource(source.id);
+        // Only collect: AI processing is cron/process (every 5 min, a few articles per run).
+        // Processing inline kept one scrape request busy for hours and later sources never ran.
+        const result = await ingestSource(source.id, { autoProcess: false });
         results.push(result);
       } catch (error) {
         console.error(`[Cron] Error scraping ${source.name}:`, error);
