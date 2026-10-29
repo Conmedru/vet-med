@@ -55,7 +55,7 @@ const dropdowns: MenuDropdown[] = [
   {
     id: "references",
     label: "Справочники",
-    groups: [{ links: [{ name: "Гайдлайны и справочники", href: "/guidelines" }, { name: "Калькуляторы и шкалы", href: "/calculators" }] }],
+    groups: [{ links: [{ name: "Рекомендации и справочники", href: "/guidelines" }, { name: "Калькуляторы и шкалы", href: "/calculators" }] }],
   },
 ]
 

@@ -7,7 +7,7 @@ import { GUIDELINE_GROUPS } from "@/lib/guidelines"
 import { getRubric } from "@/lib/rubrics"
 
 export const metadata: Metadata = {
-  title: "Гайдлайны и справочники",
+  title: "Рекомендации и справочники",
   description:
     "Клинические рекомендации WSAVA, AAHA, российских профессиональных сообществ и справочники ветеринарных препаратов — со ссылками на документы, в том числе на русском языке.",
 }
@@ -24,9 +24,9 @@ export default async function GuidelinesPage({ searchParams }: { searchParams: P
 
   return (
     <div className="container py-8 md:py-12 max-w-5xl">
-      <Breadcrumbs items={[{ label: "Гайдлайны и справочники" }]} className="mb-6" />
+      <Breadcrumbs items={[{ label: "Рекомендации и справочники" }]} className="mb-6" />
 
-      <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">Гайдлайны и справочники</h1>
+      <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">Рекомендации и справочники</h1>
       <p className="text-muted-foreground text-lg max-w-3xl mb-8">
         Клинические рекомендации международных и российских ветеринарных сообществ. Документы открываются на сайтах
         организаций; там, где есть перевод, ссылка ведёт на русскую версию.

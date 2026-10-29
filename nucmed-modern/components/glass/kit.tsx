@@ -65,7 +65,7 @@ export const TILES: { title: string; description: string; href: string; icon: Lu
   { title: "Клинические случаи", description: "Разборы реальных случаев", href: "/category/clinical-cases", icon: Stethoscope, tone: "lavender", countKey: "clinical-cases" },
   { title: "Вакцинация", description: "Схемы, вакцины, реакции", href: "/category/vaccination", icon: Syringe, tone: "sky", countKey: "vaccination" },
   { title: "Нутрициология", description: "Кормление и диеты", href: "/category/nutrition", icon: Salad, tone: "mint", countKey: "nutrition" },
-  { title: "Гайдлайны", description: "WSAVA, AAHA, РФ", href: "/guidelines", icon: BookOpen, tone: "sand", meta: "справочник" },
+  { title: "Рекомендации", description: "WSAVA, AAHA, РФ", href: "/guidelines", icon: BookOpen, tone: "sand", meta: "справочник" },
   { title: "Калькуляторы", description: "Дозы, инфузии, ППТ", href: "/calculators", icon: Calculator, tone: "teal", meta: "внешние сервисы" },
 ];
 
@@ -327,7 +327,7 @@ export function GuidelinesPanel({ items }: { items: _HomeData["guidelines"] }) {
           <div className={`${GLASS} p-6 md:p-8`}>
             <div className="mb-4 flex items-center gap-3">
               <GlossyIcon icon={BookOpen} tone="sand" size="sm" />
-              <h2 className="flex-1 text-2xl font-bold tracking-[-0.02em] text-[#0b2a33]">Гайдлайны</h2>
+              <h2 className="flex-1 text-2xl font-bold tracking-[-0.02em] text-[#0b2a33]">Рекомендации</h2>
               <Link href="/guidelines" className="text-sm font-semibold text-[#0e7490] hover:underline">
                 Все
               </Link>

@@ -135,10 +135,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2 font-bold">
                   <BookOpen className="h-4 w-4 text-primary" />
-                  <h2>Гайдлайны по теме</h2>
+                  <h2>Рекомендации по теме</h2>
                 </div>
                 <Link href={page.rubricSlugs!.length === 1 ? `/guidelines?rubric=${page.rubricSlugs![0]}` : "/guidelines"} className="text-sm text-primary hover:underline whitespace-nowrap">
-                  Все гайдлайны →
+                  Все рекомендации →
                 </Link>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">

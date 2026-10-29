@@ -17,7 +17,7 @@ const columns: { title: string; links: { name: string; href: string }[] }[] = [
     title: "Разделы",
     links: [
       ...getRubricsByKind("section").map((r) => ({ name: r.name, href: `/category/${r.slug}` })),
-      { name: "Гайдлайны и справочники", href: "/guidelines" },
+      { name: "Рекомендации и справочники", href: "/guidelines" },
       { name: "Калькуляторы и шкалы", href: "/calculators" },
       { name: "Все новости", href: "/news" },
     ],
