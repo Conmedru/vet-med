@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { jsonLd } from "@/lib/utils/safe-html";
 import { notFound, redirect } from "next/navigation";
 import { Calendar, Clock, ExternalLink, Tag, User, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -278,11 +279,11 @@ export default async function NewsArticlePage({ params }: PageProps) {
       <ReadingProgress />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(articleJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbJsonLd) }}
       />
 
       <div className="container py-8 md:py-12 max-w-3xl mx-auto">

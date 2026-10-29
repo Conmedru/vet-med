@@ -6,6 +6,7 @@ import { Search, FileText, Loader2, X } from "lucide-react"
 import Link from "next/link"
 
 import { cn } from "@/lib/utils"
+import { highlightHtml } from "@/lib/utils/safe-html"
 import {
   Dialog,
   DialogContent,
@@ -190,14 +191,14 @@ export function SearchDialog() {
                         <div
                           className="font-medium text-sm leading-snug"
                           dangerouslySetInnerHTML={{
-                            __html: article.highlightTitle || article.title
+                            __html: highlightHtml(article.highlightTitle || article.title)
                           }}
                         />
                         {article.highlightExcerpt && (
                           <div
                             className="text-xs text-muted-foreground mt-1 line-clamp-2"
                             dangerouslySetInnerHTML={{
-                              __html: article.highlightExcerpt
+                              __html: highlightHtml(article.highlightExcerpt)
                             }}
                           />
                         )}

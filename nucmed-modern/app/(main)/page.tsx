@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { jsonLd } from "@/lib/utils/safe-html"
 import Script from "next/script"
 import { SponsoredPostCard } from "@/components/articles"
 import { EventsCalendar } from "@/components/events/events-calendar"
@@ -106,8 +107,8 @@ export default async function Home() {
 
   return (
     <>
-      <Script id="organization-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
-      <Script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+      <Script id="organization-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(organizationJsonLd) }} />
+      <Script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }} />
 
       <div className="container space-y-14 py-6 md:py-8">
         {FEATURES.PUBLIC_JOURNAL && latestJournalIssue && <JournalBanner issue={latestJournalIssue} />}
