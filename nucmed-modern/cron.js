@@ -47,10 +47,21 @@ setInterval(() => {
   runTask('Newsletter Digest', '/api/cron/digest');
 }, 60 * 60 * 1000);
 
-// 3. Scrape Sources: Every 2 hours
-setInterval(() => {
-  runTask('Scrape Sources', '/api/cron/scrape');
-}, 2 * 60 * 60 * 1000);
+// 3. Scrape Sources: every 15 minutes and after startup. The route scrapes only sources whose
+// own interval (scrapeIntervalMinutes) has passed, so frequent calls are cheap. A 2-hour
+// setInterval restarted with every deploy: on a day of many deploys nothing was scraped at all.
+// One run at a time — a full run can take longer than 15 minutes.
+let scrapeRunning = false;
+async function scrapeSources() {
+  if (scrapeRunning) return;
+  scrapeRunning = true;
+  try {
+    await runTask('Scrape Sources', '/api/cron/scrape');
+  } finally {
+    scrapeRunning = false;
+  }
+}
+setInterval(scrapeSources, 15 * 60 * 1000);
 
 // 4. Veterinary events from external calendars: Every 24 hours
 setInterval(() => {
@@ -64,3 +75,4 @@ setTimeout(() => {
   runTask('Initial Publish Check', '/api/cron/publish');
   runTask('Initial Events Sync', '/api/cron/events');
 }, 30 * 1000);
+setTimeout(scrapeSources, 90 * 1000);
