@@ -253,7 +253,7 @@ PHOTOGRAPHY STYLE:
 - Natural or soft studio lighting, shallow depth of field (bokeh background)
 - Sharp focus on the animal subject, cinematic color grading
 - Settings: mostly everyday life — home, sofa, garden, park, walk, window light, studio portrait; a veterinary clinic only when the topic is a procedure or examination
-- VARIETY: use the suggested breed and setting from the request unless the article names a specific breed or species
+- VARIETY: use the suggested breed, setting, shot, action, light and style from the request unless the article names a specific breed or species. Covers sit side by side on the site — they must not all be the same calm close-up portrait.
 
 ANIMAL SELECTION BY TOPIC:
 - Dogs/cats/small pets → the breed named in the article, otherwise the suggested breed from the request (never default to a golden retriever)
@@ -268,8 +268,8 @@ ANIMAL SELECTION BY TOPIC:
 RULES:
 - Length: 30-50 words
 - English language only
-- Start with the animal and setting: "A photorealistic close-up of a [breed] [animal]...", "A [breed] resting on a sofa by the window...", "A majestic horse grazing..."
-- Always end with: "photorealistic, National Geographic style, 8k, cinematic lighting, shallow depth of field"
+- Build the prompt from the suggested shot, action, setting and light; do not start every prompt with "A photorealistic close-up"
+- End with the suggested photo style and "photorealistic, high detail"
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object:
@@ -295,12 +295,48 @@ const COVER_SETTINGS = [
   "sunny balcony", "forest trail", "veterinary clinic (only if the topic is a procedure)",
 ];
 
+// Same breed lists still gave the same picture: a calm close-up by a window. Shot, action,
+// light and photo style vary too (client, 2026-10-30: «однообразные генерации»).
+const COVER_SHOTS = [
+  "full-body shot", "wide environmental shot with the animal small in the frame", "low-angle shot at the animal's eye level",
+  "overhead shot from above", "side profile", "three-quarter portrait", "candid moment caught mid-movement", "close-up portrait",
+];
+const COVER_ACTIONS = [
+  "playing with a toy", "running", "curious and sniffing around", "stretching", "sleeping curled up", "sitting alert",
+  "looking out of the frame", "walking on a leash (no people visible)", "drinking water", "resting calmly",
+];
+const COVER_LIGHT = [
+  "golden hour sunlight", "overcast soft daylight", "bright midday light", "warm evening lamp light indoors",
+  "cool morning light", "backlit rim light", "dappled light through leaves",
+];
+const COVER_STYLES = [
+  "lifestyle photography", "editorial photo", "documentary photo", "minimalist studio photo with a plain colored backdrop",
+  "35mm film photo look", "natural candid snapshot",
+];
+/** Topic without a named species on a pet portal: not only dogs and cats */
+const COVER_GENERIC_PETS = ["dog", "dog", "cat", "cat", "dog", "cat", "rabbit", "guinea pig", "ferret", "budgerigar"];
+
 function coverVariety(seedText: string) {
   // Stable per article, varied across articles
   let h = 0;
   for (const ch of seedText) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  const pick = <T,>(list: T[], salt: number) => list[(h + salt * 2654435761) % list.length];
-  return { dog: pick(COVER_DOG_BREEDS, 1), cat: pick(COVER_CAT_BREEDS, 2), setting: pick(COVER_SETTINGS, 3) };
+  // Independent pick per list (a shared offset repeated the same breed+setting+shot combinations)
+  const pick = <T,>(list: T[], salt: number) => {
+    let x = (h ^ Math.imul(salt, 0x9e3779b1)) >>> 0;
+    x = Math.imul(x ^ (x >>> 16), 0x85ebca6b) >>> 0;
+    x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35) >>> 0;
+    return list[(x ^ (x >>> 16)) % list.length];
+  };
+  return {
+    dog: pick(COVER_DOG_BREEDS, 1),
+    cat: pick(COVER_CAT_BREEDS, 2),
+    setting: pick(COVER_SETTINGS, 3),
+    shot: pick(COVER_SHOTS, 4),
+    action: pick(COVER_ACTIONS, 5),
+    light: pick(COVER_LIGHT, 6),
+    style: pick(COVER_STYLES, 7),
+    pet: pick(COVER_GENERIC_PETS, 8),
+  };
 }
 
 /**
@@ -319,6 +355,11 @@ Excerpt: ${excerpt}
 Suggested dog breed (if the image shows a dog and the article names none): ${variety.dog}
 Suggested cat breed (if the image shows a cat and the article names none): ${variety.cat}
 Suggested setting (unless the topic needs a clinic): ${variety.setting}
+Suggested shot: ${variety.shot}
+Suggested action (unless the topic implies illness or a procedure): ${variety.action}
+Suggested light: ${variety.light}
+Suggested photo style: ${variety.style}
+If the article names no species and is about pets in general: ${variety.pet}
 
 Create a prompt for a photorealistic cover of this article.`;
 
@@ -392,6 +433,11 @@ Create a prompt for a photorealistic cover of this article.`;
 
   // Final cleanup of forbidden words just in case
   promptText = promptText.replace(/\b(cover|article|book|magazine|text|title)\b/gi, "visualization");
+
+  // The model still falls back to a golden retriever: unless the article is about one, the suggested breed
+  if (!/golden retriever|ретривер/i.test(`${title} ${excerpt}`)) {
+    promptText = promptText.replace(/golden retrievers?/gi, variety.dog);
+  }
 
   // Ensure it's not too long
   if (promptText.length > 500) {
