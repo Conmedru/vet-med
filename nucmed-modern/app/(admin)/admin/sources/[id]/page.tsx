@@ -10,7 +10,7 @@ interface Source {
   name: string;
   slug: string;
   url: string;
-  adapterType: "rss" | "playwright" | "html" | "doaj" | "crossref" | "oai";
+  adapterType: "rss" | "playwright" | "html" | "doaj" | "crossref" | "oai" | "ceg";
   adapterConfig: Record<string, any>;
   isActive: boolean;
   scrapeIntervalMinutes: number;
@@ -28,7 +28,7 @@ interface PreviewItem {
 interface PreviewResult {
   sourceId: string;
   sourceName: string;
-  adapterType: "rss" | "playwright" | "html" | "doaj" | "crossref" | "oai";
+  adapterType: "rss" | "playwright" | "html" | "doaj" | "crossref" | "oai" | "ceg";
   configVersion: number;
   durationMs: number;
   totalFetched: number;
@@ -52,7 +52,7 @@ export default function SourceEditorPage({ params }: { params: Promise<{ id: str
   // Form state
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [adapterType, setAdapterType] = useState<"rss" | "playwright" | "html" | "doaj" | "crossref" | "oai">("rss");
+  const [adapterType, setAdapterType] = useState<"rss" | "playwright" | "html" | "doaj" | "crossref" | "oai" | "ceg">("rss");
   const [interval, setInterval] = useState(1440);
   const [isActive, setIsActive] = useState(false);
   const [config, setConfig] = useState<Record<string, any>>({});
@@ -256,6 +256,7 @@ export default function SourceEditorPage({ params }: { params: Promise<{ id: str
                 <option value="doaj">DOAJ (по ISSN)</option>
                 <option value="crossref">Crossref (по ISSN)</option>
                 <option value="oai">OAI-PMH (OJS)</option>
+                <option value="ceg">Cardiac Education Group (WordPress)</option>
               </select>
             </div>
 

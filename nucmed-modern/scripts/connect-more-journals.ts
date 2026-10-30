@@ -39,6 +39,8 @@ const journals: { name: string; slug: string; url: string; region?: "ru" | "fore
 
   // Замена сломанных источников (RSS Wiley и Taylor & Francis отдают 403, Playwright SCIRP ничего не собирал)
   { name: "Veterinary Record", slug: "vet-record", url: "https://bvajournals.onlinelibrary.wiley.com/journal/20427670", ...crossref("2042-7670"), deactivate: ["wiley-vet-record", "tandfonline-rfan"] },
+  // Консенсусы ACVIM выходят здесь (с 2025 года — Oxford University Press, ISSN тот же)
+  { name: "Journal of Veterinary Internal Medicine (JVIM)", slug: "jvim", url: "https://academic.oup.com/jvim", ...crossref("1939-1676") },
   { name: "SCIRP Open Journal of Veterinary Medicine", slug: "scirp-ojvm", url: "https://www.scirp.org/journal/ojvm/", ...crossref("2165-3364", { maxAgeDays: 30 }) },
 
   // Российские — OAI-PMH, русские аннотации

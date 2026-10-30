@@ -4,6 +4,7 @@ import { PlaywrightAdapter } from './playwright';
 import { DoajAdapter } from './doaj';
 import { CrossrefAdapter } from './crossref';
 import { OaiAdapter } from './oai';
+import { CegAdapter } from './ceg';
 
 export function getAdapter(config: SourceConfig): BaseAdapter {
   switch (config.adapterType) {
@@ -18,6 +19,8 @@ export function getAdapter(config: SourceConfig): BaseAdapter {
       return new CrossrefAdapter(config);
     case 'oai':
       return new OaiAdapter(config);
+    case 'ceg':
+      return new CegAdapter(config);
     default:
       throw new Error(`Unknown adapter type: ${config.adapterType}`);
   }

@@ -20,8 +20,8 @@ import { uploadImage, isS3Configured } from "@/lib/storage/s3";
 import { withRetry } from "@/lib/utils/retry";
 import { parsePartialJson } from "@/lib/utils/json";
 import { scheduleNewArticle } from "@/lib/articles/scheduler";
-import { buildArticleProcessingUserPrompt, PROCESSING_PROMPT_VERSION } from "@/lib/ai/prompts";
-import { rubricsFromAI, primaryRubricName } from "@/lib/rubrics";
+import { buildArticleProcessingUserPrompt, buildMediaTeaserUserPrompt, MEDIA_TEASER_SYSTEM_PROMPT, PROCESSING_PROMPT_VERSION } from "@/lib/ai/prompts";
+import { rubricsFromAI, primaryRubricName, withSourceRubrics } from "@/lib/rubrics";
 
 export interface ProcessingResult {
   success: boolean;
@@ -44,6 +44,10 @@ interface AIArticle {
 
 /** Below this the source is a title or citation only: the model would invent the article */
 const MIN_SOURCE_CHARS = 150;
+/** Video/podcast card (format, title, host): a teaser is written only from these lines */
+const MIN_MEDIA_SOURCE_CHARS = 40;
+/** Source text given to the model (long clinical cases fit) */
+const MAX_SOURCE_CHARS = 16000;
 /** First generation + one regeneration with the list of problems */
 const MAX_GENERATIONS = 2;
 /** Same limit as app/api/cron/process */
@@ -110,7 +114,9 @@ export async function processAndGenerateCover(
   // Step 0: no usable source text → never ask the model (it would invent the article from the title)
   const sourceParts = [article.contentOriginal, article.excerptOriginal ?? ""];
   const sourceText = stripToText(sourceParts.filter(Boolean).join("\n"));
-  if (sourceText.length < MIN_SOURCE_CHARS) {
+  // Video, webinars, podcasts: link-out teaser instead of an article (adapterConfig.mode = "media")
+  const isMedia = (article.source?.adapterConfig as { mode?: unknown } | null)?.mode === "media";
+  if (sourceText.length < (isMedia ? MIN_MEDIA_SOURCE_CHARS : MIN_SOURCE_CHARS)) {
     const note = `${NO_SOURCE_MARKER} исходного текста ${sourceText.length} зн. — пересказывать нечего`;
     console.warn(`[Process] REJECT ${articleId}: ${note}`);
     await prisma.article.update({
@@ -141,12 +147,14 @@ export async function processAndGenerateCover(
 
     // Step 2: AI text processing via Replicate, checked against the source.
     // One regeneration with the list of problems; if it still fails, the article is held for an editor.
-    const prompt = buildArticleProcessingUserPrompt({
-      sourceName: article.source?.name || "Unknown",
-      titleOriginal: article.titleOriginal,
-      contentOriginal: article.contentOriginal.slice(0, 12000),
-      excerptOriginal: article.excerptOriginal,
-    });
+    const prompt = isMedia
+      ? buildMediaTeaserUserPrompt({ titleOriginal: article.titleOriginal, card: article.contentOriginal })
+      : buildArticleProcessingUserPrompt({
+          sourceName: article.source?.name || "Unknown",
+          titleOriginal: article.titleOriginal,
+          contentOriginal: article.contentOriginal.slice(0, MAX_SOURCE_CHARS),
+          excerptOriginal: article.excerptOriginal,
+        });
     const fidelitySource = [article.titleOriginal, ...sourceParts];
 
     let costUsd = 0;
@@ -163,7 +171,8 @@ export async function processAndGenerateCover(
         feedback
           ? `${prompt}\n\nПРЕДЫДУЩИЙ ВАРИАНТ НЕ ПРОШЁЛ ПРОВЕРКУ ПО ИСХОДНОМУ ТЕКСТУ:\n${feedback}\nПерепиши, используя только факты, числа и дозы из исходного текста. Ничего не добавляй от себя.`
           : prompt,
-        aiModel
+        aiModel,
+        isMedia ? { systemPrompt: MEDIA_TEASER_SYSTEM_PROMPT } : {}
       );
       costUsd += aiResponse.costUsd ?? 0;
       modelUsed = aiResponse.model;
@@ -175,7 +184,11 @@ export async function processAndGenerateCover(
       }
       result = parsed;
 
-      fidelity = checkFidelity({ source: fidelitySource, output: `${parsed.title}\n${parsed.excerpt ?? ""}\n${parsed.content}` });
+      fidelity = checkFidelity({
+        source: fidelitySource,
+        output: `${parsed.title}\n${parsed.excerpt ?? ""}\n${parsed.content}`,
+        ...(isMedia ? { minSourceChars: MIN_MEDIA_SOURCE_CHARS } : {}),
+      });
       factCheck = null;
       if (!fidelity.ok) {
         feedback = fidelityFeedback(fidelity);
@@ -210,7 +223,7 @@ export async function processAndGenerateCover(
     const passed = !!fidelity?.ok && (!factCheckEnabled || (!!factCheck && factCheck.verdict !== "major"));
     const holdNote = passed ? null : holdReason(fidelity, factCheck);
 
-    const rubrics = rubricsFromAI(result.rubrics);
+    const rubrics = withSourceRubrics(rubricsFromAI(result.rubrics), article.source?.adapterConfig);
     const category = primaryRubricName(rubrics) || "Общая ветеринария";
     const processingTime = Date.now() - startTime;
     const factCheckRecord = {
@@ -268,9 +281,16 @@ export async function processAndGenerateCover(
 
     console.log(`[Process] AI done: "${result.title}" | ${rubrics.join(", ")} | ${attempts} attempt(s) | ${processingTime}ms`);
 
-    // Step 4: Generate cover (optional)
+    // Step 4: Cover — the source's own preview (video still, patient photo) when it was stored, else generated
     let coverGenerated = false;
-    if (options.generateCover) {
+    const sourceCover = await prisma.image.findFirst({
+      where: { articleId, isCover: true, storedUrl: { not: null } },
+      select: { storedUrl: true },
+    });
+    if (sourceCover?.storedUrl) {
+      await prisma.article.update({ where: { id: articleId }, data: { coverImageUrl: sourceCover.storedUrl } });
+      coverGenerated = true;
+    } else if (options.generateCover) {
       try {
         coverGenerated = await generateAndSaveCover(
           articleId,

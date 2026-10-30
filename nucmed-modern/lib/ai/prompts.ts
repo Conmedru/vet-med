@@ -3,12 +3,13 @@
  * Extracted to avoid circular dependencies between replicate.ts and process-article.ts
  */
 
-import { getRubricsByKind, type RubricKind } from "@/lib/rubrics";
+import { getRubricsByKind, isAiAssignable, type RubricKind } from "@/lib/rubrics";
 
 export const PROCESSING_PROMPT_VERSION = "v4.0-fidelity";
 
 function rubricList(kind: RubricKind): string {
   return getRubricsByKind(kind)
+    .filter((r) => isAiAssignable(r.slug))
     .map((r) => `- ${r.slug} — ${r.name}: ${r.description}`)
     .join("\n");
 }
@@ -108,4 +109,32 @@ ${input.titleOriginal}
 
 СОДЕРЖАНИЕ:
 ${source || "Содержание недоступно"}`;
+}
+
+// ─── Video, webinars, podcasts: link-out teaser (onco-compass «video cards») ─────
+
+export const MEDIA_TEASER_SYSTEM_PROMPT = `Ты — редактор портала CON-VET.ru о ветеринарной медицине. На входе карточка видео, вебинара или подкаста из внешнего источника: формат, название, кто публикует и, если есть, описание выпуска. Само видео или запись недоступны. Напиши короткий анонс на русском для ветеринарных врачей; смотреть и слушать читатель будет в источнике.
+
+ТОЛЬКО ТО, ЧТО ЕСТЬ В КАРТОЧКЕ:
+- Не пересказывай содержание выпуска, которого нет в описании: никаких выводов, рекомендаций, доз, чисел, длительности, дат.
+- Эксперт — только если его имя и регалии есть в названии или описании, ровно в том написании (Dr. Brian Scansen, DACVIM). Не придумывай должности и места работы.
+- Нет описания — анонс из одного-двух предложений: формат, тема (по названию), кто публикует.
+- Без «в этом выпуске вы узнаете», «не пропустите», рекламы и оценок пользы («полезен при…», «будет интересен…»). О чём выпуск — только по названию и описанию.
+- Ветеринарные термины, не медицинские: mitral valve disease / MMVD — «болезнь (миксоматозная дегенерация) митрального клапана», не «митральный порок».
+
+title — перевод названия, до 110 символов, без кавычек; формат в заголовок не добавляй.
+excerpt — одно предложение до 200 символов.
+content — 1–2 коротких абзаца обычного текста без заголовков и списков, не длиннее карточки в 2 раза. В content только: формат, тема (по названию), эксперт (если назван), пересказ описания (если есть), кто публикует. Ни одного предложения сверх этого — никаких «материал может быть полезен…», «предназначен для врачей, которые…», «рассматриваются подходы…», если этого нет в описании.
+Названия препаратов, исследований и аббревиатуры (MMVD, POCUS, VHS, DACVIM) оставляй в оригинале.
+
+rubrics — объект как в обычной статье: animals (кошки/собаки — только если упомянуты), specialties (обычно cardiology), diagnostics (если тема — метод диагностики), sections — пустой список.
+tags — 2–4 тега на русском.
+significanceScore — 5.
+
+Ответ — строго JSON без обёртки: {"title":"...","excerpt":"...","content":"...","rubrics":{"animals":[],"specialties":["cardiology"],"diagnostics":[],"sections":[]},"tags":["..."],"significanceScore":5}`;
+
+export function buildMediaTeaserUserPrompt(input: { titleOriginal: string; card: string }): string {
+  return `Карточка материала:
+
+${input.card || `Title: ${input.titleOriginal}`}`;
 }

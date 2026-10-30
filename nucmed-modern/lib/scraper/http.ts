@@ -153,9 +153,10 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
 export function toPlainText(value: string | null | undefined): string {
   if (!value) return "";
   // A space before every tag keeps words apart across <br>, </p><p> and JATS elements
-  const $ = cheerio.load(`<root>${value.replace(/</g, " <")}</root>`, { xmlMode: true, decodeEntities: true } as cheerio.CheerioOptions);
+  // xmlMode knows only the XML entities; &nbsp; (HTML pages) becomes a plain space
+  const $ = cheerio.load(`<root>${value.replace(/</g, " <").replace(/&nbsp;/gi, " ")}</root>`, { xmlMode: true, decodeEntities: true } as cheerio.CheerioOptions);
   $("jats\\:title, title").remove(); // «Abstract» heading inside JATS
-  return $("root").text().replace(/\s+/g, " ").trim();
+  return $("root").text().replace(/[\s\u00a0]+/g, " ").trim();
 }
 
 /** Errata, retractions and editorial notes: not material for an article */

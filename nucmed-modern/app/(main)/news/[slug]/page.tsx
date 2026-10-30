@@ -8,7 +8,7 @@ import { ReadingProgress } from "@/components/ui/reading-progress";
 import { ShareButtons } from "@/components/shared";
 import { prisma } from "@/lib/prisma";
 import { getCategorySlug } from "@/lib/data";
-import { articleRubrics, primaryRubric } from "@/lib/rubrics";
+import { articleRubrics, primaryRubric, VIDEO_SLUG } from "@/lib/rubrics";
 import { getCurrentMember } from "@/lib/auth/member-session";
 import { truncateForPaywall } from "@/lib/paywall";
 import { ArticlePaywall } from "@/components/articles/article-paywall";
@@ -392,6 +392,20 @@ export default async function NewsArticlePage({ params }: PageProps) {
               </p>
             )}
           </div>
+
+          {/* Video, webinar, podcast: a teaser here, the material itself is at the source */}
+          {article.rubrics.includes(VIDEO_SLUG) && article.externalUrl && (
+            <a
+              href={article.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 font-semibold text-white"
+            >
+              Смотреть в источнике
+              <span className="font-normal opacity-80">· {new URL(article.externalUrl).hostname.replace(/^www\./, "")}</span>
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
 
           {locked && <ArticlePaywall redirectPath={`/news/${canonicalSlug}`} />}
 

@@ -28,6 +28,12 @@ export interface FidelityInput {
    * короткий исходник + ≥3 разделов — брак без порога раздувания.
    */
   strictTemplate?: boolean;
+  /**
+   * Порог «нет исходника» (по умолчанию 150 зн.). Ниже — только для анонса видео и подкастов
+   * по карточке (формат, название, площадка): там короткий исходник — норма, раздувание
+   * по-прежнему ловит правило ×3.
+   */
+  minSourceChars?: number;
 }
 
 export type FidelityIssueCode =
@@ -199,7 +205,7 @@ function joinSource(parts: string | string[]): string {
   return uniq.join("\n");
 }
 
-export function checkFidelity({ source: sourceParts, output, strictTemplate = false }: FidelityInput): FidelityResult {
+export function checkFidelity({ source: sourceParts, output, strictTemplate = false, minSourceChars = MIN_SOURCE_CHARS }: FidelityInput): FidelityResult {
   const source = joinSource(sourceParts);
   const src = source;
   const out = stripToText(output);
@@ -214,7 +220,7 @@ export function checkFidelity({ source: sourceParts, output, strictTemplate = fa
     issues.push({ code: "garbled", detail: `склейки кириллицы и латиницы: ${[...new Set(garbled)].slice(0, 4).join(", ")}` });
   }
 
-  if (src.length < MIN_SOURCE_CHARS) {
+  if (src.length < minSourceChars) {
     issues.push({ code: "no-source", detail: `исходного текста ${src.length} зн. — пересказывать нечего` });
   } else if (src.length < SHORT_SOURCE_CHARS && out.length > src.length * INFLATION) {
     issues.push({ code: "inflated", detail: `исходник ${src.length} зн., текст ${out.length} зн. (×${(out.length / src.length).toFixed(1)}) — додумано сверх источника` });

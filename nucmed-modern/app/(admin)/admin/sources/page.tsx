@@ -61,6 +61,7 @@ const adapterLabels: Record<string, string> = {
   doaj: "DOAJ",
   crossref: "Crossref",
   oai: "OAI-PMH",
+  ceg: "Cardiac Education Group",
 };
 
 const healthConfig: Record<string, { icon: typeof CheckCircle; color: string; bg: string }> = {

@@ -21,7 +21,7 @@ export interface SourceConfig {
   name: string;
   slug: string;
   url: string;
-  adapterType: 'rss' | 'html' | 'playwright' | 'doaj' | 'crossref' | 'oai';
+  adapterType: 'rss' | 'html' | 'playwright' | 'doaj' | 'crossref' | 'oai' | 'ceg';
   adapterConfig: {
     feedUrl?: string;
     articleSelector?: string;

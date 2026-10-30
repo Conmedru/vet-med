@@ -15,6 +15,9 @@ export interface Rubric {
   description: string;
 }
 
+/** Video, webinars and podcasts: link-out teasers (lib/ai/process-article.ts, media path) */
+export const VIDEO_SLUG = "video";
+
 export const RUBRICS: Rubric[] = [
   // Животные
   { slug: "cats", name: "Кошки", kind: "animal", description: "Кошки (feline)." },
@@ -58,7 +61,11 @@ export const RUBRICS: Rubric[] = [
   { slug: "nutrition", name: "Нутрициология", kind: "section", description: "Кормление, питание, диеты, кормовые добавки." },
   { slug: "vaccination", name: "Вакцинация", kind: "section", description: "Вакцины, схемы и эффективность вакцинации, поствакцинальные реакции." },
   { slug: "clinical-cases", name: "Клинические случаи", kind: "section", description: "Описания конкретных клинических случаев и серий случаев (case report)." },
+  { slug: VIDEO_SLUG, name: "Видео", kind: "section", description: "Видеолекции, вебинары и подкасты: короткий анонс, смотреть и слушать — в источнике." },
 ];
+
+/** Rubrics set only by the source (adapterConfig.defaultRubrics), never by the AI classifier */
+const SOURCE_ONLY_SLUGS = new Set([VIDEO_SLUG]);
 
 export const RUBRIC_KIND_LABELS: Record<RubricKind, string> = {
   animal: "Животные",
@@ -179,6 +186,17 @@ export function rubricsFromAI(value: unknown): string[] {
     ...filterRubricSlugs(v.animals, "animal"),
     ...(specialties.length > 0 ? specialties : ["therapy"]),
     ...filterRubricSlugs(v.diagnostics, "diagnostics"),
-    ...filterRubricSlugs(v.sections, "section"),
+    ...filterRubricSlugs(v.sections, "section").filter((slug) => !SOURCE_ONLY_SLUGS.has(slug)),
   ];
+}
+
+/** Classifier rubrics plus the source's fixed ones (adapterConfig.defaultRubrics), no duplicates */
+export function withSourceRubrics(rubrics: string[], adapterConfig: unknown): string[] {
+  const fixed = filterRubricSlugs((adapterConfig as { defaultRubrics?: unknown } | null)?.defaultRubrics);
+  return [...new Set([...rubrics, ...fixed])];
+}
+
+/** Rubrics the AI may assign (prompt lists) */
+export function isAiAssignable(slug: string): boolean {
+  return !SOURCE_ONLY_SLUGS.has(slug);
 }
