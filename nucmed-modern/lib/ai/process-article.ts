@@ -115,7 +115,8 @@ export async function processAndGenerateCover(
   const sourceParts = [article.contentOriginal, article.excerptOriginal ?? ""];
   const sourceText = stripToText(sourceParts.filter(Boolean).join("\n"));
   // Video, webinars, podcasts: link-out teaser instead of an article (adapterConfig.mode = "media")
-  const isMedia = (article.source?.adapterConfig as { mode?: unknown } | null)?.mode === "media";
+  const sourceConfig = (article.source?.adapterConfig ?? {}) as { mode?: unknown; useSourceCover?: unknown };
+  const isMedia = sourceConfig.mode === "media";
   if (sourceText.length < (isMedia ? MIN_MEDIA_SOURCE_CHARS : MIN_SOURCE_CHARS)) {
     const note = `${NO_SOURCE_MARKER} исходного текста ${sourceText.length} зн. — пересказывать нечего`;
     console.warn(`[Process] REJECT ${articleId}: ${note}`);
@@ -172,7 +173,8 @@ export async function processAndGenerateCover(
           ? `${prompt}\n\nПРЕДЫДУЩИЙ ВАРИАНТ НЕ ПРОШЁЛ ПРОВЕРКУ ПО ИСХОДНОМУ ТЕКСТУ:\n${feedback}\nПерепиши, используя только факты, числа и дозы из исходного текста. Ничего не добавляй от себя.`
           : prompt,
         aiModel,
-        isMedia ? { systemPrompt: MEDIA_TEASER_SYSTEM_PROMPT } : {}
+        // Long clinical cases: a full retelling in Russian does not fit the default 4096 tokens
+        isMedia ? { systemPrompt: MEDIA_TEASER_SYSTEM_PROMPT } : { maxTokens: sourceText.length > 6000 ? 8192 : undefined }
       );
       costUsd += aiResponse.costUsd ?? 0;
       modelUsed = aiResponse.model;
@@ -281,12 +283,13 @@ export async function processAndGenerateCover(
 
     console.log(`[Process] AI done: "${result.title}" | ${rubrics.join(", ")} | ${attempts} attempt(s) | ${processingTime}ms`);
 
-    // Step 4: Cover — the source's own preview (video still, patient photo) when it was stored, else generated
+    // Step 4: Cover — generated; sources with adapterConfig.useSourceCover (CEG: video stills,
+    // patient photos) keep their own stored preview. RSS images stay out: the client wants varied covers.
     let coverGenerated = false;
-    const sourceCover = await prisma.image.findFirst({
-      where: { articleId, isCover: true, storedUrl: { not: null } },
-      select: { storedUrl: true },
-    });
+    const sourceCover =
+      sourceConfig.useSourceCover === true
+        ? await prisma.image.findFirst({ where: { articleId, isCover: true, storedUrl: { not: null } }, select: { storedUrl: true } })
+        : null;
     if (sourceCover?.storedUrl) {
       await prisma.article.update({ where: { id: articleId }, data: { coverImageUrl: sourceCover.storedUrl } });
       coverGenerated = true;

@@ -166,7 +166,7 @@ export const GUIDELINE_GROUPS: GuidelineGroup[] = [
     id: "acvim",
     title: "Американский колледж ветеринарной внутренней медицины (ACVIM)",
     description:
-      "Консенсусы ACVIM (ACVIM Endorsed Statements) — в открытом доступе в журнале JVIM, на английском языке. Письма и ответы к консенсусам не включены.",
+      "Консенсусы ACVIM (ACVIM Endorsed Statements) и рекомендации рабочих групп, опубликованные в журнале ACVIM (JVIM), — в открытом доступе, на английском языке.",
     url: "https://www.acvim.org/journals-research/research/acvim-endorsed-statements",
     items: [
       // Кардиология
@@ -189,7 +189,7 @@ export const GUIDELINE_GROUPS: GuidelineGroup[] = [
       { title: "Лечение и профилактика уролитиаза у собак и кошек", titleOriginal: "ACVIM Small Animal Consensus Recommendations on the Treatment and Prevention of Uroliths in Dogs and Cats", year: 2016, url: `${DOI}/10.1111/jvim.14559`, language: "en", rubrics: ["nephrology-urology", "nutrition", "dogs", "cats"] },
       {
         title: "Гломерулярные болезни у собак: диагностика и лечение (серия консенсусов)",
-        titleOriginal: "IRIS Canine Glomerular Disease Study Group consensus recommendations",
+        titleOriginal: "IRIS Canine Glomerular Disease Study Group consensus recommendations (JVIM, 2013)",
         year: 2013,
         url: `${DOI}/10.1111/jvim.12223`,
         language: "en",

@@ -20,13 +20,13 @@ const sources = [
     slug: "ceg-cases",
     name: "Cardiac Education Group — клинические случаи",
     url: "https://cardiaceducationgroup.org/explore/cats/",
-    adapterConfig: { version: 1, mode: "cases", sinceDays: 30, language: "en", defaultRubrics: ["clinical-cases", "cardiology"] },
+    adapterConfig: { version: 1, mode: "cases", sinceDays: 30, language: "en", defaultRubrics: ["clinical-cases", "cardiology"], useSourceCover: true },
   },
   {
     slug: "ceg-media",
     name: "Cardiac Education Group — видео и подкасты",
     url: "https://cardiaceducationgroup.org/podcast-webinar/",
-    adapterConfig: { version: 1, mode: "media", sinceDays: 30, language: "en", defaultRubrics: ["video"] },
+    adapterConfig: { version: 1, mode: "media", sinceDays: 30, language: "en", defaultRubrics: ["video"], useSourceCover: true },
   },
 ];
 
