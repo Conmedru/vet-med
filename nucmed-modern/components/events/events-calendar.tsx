@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, PartyPopper, Users, Video } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, MapPin, PartyPopper, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EventApiItem } from "@/lib/schemas/events";
 import type { VetDate } from "@/lib/vet-dates";
@@ -13,6 +13,10 @@ interface EventsCalendarProps {
 }
 
 const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+/** Agenda rows shown before «Показать ещё» */
+const AGENDA_LIMIT = 6;
+/** Agenda horizon from the selected day: crosses into the next month near the month's end */
+const AGENDA_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function getMonthDate(month: string): Date {
@@ -48,17 +52,13 @@ function formatMonthLabel(month: string): string {
   }).format(getMonthDate(month));
 }
 
-function formatFullDate(value: string): string {
-  return new Intl.DateTimeFormat("ru-RU", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(value));
-}
+const shortDate = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", timeZone: "UTC" });
+const tileMonth = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" });
+const dayMonth = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" });
 
-const shortDate = new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", timeZone: "UTC" });
+type AgendaItem =
+  | { kind: "event"; key: string; date: string; event: EventApiItem }
+  | { kind: "vet"; key: string; date: string; title: string };
 
 function formatEventDates(event: EventApiItem): string {
   const start = shortDate.format(new Date(event.eventDate));
@@ -176,10 +176,50 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
     return nextMap;
   }, [vetDates]);
 
-  const selectedDayEvents = eventsByDate.get(selectedDateKey) || [];
-  const selectedDayVetDates = vetDatesByDate.get(selectedDateKey) || [];
   const calendarDays = useMemo(() => buildCalendarDays(currentMonth), [currentMonth]);
   const todayKey = getDateKey(new Date());
+  const [showAll, setShowAll] = useState(false);
+  const [nextMonth, setNextMonth] = useState<{ month: string; events: EventApiItem[]; vetDates: VetDate[] } | null>(null);
+
+  // Next month's items for the agenda horizon (the grid shows the current month only)
+  useEffect(() => {
+    const base = getMonthDate(currentMonth);
+    const month = getMonthKey(new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 1)));
+    let cancelled = false;
+    fetch(`/api/events?month=${month}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setNextMonth({ month, events: data.events || [], vetDates: data.vetDates || [] });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentMonth]);
+
+  // Agenda (Luma-style): the next AGENDA_DAYS from the selected day, events and memorable dates together
+  const agenda = useMemo<AgendaItem[]>(() => {
+    const horizonKey = getDateKey(new Date(new Date(`${selectedDateKey}T00:00:00Z`).getTime() + AGENDA_DAYS * DAY_MS));
+    const following = nextMonth && nextMonth.month > currentMonth ? nextMonth : null;
+    const allEvents = [...events, ...(following?.events ?? []).filter((e) => !events.some((x) => x.id === e.id))];
+    const allVetDates = [...vetDates, ...(following?.vetDates ?? [])];
+    const items: AgendaItem[] = [
+      ...allEvents.map((event) => {
+        const start = getDateKey(event.eventDate);
+        // A multi-day event that started earlier is listed on the first day still running
+        const end = event.endDate ? getDateKey(event.endDate) : start;
+        const date = start < selectedDateKey && end >= selectedDateKey ? selectedDateKey : start;
+        return { kind: "event" as const, key: `e-${event.id}`, date, event };
+      }),
+      ...allVetDates.map((v) => ({ kind: "vet" as const, key: `v-${v.date}-${v.title}`, date: v.date, title: v.title })),
+    ];
+    return items
+      .filter((item) => item.date >= selectedDateKey && item.date < horizonKey)
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.kind === b.kind ? 0 : a.kind === "event" ? -1 : 1));
+  }, [events, vetDates, nextMonth, selectedDateKey, currentMonth]);
+  const visible = showAll ? agenda : agenda.slice(0, AGENDA_LIMIT);
+
+  useEffect(() => setShowAll(false), [selectedDateKey, currentMonth]);
 
   function moveMonth(offset: number) {
     const baseDate = getMonthDate(currentMonth);
@@ -187,195 +227,185 @@ export function EventsCalendar({ initialMonth, initialEvents, initialVetDates }:
     setCurrentMonth(getMonthKey(nextDate));
   }
 
+  const monthStartKey = `${currentMonth}-01`;
+  const isFiltered = selectedDateKey !== monthStartKey && selectedDateKey !== todayKey;
+
   return (
-    <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-5">
-      <div className="rounded-[28px] border border-white/80 bg-white/65 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-2xl sm:p-6">
-        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              <CalendarDays className="h-3.5 w-3.5" />
-              Мероприятия
+    <section className="rounded-[28px] border border-white/80 bg-white/65 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-2xl sm:p-7">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_288px]">
+        {/* Agenda */}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <div>
+              <p className="text-[13px] font-medium text-primary">Мероприятия и памятные даты</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-stone-900">Календарь событий</h2>
             </div>
-            <div className="text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl">
-              Календарь событий
-            </div>
+            <p className="text-sm text-stone-500">
+              {isFiltered ? (
+                <>
+                  с {dayMonth.format(new Date(`${selectedDateKey}T00:00:00Z`))}
+                  {" · "}
+                  <button type="button" onClick={() => setSelectedDateKey(getDefaultSelectedDate(currentMonth, events, vetDates))} className="font-medium text-primary hover:underline">
+                    сбросить
+                  </button>
+                </>
+              ) : (
+                <span>Ближайшие {AGENDA_DAYS} дней</span>
+              )}
+            </p>
           </div>
+
+          <ul className={cn("mt-5 divide-y divide-stone-200/70 border-y border-stone-200/70 transition-opacity", isLoading && "opacity-50")}>
+            {visible.map((item) => (
+              <li key={item.key} className="flex gap-4 py-3.5">
+                <DateTile date={item.date} tone={item.kind === "vet" ? "amber" : "teal"} />
+                {item.kind === "event" ? (
+                  <EventRow event={item.event} />
+                ) : (
+                  <div className="min-w-0 self-center">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                      <PartyPopper className="h-3.5 w-3.5" />
+                      Памятная дата
+                    </p>
+                    <p className="mt-0.5 text-[15px] font-medium leading-snug text-stone-900">{item.title}</p>
+                  </div>
+                )}
+              </li>
+            ))}
+            {agenda.length === 0 && (
+              <li className="flex flex-col items-start gap-3 py-8">
+                <p className="text-[15px] text-stone-600">В ближайшие {AGENDA_DAYS} дней событий нет.</p>
+                <button type="button" onClick={() => moveMonth(1)} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  Следующий месяц <ChevronRight className="h-4 w-4" />
+                </button>
+              </li>
+            )}
+          </ul>
+
+          {agenda.length > AGENDA_LIMIT && (
+            <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-3 text-sm font-medium text-primary hover:underline">
+              {showAll ? "Свернуть" : `Показать ещё ${agenda.length - AGENDA_LIMIT}`}
+            </button>
+          )}
         </div>
 
-        <div className="mt-4 rounded-[20px] border border-white/80 bg-white/70 p-3.5 sm:p-4">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => moveMonth(-1)}
-              disabled={isLoading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Предыдущий месяц"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="text-center text-base font-semibold capitalize text-stone-900 sm:text-lg">
-              {formatMonthLabel(currentMonth)}
+        {/* Mini month calendar */}
+        <div className="lg:border-l lg:border-stone-200/70 lg:pl-8">
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] font-semibold capitalize text-stone-900">{formatMonthLabel(currentMonth).replace(/\s*г\.$/, "")}</span>
+            <div className="flex gap-1">
+              {[
+                { offset: -1, label: "Предыдущий месяц", Icon: ChevronLeft },
+                { offset: 1, label: "Следующий месяц", Icon: ChevronRight },
+              ].map(({ offset, label, Icon }) => (
+                <button
+                  key={offset}
+                  type="button"
+                  onClick={() => moveMonth(offset)}
+                  disabled={isLoading}
+                  aria-label={label}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-primary/10 hover:text-primary disabled:opacity-40"
+                >
+                  <Icon className="h-4 w-4" />
+                </button>
+              ))}
             </div>
-            <button
-              type="button"
-              onClick={() => moveMonth(1)}
-              disabled={isLoading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Следующий месяц"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+          <div className="mt-3 grid grid-cols-7 text-center text-[11px] font-medium text-stone-400">
             {dayNames.map((day) => (
-              <div key={day} className="py-1">
-                {day}
-              </div>
+              <div key={day} className="py-1">{day}</div>
             ))}
           </div>
-
-          <div className="mt-2.5 grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-7 gap-y-0.5">
             {calendarDays.map((day, index) => {
-              if (day === null) {
-                return <div key={`empty-${index}`} className="aspect-square rounded-xl" />;
-              }
-
+              if (day === null) return <div key={`empty-${index}`} />;
               const dateKey = `${currentMonth}-${String(day).padStart(2, "0")}`;
               const hasEvents = eventsByDate.has(dateKey);
               const hasVetDates = vetDatesByDate.has(dateKey);
               const isSelected = selectedDateKey === dateKey;
               const isToday = todayKey === dateKey;
-
+              const isPast = dateKey < todayKey;
               return (
                 <button
                   key={dateKey}
                   type="button"
                   onClick={() => setSelectedDateKey(dateKey)}
-                  className={cn(
-                    "relative aspect-square rounded-xl border text-[15px] font-medium transition-all",
-                    isSelected
-                      ? "border-primary bg-primary text-white shadow-md shadow-primary/15"
-                      : "border-stone-200 bg-white text-stone-700 hover:border-primary/30 hover:text-primary",
-                    isToday && !isSelected ? "border-primary/40 text-primary" : ""
-                  )}
+                  aria-pressed={isSelected}
+                  aria-label={`${day}${hasEvents ? ", есть мероприятия" : ""}${hasVetDates ? ", памятная дата" : ""}`}
+                  className="group flex h-10 flex-col items-center justify-center"
                 >
-                  <span>{day}</span>
-                  {(hasEvents || hasVetDates) && (
-                    <span className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
-                      {hasEvents && (
-                        <span className={cn("h-1.5 w-1.5 rounded-full", isSelected ? "bg-white" : "bg-primary")} />
-                      )}
-                      {hasVetDates && (
-                        <span className={cn("h-1.5 w-1.5 rounded-full", isSelected ? "bg-amber-200" : "bg-amber-500")} />
-                      )}
-                    </span>
-                  )}
+                  <span
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full text-[13px] tabular-nums transition-colors",
+                      isSelected
+                        ? "bg-primary font-semibold text-white shadow-[0_6px_14px_-6px_hsl(var(--primary))]"
+                        : isToday
+                          ? "font-semibold text-primary ring-1 ring-primary/40"
+                          : isPast
+                            ? "text-stone-400 group-hover:bg-stone-100"
+                            : "text-stone-700 group-hover:bg-primary/10 group-hover:text-primary"
+                    )}
+                  >
+                    {day}
+                  </span>
+                  <span className="flex h-1 gap-0.5">
+                    {hasEvents && <span className="h-1 w-1 rounded-full bg-primary" />}
+                    {hasVetDates && <span className="h-1 w-1 rounded-full bg-amber-500" />}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              Мероприятия
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
-              Памятные даты
-            </span>
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+            <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Мероприятия</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Памятные даты</span>
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-[28px] border border-white/80 bg-white/65 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-2xl sm:p-6">
-        <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">На выбранную дату</div>
-            <div className="mt-1.5 text-lg font-semibold tracking-tight text-stone-900 sm:text-xl">
-              {formatFullDate(`${selectedDateKey}T00:00:00.000Z`)}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 max-h-[640px] space-y-3 overflow-y-auto pr-1">
-          {selectedDayVetDates.length > 0 && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
-                <PartyPopper className="h-3.5 w-3.5" />
-                Памятная дата
-              </div>
-              <ul className="mt-2 space-y-1">
-                {selectedDayVetDates.map((vetDate) => (
-                  <li key={vetDate.title} className="text-sm font-medium leading-6 text-stone-900">
-                    {vetDate.title}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {selectedDayEvents.length === 0 ? (
-            selectedDayVetDates.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/80 px-4 py-8 text-center">
-                <div className="text-base font-semibold text-stone-900">На эту дату мероприятий пока нет</div>
-              </div>
-            )
-          ) : (
-            selectedDayEvents.map((event) => (
-              <article
-                key={event.id}
-                className="rounded-2xl border border-stone-200/80 bg-gradient-to-br from-white to-stone-50 p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold leading-6 text-stone-900">{event.title}</div>
-                    <div className="mt-2.5 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
-                        <Users className="h-3.5 w-3.5" />
-                        {event.organizer}
-                      </span>
-                      {event.isOnline ? (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary">
-                          <Video className="h-3.5 w-3.5" />
-                          Онлайн
-                        </span>
-                      ) : (
-                        event.location && (
-                          <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600">
-                            <MapPin className="h-3.5 w-3.5 shrink-0" />
-                            {event.location}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <div className="shrink-0 rounded-xl bg-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-                    {formatEventDates(event)}
-                  </div>
-                </div>
-                {event.description && (
-                  <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-600 line-clamp-4">
-                    {event.description}
-                  </div>
-                )}
-                {event.linkUrl && (
-                  <a
-                    href={event.linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                  >
-                    Перейти к мероприятию
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-              </article>
-            ))
-          )}
         </div>
       </div>
     </section>
+  );
+}
+
+/** Tear-off calendar page: month on a tinted strip, day number below (Luma event rows) */
+function DateTile({ date, tone }: { date: string; tone: "teal" | "amber" }) {
+  const value = new Date(`${date}T00:00:00Z`);
+  return (
+    <div className="w-12 shrink-0 self-start overflow-hidden rounded-xl border border-stone-200/80 bg-white text-center shadow-[0_1px_2px_rgba(11,42,51,0.06)]">
+      <div className={cn("py-0.5 text-[10px] font-semibold uppercase tracking-wide", tone === "amber" ? "bg-amber-50 text-amber-700" : "bg-primary/10 text-primary")}>
+        {tileMonth.format(value).replace(".", "")}
+      </div>
+      <div className="py-1 text-lg font-semibold leading-none tabular-nums text-stone-900">{value.getUTCDate()}</div>
+    </div>
+  );
+}
+
+function EventRow({ event }: { event: EventApiItem }) {
+  const place = event.isOnline ? "Онлайн" : event.location;
+  const content = (
+    <>
+      <p className="text-[15px] font-medium leading-snug text-stone-900 transition-colors group-hover:text-primary">
+        {event.title}
+        {event.linkUrl && <ArrowUpRight className="ml-1 inline h-3.5 w-3.5 -translate-y-px text-stone-400 transition-colors group-hover:text-primary" />}
+      </p>
+      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[13px] text-stone-500">
+        {event.endDate && <span>{formatEventDates(event)}</span>}
+        {place && (
+          <span className="inline-flex items-center gap-1">
+            {event.isOnline ? <Video className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+            {place}
+          </span>
+        )}
+        {event.organizer && <span className="text-stone-400">{event.organizer}</span>}
+      </p>
+    </>
+  );
+  return event.linkUrl ? (
+    <a href={event.linkUrl} target="_blank" rel="noopener noreferrer" className="group min-w-0 self-center">
+      {content}
+    </a>
+  ) : (
+    <div className="min-w-0 self-center">{content}</div>
   );
 }
