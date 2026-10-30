@@ -9,6 +9,10 @@ const MAX_RETRIES = 3;
 /** Articles that went out without a cover get one per run, newest first */
 const COVER_BACKFILL_PER_RUN = 2;
 const COVER_BACKFILL_DAYS = 60;
+/** A cover that failed this many times is left to the editor: every try is billed by Replicate */
+const COVER_BACKFILL_MAX_FAILURES = 3;
+/** Failures per article since the server started (no column for it; a deploy gives each one more chance) */
+const coverFailures = new Map<string, number>();
 
 /**
  * GET /api/cron/process
@@ -155,6 +159,7 @@ async function backfillCovers(): Promise<number> {
       coverImageUrl: null,
       title: { not: null },
       OR: [{ publishedAt: { gte: since } }, { scheduledAt: { gte: since } }],
+      id: { notIn: [...coverFailures].filter(([, n]) => n >= COVER_BACKFILL_MAX_FAILURES).map(([id]) => id) },
     },
     orderBy: { updatedAt: "desc" },
     take: COVER_BACKFILL_PER_RUN,
@@ -165,7 +170,8 @@ async function backfillCovers(): Promise<number> {
     try {
       if (await generateAndSaveCover(a.id, a.title!, a.excerpt || "", a.category || "Общая ветеринария")) filled++;
     } catch (error) {
-      console.error(`[Cron Process] Cover backfill failed for ${a.id}:`, error);
+      coverFailures.set(a.id, (coverFailures.get(a.id) ?? 0) + 1);
+      console.error(`[Cron Process] Cover backfill failed for ${a.id} (${coverFailures.get(a.id)}/${COVER_BACKFILL_MAX_FAILURES}):`, error);
     }
   }
   if (filled) console.log(`[Cron Process] Filled ${filled} missing cover(s)`);

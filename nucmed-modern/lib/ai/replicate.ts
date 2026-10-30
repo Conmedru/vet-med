@@ -41,6 +41,10 @@ export const DEFAULT_TEXT_MODEL: ReplicateModel = "claude-4.5-sonnet";
 // overloaded (E003): a removed or busy model must not stop all processing.
 const FALLBACK_TEXT_MODEL: ReplicateModel = "claude-4.5-sonnet";
 const MODEL_UNAVAILABLE = /status 404|Invalid version|not permitted|E003/i;
+// Sonnet 4.5 on Replicate «succeeds» with zero output tokens on pathogen topics (Salmonella,
+// viruses: a safety refusal, the same every time), and Haiku 4.5 answers them
+const EMPTY_OUTPUT_FALLBACK: ReplicateModel = "claude-4.5-haiku";
+const EMPTY_OUTPUT = "Empty model output";
 // Claude 4.5 models on Replicate reject max_tokens below 1024
 const MIN_MAX_TOKENS = 1024;
 
@@ -65,9 +69,15 @@ export async function callReplicateAI(
     return await callWithRetry(prompt, model, options);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (model === FALLBACK_TEXT_MODEL || !MODEL_UNAVAILABLE.test(message)) throw error;
-    console.warn(`[Replicate] Model ${model} unavailable (${message.slice(0, 120)}), falling back to ${FALLBACK_TEXT_MODEL}`);
-    return callWithRetry(prompt, FALLBACK_TEXT_MODEL, options);
+    if (model !== FALLBACK_TEXT_MODEL && MODEL_UNAVAILABLE.test(message)) {
+      console.warn(`[Replicate] Model ${model} unavailable (${message.slice(0, 120)}), falling back to ${FALLBACK_TEXT_MODEL}`);
+      return callReplicateAI(prompt, FALLBACK_TEXT_MODEL, options);
+    }
+    if (model !== EMPTY_OUTPUT_FALLBACK && message.includes(EMPTY_OUTPUT)) {
+      console.warn(`[Replicate] ${model} returned nothing, falling back to ${EMPTY_OUTPUT_FALLBACK}`);
+      return callWithRetry(prompt, EMPTY_OUTPUT_FALLBACK, options);
+    }
+    throw error;
   }
 }
 
@@ -90,7 +100,6 @@ function callWithRetry(
         "503",
         "502",
         "timeout",
-        "Empty model output",
         "Prediction interrupted",
       ],
       onRetry: (attempt, error, delay) => {
@@ -169,9 +178,9 @@ async function _callReplicateAI(
     outputText = JSON.stringify(output);
   }
 
-  // Replicate sometimes «succeeds» with zero output tokens: a transient fault, retried by callWithRetry
+  // Zero output tokens: not retried on the same model (a refusal repeats), callReplicateAI switches to Haiku
   if (!outputText || !outputText.trim() || outputText === "null") {
-    throw new Error("Empty model output");
+    throw new Error(EMPTY_OUTPUT);
   }
 
   // Расчёт стоимости (приблизительно)
@@ -363,53 +372,10 @@ If the article names no species and is about pets in general: ${variety.pet}
 
 Create a prompt for a photorealistic cover of this article.`;
 
-  const apiToken = process.env.REPLICATE_API_TOKEN;
-  if (!apiToken) {
-    throw new Error("REPLICATE_API_TOKEN is not configured");
-  }
-
-  const replicate = new Replicate({ auth: apiToken });
-
-  const modelId = REPLICATE_MODELS[DEFAULT_TEXT_MODEL];
-
-  // Use predictions.create for reliable control
-  let prediction = await replicate.predictions.create({
-    model: modelId as `${string}/${string}`,
-    input: {
-      prompt: userPrompt,
-      system_prompt: COVER_PROMPT_SYSTEM,
-      max_tokens: 1024,
-    },
-  });
-  console.log(`[CoverPrompt] Prediction created: ${prediction.id}`);
-
-  // Poll for completion
-  const POLL_TIMEOUT_MS = 120_000;
-  const POLL_INTERVAL_MS = 2_000;
-  const deadline = Date.now() + POLL_TIMEOUT_MS;
-  
-  while (prediction.status !== "succeeded" && prediction.status !== "failed" && prediction.status !== "canceled") {
-    if (Date.now() > deadline) {
-      throw new Error(`Cover prompt prediction timed out`);
-    }
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
-    prediction = await replicate.predictions.get(prediction.id);
-  }
-
-  if (prediction.status !== "succeeded") {
-    throw new Error(`Cover prompt prediction failed: ${prediction.error || "unknown"}`);
-  }
-
-  const output = prediction.output;
-
-  let outputText: string;
-  if (Array.isArray(output)) {
-    outputText = output.join("").trim();
-  } else if (typeof output === "string") {
-    outputText = output.trim();
-  } else {
-    outputText = String(output).trim();
-  }
+  // Through callReplicateAI: an empty answer (Sonnet 4.5 is silent on pathogen topics) falls back to Haiku
+  const outputText = (
+    await callReplicateAI(userPrompt, DEFAULT_TEXT_MODEL, { systemPrompt: COVER_PROMPT_SYSTEM, maxTokens: 1024 })
+  ).output.trim();
 
   console.log("[CoverPrompt] Raw LLM output:", outputText);
 
@@ -445,6 +411,8 @@ Create a prompt for a photorealistic cover of this article.`;
   }
 
   console.log("[CoverPrompt] Final prompt:", promptText);
+  // p-image rejects an empty prompt (400) and is billed anyway
+  if (!promptText?.trim()) throw new Error("Cover prompt is empty");
   return promptText;
 }
 
