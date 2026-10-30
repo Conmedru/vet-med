@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import useSWR from "swr"
-import { ArrowRight, Loader2, SlidersHorizontal } from "lucide-react"
+import { ArrowRight, SlidersHorizontal } from "lucide-react"
 import { DBArticleCard } from "@/components/articles"
 import type { DBArticle } from "@/lib/articles"
 import { useMemberSession } from "@/lib/hooks/use-member-session"
@@ -21,7 +21,8 @@ export function PersonalFeedSection() {
     fetcher
   )
 
-  if (sessionLoading) return null
+  // Same height as the guest card: the block below does not jump when the session resolves
+  if (sessionLoading) return <div aria-hidden className="h-[184px] animate-pulse rounded-[28px] bg-white/50 md:h-[136px]" />
 
   if (!member) {
     return (
@@ -63,8 +64,17 @@ export function PersonalFeedSection() {
       </div>
 
       {feedLoading ? (
-        <div className="py-10 flex justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <div aria-hidden className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="flex gap-4">
+              <div className="h-24 w-32 shrink-0 animate-pulse rounded-2xl bg-stone-200/60" />
+              <div className="flex-1 space-y-2 py-1">
+                <div className="h-3 w-20 animate-pulse rounded bg-stone-200/60" />
+                <div className="h-4 w-full animate-pulse rounded bg-stone-200/60" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-stone-200/60" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : articles.length === 0 ? (
         <p className="text-muted-foreground">

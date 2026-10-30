@@ -249,3 +249,8 @@
 
 /* Headings get balanced wraps site-wide */
 h1, h2, h3 { text-wrap: balance; }
+
+/* Cover placeholder while the image loads: a soft tint instead of an empty hole */
+img[data-nimg] {
+  background-color: hsl(190 30% 92%);
+}
