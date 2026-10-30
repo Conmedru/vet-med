@@ -62,12 +62,12 @@ export class CrossrefAdapter extends BaseAdapter {
       // Без аннотации ИИ нечего обрабатывать — конвейер такую статью всё равно отклонит
       if (abstract.length < 150) continue;
 
+      // «published» is often the issue date (JVIM: 1 September for a paper online on 29 October):
+      // the later of it and the DOI registration, or the age filter of ingest drops fresh papers
       const parts = item.published?.["date-parts"]?.[0];
-      const publishedAt = parts?.length
-        ? new Date(Date.UTC(parts[0], (parts[1] ?? 1) - 1, parts[2] ?? 1))
-        : item.created?.["date-time"]
-          ? new Date(item.created["date-time"])
-          : null;
+      const issued = parts?.length ? new Date(Date.UTC(parts[0], (parts[1] ?? 1) - 1, parts[2] ?? 1)) : null;
+      const created = item.created?.["date-time"] ? new Date(item.created["date-time"]) : null;
+      const publishedAt = issued && created ? (issued > created ? issued : created) : issued ?? created;
 
       articles.push({
         externalId: `doi:${item.DOI.toLowerCase()}`,
