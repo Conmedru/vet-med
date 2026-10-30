@@ -8,7 +8,7 @@ import {
   type DBArticle,
 } from "@/lib/articles";
 import { getCurrentMonthKey, listEventsByMonth } from "@/lib/events";
-import { FARM_SLUG, NON_FARM_ANIMAL_SLUGS } from "@/lib/rubrics";
+import { DIAGNOSTICS_SLUGS, FARM_SLUG, NON_FARM_ANIMAL_SLUGS } from "@/lib/rubrics";
 
 const isPetArticle = (rubrics: string[]) => rubrics.some((r) => NON_FARM_ANIMAL_SLUGS.includes(r)) && !rubrics.includes(FARM_SLUG);
 import { GUIDELINE_GROUPS } from "@/lib/guidelines";
@@ -56,7 +56,7 @@ export async function loadHomeData(): Promise<HomeData | null> {
     getArticleStats(),
     getRubricCounts(),
     getPetArticles(12),
-    getArticlesByRubrics(["ultrasound", "radiology", "lab-diagnostics", "histology", "genetics"], 8, { petsOnly: true }),
+    getArticlesByRubrics(DIAGNOSTICS_SLUGS, 8, { petsOnly: true }),
     getArticlesByRubrics(["oncology", "neurology", "cardiology", "endocrinology", "surgery", "dermatology"], 6, { petsOnly: true }),
     getArticlesByRubrics(["clinical-cases"], 3, { petsOnly: true }),
     listEventsByMonth(month),

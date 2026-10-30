@@ -54,7 +54,7 @@ export function RailCard({ article }: { article: DBArticle }) {
   );
 }
 
-export function Rail({ title, kicker, href, articles }: { title: string; kicker: string; href: string; articles: DBArticle[] }) {
+export function Rail({ title, kicker, href, articles }: { title: string; kicker?: string; href: string; articles: DBArticle[] }) {
   if (articles.length === 0) return null;
   return (
     <section>

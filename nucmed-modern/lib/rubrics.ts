@@ -79,6 +79,8 @@ export const PET_SLUGS = ["cats", "dogs", "rodents", "birds"];
 
 /** Non-farm animals: an article with any of them is not hidden as farm-only */
 export const NON_FARM_ANIMAL_SLUGS = [...PET_SLUGS, "exotics"];
+/** «Диагностика» on the home page and its «Все» page */
+export const DIAGNOSTICS_SLUGS = RUBRICS.filter((r) => r.kind === "diagnostics").map((r) => r.slug);
 
 export const FARM_SLUG = "farm-animals";
 

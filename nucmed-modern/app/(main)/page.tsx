@@ -151,7 +151,7 @@ export default async function Home() {
 
         <SectionTiles counts={counts} title="Разделы и сервисы" />
 
-        <Rail kicker="Диагностика" title="УЗИ, рентген, лаборатория" href="/category/radiology" articles={data.diagnostics} />
+        <Rail title="Диагностика" href="/category/diagnostics" articles={data.diagnostics} />
 
         <section>
           <EventsCalendar initialMonth={eventsMonth.month} initialEvents={eventsMonth.events} initialVetDates={eventsMonth.vetDates} />

@@ -252,7 +252,7 @@ CORE RULE — ANIMALS FIRST:
 - Only if the topic is genuinely abstract (e.g. molecular biology, pure chemistry) → use a close-up macro of biological tissue or a subtle animal-themed scientific still life.
 
 STRICTLY FORBIDDEN:
-- Human faces, doctors, patients, people in any form
+- People in any form: no owner, woman, man, child, vet, doctor, hands, silhouettes — even when the topic is about owners or clinicians. The ANIMAL is always the main subject
 - Text, letters, words, watermarks, logos, infographics
 - Cartoon, anime, illustration, painting, drawing styles
 - Abstract or surreal art when a realistic photo is possible
@@ -322,6 +322,12 @@ const COVER_STYLES = [
   "lifestyle photography", "editorial photo", "documentary photo", "minimalist studio photo with a plain colored backdrop",
   "35mm film photo look", "natural candid snapshot",
 ];
+/** People on a cover; «vet» alone is left out: «at the vet clinic» is an allowed setting */
+const HUMAN_WORDS = /\b(people|persons?|humans?|wom[ae]n|m[ae]n|girls?|boys?|child(ren)?|kids?|owners?|veterinarians?|doctors?|nurses?|hands?|lady|family|silhouettes?)\b/i;
+/** People in the picture, not in «no people», «without humans or hands» */
+const showsPeople = (prompt: string) =>
+  HUMAN_WORDS.test(prompt.replace(/\b(no|without|free of|absent)\s+(visible\s+)?[a-z]+(\s*(,|or|and)\s*[a-z]+)*/gi, ""));
+
 /** Topic without a named species on a pet portal: not only dogs and cats */
 const COVER_GENERIC_PETS = ["dog", "dog", "cat", "cat", "dog", "cat", "rabbit", "guinea pig", "ferret", "budgerigar"];
 
@@ -373,6 +379,23 @@ If the article names no species and is about pets in general: ${variety.pet}
 Create a prompt for a photorealistic cover of this article.`;
 
   // Through callReplicateAI: an empty answer (Sonnet 4.5 is silent on pathogen topics) falls back to Haiku
+  let promptText = await askCoverPrompt(userPrompt, title, excerpt, variety.dog);
+  // A pyometra cover came out as a sad woman on a sofa (client, 2026-10-30): a prompt with people
+  // is rewritten once; if people stay, no cover rather than a person on it
+  if (showsPeople(promptText)) {
+    console.warn("[CoverPrompt] People in prompt, rewriting:", promptText);
+    promptText = await askCoverPrompt(
+      `${userPrompt}\n\nYour previous prompt showed people: "${promptText}". Rewrite it with the animal as the only living subject, no people at all.`,
+      title, excerpt, variety.dog
+    );
+    if (showsPeople(promptText)) throw new Error(`Cover prompt still shows people: ${promptText}`);
+  }
+  return promptText;
+}
+
+/** One cover prompt from the model: JSON parsed, forbidden words and the default breed replaced */
+async function askCoverPrompt(userPrompt: string, title: string, excerpt: string, dog: string): Promise<string> {
+  // Through callReplicateAI: an empty answer (Sonnet 4.5 is silent on pathogen topics) falls back to Haiku
   const outputText = (
     await callReplicateAI(userPrompt, DEFAULT_TEXT_MODEL, { systemPrompt: COVER_PROMPT_SYSTEM, maxTokens: 1024 })
   ).output.trim();
@@ -398,11 +421,11 @@ Create a prompt for a photorealistic cover of this article.`;
   }
 
   // Final cleanup of forbidden words just in case
-  promptText = promptText.replace(/\b(cover|article|book|magazine|text|title)\b/gi, "visualization");
+  promptText = String(promptText ?? "").replace(/\b(cover|article|book|magazine|text|title)\b/gi, "visualization");
 
   // The model still falls back to a golden retriever: unless the article is about one, the suggested breed
   if (!/golden retriever|ретривер/i.test(`${title} ${excerpt}`)) {
-    promptText = promptText.replace(/golden retrievers?/gi, variety.dog);
+    promptText = promptText.replace(/golden retrievers?/gi, dog);
   }
 
   // Ensure it's not too long
@@ -412,7 +435,7 @@ Create a prompt for a photorealistic cover of this article.`;
 
   console.log("[CoverPrompt] Final prompt:", promptText);
   // p-image rejects an empty prompt (400) and is billed anyway
-  if (!promptText?.trim()) throw new Error("Cover prompt is empty");
+  if (!promptText.trim()) throw new Error("Cover prompt is empty");
   return promptText;
 }
 
@@ -437,7 +460,7 @@ export async function generateCoverImage(
   const {
     width = 1200,
     height = 630, // OG image ratio
-    negativePrompt = "text, letters, words, typography, chinese characters, kanji, watermark, logo, signature, human face, realistic person, distorted, blurry, low quality, ugly, book cover, magazine cover, poster, infographic",
+    negativePrompt = "text, letters, words, typography, chinese characters, kanji, watermark, logo, signature, person, people, woman, man, girl, child, human, human face, hands, realistic person, distorted, blurry, low quality, ugly, book cover, magazine cover, poster, infographic",
   } = options;
 
   console.log(`[p-image] Generating cover: ${prompt.slice(0, 100)}...`);

@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation"
-import { getRubric, LEGACY_RUBRIC_REDIRECTS, NON_FARM_ANIMAL_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
+import { DIAGNOSTICS_SLUGS, getRubric, LEGACY_RUBRIC_REDIRECTS, NON_FARM_ANIMAL_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
 import { getPublishedArticles, getArticlesByRubrics } from "@/lib/articles"
 import { getGuidelinesByRubric } from "@/lib/guidelines"
 import { DBArticleCard, DBArticleSidebar } from "@/components/articles"
@@ -24,13 +24,16 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 const ALL_DESCRIPTION = "Полный архив новостей, исследований и клинических случаев ветеринарной медицины."
 
-/** Rubric page: a rubric from lib/rubrics, the "pets" group or the full archive */
+/** Rubric page: a rubric from lib/rubrics, the "pets" or "diagnostics" group or the full archive */
 function resolvePage(slug: string) {
   if (slug === "all") {
     return { title: "Все материалы", badge: "Архив", description: ALL_DESCRIPTION, rubricSlugs: null }
   }
   if (slug === "pets") {
     return { title: "Питомцы", badge: "Животные", description: "Кошки, собаки, грызуны, декоративные птицы и экзоты.", rubricSlugs: NON_FARM_ANIMAL_SLUGS }
+  }
+  if (slug === "diagnostics") {
+    return { title: "Диагностика", badge: "Диагностика", description: "УЗИ, рентгенология, лабораторная диагностика, гистология и генетика.", rubricSlugs: DIAGNOSTICS_SLUGS }
   }
   const rubric = getRubric(slug)
   if (!rubric) return null
