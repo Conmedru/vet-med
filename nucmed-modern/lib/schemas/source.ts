@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AdapterTypeSchema = z.enum(["rss", "html", "playwright", "doaj", "crossref", "oai", "ceg"]);
+export const AdapterTypeSchema = z.enum(["rss", "html", "playwright", "doaj", "crossref", "oai", "ceg", "vettimes"]);
 
 const AdapterConfigSchema = z
   .record(z.string(), z.unknown())

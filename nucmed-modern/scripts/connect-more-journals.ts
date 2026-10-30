@@ -9,6 +9,7 @@
  * Veterinary Science (ijvets.com) — аннотации только за защитой от ботов; Актуальные вопросы
  * ветеринарной биологии (avvb.ru) — только PDF номеров; Ветеринарный фармакологический
  * вестник (vfvrn.ru) — сайт не отвечает; Sokoto J Vet Sci — сайт не отвечает.
+ * Vet Times — свой адаптер (vettimes): клинические статьи и новости о мелких и экзотических животных.
  * Отключены: Wiley Veterinary Record (дубль Veterinary Record) и Archives of Animal Nutrition
  * (Taylor & Francis): RSS отдаёт 403, в Crossref нет аннотаций, страницы статей закрыты для ботов.
  */
@@ -41,6 +42,8 @@ const journals: { name: string; slug: string; url: string; region?: "ru" | "fore
   { name: "Veterinary Record", slug: "vet-record", url: "https://bvajournals.onlinelibrary.wiley.com/journal/20427670", ...crossref("2042-7670"), deactivate: ["wiley-vet-record", "tandfonline-rfan"] },
   // Консенсусы ACVIM выходят здесь (с 2025 года — Oxford University Press, ISSN тот же)
   { name: "Journal of Veterinary Internal Medicine (JVIM)", slug: "jvim", url: "https://academic.oup.com/jvim", ...crossref("1939-1676") },
+  // Сайт переехал на vettimes.com, RSS нет: свежее — со страниц-хабов (lib/scraper/adapters/vettimes.ts)
+  { name: "Vet Times", slug: "vet-times", url: "https://www.vettimes.com/clinical", adapterType: "vettimes", adapterConfig: { version: 1, maxAgeDays: 14, language: "en" } },
   { name: "SCIRP Open Journal of Veterinary Medicine", slug: "scirp-ojvm", url: "https://www.scirp.org/journal/ojvm/", ...crossref("2165-3364", { maxAgeDays: 30 }) },
 
   // Российские — OAI-PMH, русские аннотации

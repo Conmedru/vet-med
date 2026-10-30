@@ -5,6 +5,7 @@ import { DoajAdapter } from './doaj';
 import { CrossrefAdapter } from './crossref';
 import { OaiAdapter } from './oai';
 import { CegAdapter } from './ceg';
+import { VetTimesAdapter } from './vettimes';
 
 export function getAdapter(config: SourceConfig): BaseAdapter {
   switch (config.adapterType) {
@@ -21,6 +22,8 @@ export function getAdapter(config: SourceConfig): BaseAdapter {
       return new OaiAdapter(config);
     case 'ceg':
       return new CegAdapter(config);
+    case 'vettimes':
+      return new VetTimesAdapter(config);
     default:
       throw new Error(`Unknown adapter type: ${config.adapterType}`);
   }
