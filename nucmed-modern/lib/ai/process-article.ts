@@ -375,7 +375,8 @@ export async function generateAndSaveCover(
   let permanentUrl: string;
   if (isS3Configured()) {
     const date = new Date();
-    const key = `articles/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${articleId}/cover-ai-${Date.now().toString(36)}.webp` // new name: caches keep the old image under the old URL;
+    // New name per cover: caches keep a replaced image under the old URL
+    const key = `articles/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${articleId}/cover-ai-${Date.now().toString(36)}.webp`;
     permanentUrl = await uploadImage(buffer, key, "image/webp");
   } else {
     const base64 = buffer.toString("base64");
