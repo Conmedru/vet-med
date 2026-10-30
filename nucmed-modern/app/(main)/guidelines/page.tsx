@@ -3,21 +3,22 @@ import { ExternalLink, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { RubricFilter } from "@/components/references/rubric-filter"
-import { GUIDELINE_GROUPS } from "@/lib/guidelines"
+import { getGuidelineGroups } from "@/lib/guidelines"
 import { getRubric } from "@/lib/rubrics"
 
 export const metadata: Metadata = {
   title: "Рекомендации и справочники",
   description:
-    "Клинические рекомендации WSAVA, AAHA, российских профессиональных сообществ и справочники ветеринарных препаратов — со ссылками на документы, в том числе на русском языке.",
+    "Клинические рекомендации WSAVA, AAHA, консенсусы ACVIM, российских профессиональных сообществ и справочники ветеринарных препаратов — со ссылками на документы, в том числе на русском языке.",
 }
 
 export default async function GuidelinesPage({ searchParams }: { searchParams: Promise<{ rubric?: string }> }) {
   const { rubric } = await searchParams
   const active = rubric && getRubric(rubric) ? rubric : undefined
 
-  const available = [...new Set(GUIDELINE_GROUPS.flatMap((g) => g.items.flatMap((i) => i.rubrics)))]
-  const groups = GUIDELINE_GROUPS.map((g) => ({
+  const catalog = await getGuidelineGroups()
+  const available = [...new Set(catalog.flatMap((g) => g.items.flatMap((i) => i.rubrics)))]
+  const groups = catalog.map((g) => ({
     ...g,
     items: active ? g.items.filter((i) => i.rubrics.includes(active)) : g.items,
   })).filter((g) => g.items.length > 0)
@@ -76,8 +77,7 @@ export default async function GuidelinesPage({ searchParams }: { searchParams: P
                         <li key={link.url}>
                           <a
                             href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            {...(link.url.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
                             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <FileText className="h-3.5 w-3.5 shrink-0" />

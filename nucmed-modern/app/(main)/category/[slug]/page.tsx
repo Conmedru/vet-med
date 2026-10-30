@@ -83,7 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       : getPublishedArticles(50),
   ])
   const allArticles = sidebarArticles
-  const guidelines = page.rubricSlugs ? getGuidelinesByRubric(page.rubricSlugs) : []
+  const guidelines = page.rubricSlugs ? await getGuidelinesByRubric(page.rubricSlugs) : []
 
   return (
     <div className="container py-8 md:py-12 min-h-screen">

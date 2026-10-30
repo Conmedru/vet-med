@@ -1,7 +1,10 @@
 /**
  * «Гайдлайны и справочники» (ТЗ клиента, п. 4) — каталог ссылок на внешние документы.
  * Наполняется здесь, админки нет. rubrics — slug-и из lib/rubrics.ts.
+ * Новые консенсусы ACVIM добавляются сами: getGuidelineGroups() (сбор JVIM).
  */
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export interface GuidelineLink {
   label: string;
@@ -309,8 +312,51 @@ export const GUIDELINE_GROUPS: GuidelineGroup[] = [
   },
 ];
 
-export function getGuidelinesByRubric(slugs: string[]): (Guideline & { group: string })[] {
-  return GUIDELINE_GROUPS.flatMap((g) =>
+/** JVIM papers that are ACVIM consensus statements (not letters or replies about one) */
+const ACVIM_CONSENSUS_SQL = Prisma.sql`
+  a."titleOriginal" ~* '(ACVIM|American College of Veterinary Internal Medicine)'
+  AND a."titleOriginal" ~* '(consensus|endorsed statement)'
+  AND a."titleOriginal" !~* '^\\s*(letter|response|reply|citation|correction|erratum|comment)'`;
+
+/**
+ * Catalog with new ACVIM consensus statements: JVIM is scraped regularly (Crossref), and a
+ * published consensus not yet listed by hand joins the ACVIM group — newest first, with a link
+ * to our retelling. A database failure leaves the hand-made catalog.
+ */
+export async function getGuidelineGroups(): Promise<GuidelineGroup[]> {
+  const listed = new Set(
+    GUIDELINE_GROUPS.flatMap((g) => g.items.flatMap((i) => [i.url, ...(i.links ?? []).map((l) => l.url)])).map((u) => u.toLowerCase())
+  );
+  const rows = await prisma
+    .$queryRaw<{ slug: string | null; title: string | null; titleOriginal: string; externalId: string; rubrics: string[]; date: Date | null }[]>`
+      SELECT a.slug, a.title, a."titleOriginal", a."externalId", a.rubrics, COALESCE(a."originalPublishedAt", a."publishedAt") AS date
+      FROM articles a JOIN sources s ON s.id = a."sourceId"
+      WHERE s.slug = 'jvim' AND a.status = 'PUBLISHED' AND a."externalId" LIKE 'doi:%' AND ${ACVIM_CONSENSUS_SQL}
+      ORDER BY date DESC NULLS LAST
+      LIMIT 20`
+    .catch((error) => {
+      console.error("[Guidelines] ACVIM consensus lookup failed:", error);
+      return [];
+    });
+
+  const fresh: Guideline[] = rows
+    .map((row) => ({ ...row, url: `https://doi.org/${row.externalId.slice(4)}` }))
+    .filter((row) => !listed.has(row.url.toLowerCase()))
+    .map((row) => ({
+      title: row.title || row.titleOriginal,
+      titleOriginal: row.titleOriginal,
+      year: row.date?.getUTCFullYear(),
+      url: row.url,
+      language: "en" as const,
+      links: row.slug ? [{ label: "Пересказ на CON-VET.ru", url: `/news/${row.slug}` }] : [],
+      rubrics: row.rubrics.filter((r) => r !== "therapy" || row.rubrics.length === 1),
+    }));
+  if (!fresh.length) return GUIDELINE_GROUPS;
+  return GUIDELINE_GROUPS.map((g) => (g.id === "acvim" ? { ...g, items: [...fresh, ...g.items] } : g));
+}
+
+export async function getGuidelinesByRubric(slugs: string[]): Promise<(Guideline & { group: string })[]> {
+  return (await getGuidelineGroups()).flatMap((g) =>
     g.items.filter((item) => item.rubrics.some((r) => slugs.includes(r))).map((item) => ({ ...item, group: g.id }))
   );
 }
