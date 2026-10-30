@@ -6,11 +6,11 @@
  *
  *   npx tsx scripts/connect-ceg.ts [--backfill] [--dry-run]
  *
- * --backfill — один раз собрать весь архив (иначе сбор берёт изменения за 30 дней). Собранное
+ * --backfill — окно 10 лет: весь архив соберёт ближайший плановый сбор на сервере (там настроен
+ * S3 для превью). После него запустить ещё раз без флага — окно вернётся к 30 дням. Собранное
  * обрабатывает cron/process обычным конвейером с проверкой фактов, публикация — по расписанию.
  */
 import { prisma } from "@/lib/prisma";
-import { ingestSource } from "@/lib/scraper";
 
 const dryRun = process.argv.includes("--dry-run");
 const backfill = process.argv.includes("--backfill");
@@ -33,25 +33,17 @@ const sources = [
 async function main() {
   for (const s of sources) {
     const existing = await prisma.source.findUnique({ where: { slug: s.slug } });
+    // Backfill: the archive is collected by the next scheduled scrape on the server (S3 for the
+    // previews is configured there); run again without --backfill afterwards to return to 30 days
+    const adapterConfig = backfill ? { ...s.adapterConfig, sinceDays: 3650 } : s.adapterConfig;
     if (dryRun) {
-      console.log(`${existing ? "UPDATE" : "CREATE"}: ${s.slug}`);
+      console.log(`${existing ? "UPDATE" : "CREATE"}: ${s.slug} (sinceDays ${adapterConfig.sinceDays})`);
       continue;
     }
-    const data = { name: s.name, url: s.url, adapterType: "ceg", adapterConfig: s.adapterConfig, isActive: true };
-    const source = existing
-      ? await prisma.source.update({ where: { id: existing.id }, data })
-      : await prisma.source.create({ data: { slug: s.slug, ...data } });
-    console.log(`${existing ? "UPDATED" : "CREATED"}: ${s.slug}`);
-
-    if (backfill) {
-      await prisma.source.update({ where: { id: source.id }, data: { adapterConfig: { ...s.adapterConfig, sinceDays: 3650 } } });
-      try {
-        const result = await ingestSource(source.id, { autoProcess: false });
-        console.log(`  backfill: ${result.totalFetched} fetched, ${result.newArticles} new, ${result.duplicates} duplicates, ${result.errors.length} errors`);
-      } finally {
-        await prisma.source.update({ where: { id: source.id }, data: { adapterConfig: s.adapterConfig } });
-      }
-    }
+    const data = { name: s.name, url: s.url, adapterType: "ceg", adapterConfig, isActive: true };
+    if (existing) await prisma.source.update({ where: { id: existing.id }, data });
+    else await prisma.source.create({ data: { slug: s.slug, ...data } });
+    console.log(`${existing ? "UPDATED" : "CREATED"}: ${s.slug} (sinceDays ${adapterConfig.sinceDays})`);
   }
 }
 
