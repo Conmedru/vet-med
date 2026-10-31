@@ -111,8 +111,6 @@ export default async function Home() {
       <Script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }} />
 
       <div className="container space-y-14 py-6 md:py-8">
-        {FEATURES.PUBLIC_JOURNAL && latestJournalIssue && <JournalBanner issue={latestJournalIssue} />}
-
         <div className="space-y-5">
           <SplitFeature article={featured} tone="teal" kicker="Главное" />
           <AnimalStrip counts={counts} />
@@ -133,6 +131,8 @@ export default async function Home() {
             </Link>
           </div>
         </section>
+
+        {FEATURES.PUBLIC_JOURNAL && latestJournalIssue && <JournalBanner issue={latestJournalIssue} />}
 
         <ClinicalCases articles={data.clinicalCases} />
 

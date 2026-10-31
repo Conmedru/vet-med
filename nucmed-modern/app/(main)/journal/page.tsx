@@ -1,79 +1,71 @@
-import Link from "next/link";
-import { BookOpen, Calendar } from "lucide-react";
-import { listPublishedJournalIssues } from "@/lib/magazine";
+import type { Metadata } from "next"
+import Image from "next/image"
+import Link from "next/link"
+import { BookOpen } from "lucide-react"
+import { Breadcrumbs } from "@/components/ui/breadcrumbs"
+import { JournalBanner } from "@/components/journal"
+import { GLASS } from "@/components/glass/kit"
+import { JOURNAL, listPublishedJournalIssues } from "@/lib/magazine"
+import { formatDateUTC } from "@/lib/utils/date"
 
-export const dynamic = "force-dynamic";
-export const revalidate = 60;
+export const dynamic = "force-dynamic"
+export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: `Журнал «${JOURNAL.name}»`,
+  description: `${JOURNAL.tagline}. Номера журнала онлайн и в PDF: гайдлайны, клинические разборы, исследования, шпаргалки.`,
+}
 
 export default async function JournalPage() {
-  let issues: Awaited<ReturnType<typeof listPublishedJournalIssues>> = [];
+  let issues: Awaited<ReturnType<typeof listPublishedJournalIssues>> = []
   try {
-    issues = await listPublishedJournalIssues();
+    issues = await listPublishedJournalIssues()
   } catch (error) {
-    console.error("[JournalPage] Failed to fetch issues:", error);
+    console.error("[JournalPage] Failed to fetch issues:", error)
   }
+  const [latest, ...archive] = issues
 
   return (
-    <div className="container py-8 md:py-12">
-      <div className="mb-10">
-        <h1 className="text-4xl font-serif font-bold tracking-tight mb-3">Журнал</h1>
-        <p className="text-muted-foreground max-w-2xl">
-          Архив опубликованных выпусков журнала с обложками и ссылками на материалы.
+    <div className="container max-w-6xl py-8 md:py-12">
+      <Breadcrumbs items={[{ label: "Журнал" }]} className="mb-6" />
+
+      <div className="mb-8 max-w-3xl">
+        <p className="mb-2 text-[13px] font-semibold uppercase tracking-[0.18em] text-[#0e7490]">{JOURNAL.tagline}</p>
+        <h1 className="text-[36px] font-extrabold leading-[1.02] tracking-[-0.03em] text-[#0b2a33] md:text-[52px]">«{JOURNAL.name}»</h1>
+        <p className="mt-4 text-[17px] leading-relaxed text-muted-foreground">
+          Журнал CON-VET.ru: гайдлайны, клинические разборы, исследования и шпаргалки для практикующих ветеринаров. Читайте номера онлайн или скачивайте в PDF — бесплатно.
         </p>
       </div>
 
-      {issues.length === 0 ? (
-        <div className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl p-10 text-center">
-          <BookOpen className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-stone-600">Пока нет опубликованных выпусков</p>
+      {!latest ? (
+        <div className={`${GLASS} p-10 text-center`}>
+          <BookOpen className="mx-auto mb-3 h-10 w-10 text-stone-300" />
+          <p className="text-stone-600">Первый номер скоро появится</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {issues.map((issue) => {
-            const targetHref = issue.landingUrl || issue.pdfUrl || "/journal";
-
-            return (
-              <article
-                key={issue.id}
-                className="rounded-[24px] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_20px_50px_-28px_rgba(11,42,51,0.28)] backdrop-blur-xl overflow-hidden transition-shadow hover:shadow-md"
-              >
-                <div className="aspect-[4/5] bg-stone-100">
-                  <img
-                    src={issue.coverImageUrl}
-                    alt={issue.coverAlt || issue.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="p-5 space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-stone-500">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{new Date(issue.publicationDate).toLocaleDateString("ru-RU")}</span>
-                    {issue.issueNumber ? <span className="text-stone-400">• № {issue.issueNumber}</span> : null}
-                  </div>
-
-                  <h2 className="text-lg font-semibold leading-snug text-stone-900">{issue.title}</h2>
-
-                  {issue.description ? (
-                    <p className="text-sm text-stone-600 line-clamp-3">{issue.description}</p>
-                  ) : null}
-
-                  {(issue.landingUrl || issue.pdfUrl) && (
-                    <Link
-                      href={targetHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                    >
-                      Открыть выпуск
-                    </Link>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <JournalBanner issue={latest} archiveLink={false} />
       )}
+
+      {archive.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-5 text-[26px] font-bold tracking-[-0.02em] text-[#0b2a33] md:text-[32px]">Архив номеров</h2>
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {archive.map((issue) => (
+              <Link key={issue.id} href={`/journal/${issue.slug}`} className="group">
+                <div className="overflow-hidden rounded-[5px] shadow-[0_20px_40px_-18px_rgba(11,42,51,0.5)] transition-transform duration-300 group-hover:-translate-y-1">
+                  <Image src={issue.coverImageUrl} alt={issue.coverAlt || issue.title} width={1200} height={1697} sizes="220px" className="h-auto w-full" />
+                </div>
+                <div className="mt-3 text-[15px] font-semibold text-[#0b2a33]">№ {issue.issueNumber || issue.title}</div>
+                <div className="text-[13px] text-muted-foreground">{formatDateUTC(issue.publicationDate, "LLLL yyyy")}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="mt-12 text-[13px] leading-relaxed text-muted-foreground">
+        {JOURNAL.imprint.map((line) => <p key={line}>{line}</p>)}
+      </div>
     </div>
-  );
+  )
 }

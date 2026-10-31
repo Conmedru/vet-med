@@ -30,9 +30,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
+    const journalUrls = (await prisma.journalIssue.findMany({
+      where: { isPublished: true },
+      select: { slug: true, updatedAt: true },
+    })).map((issue) => ({
+      url: `${BASE_URL}/journal/${issue.slug}`,
+      lastModified: issue.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }))
+
     // Static pages (excluding /privacy and /terms - they have noindex)
     const staticPages = [
       { url: `${BASE_URL}/news`, priority: 0.9 },
+      { url: `${BASE_URL}/journal`, priority: 0.8 },
       { url: `${BASE_URL}/guidelines`, priority: 0.7 },
       { url: `${BASE_URL}/calculators`, priority: 0.7 },
       { url: `${BASE_URL}/about`, priority: 0.5 },
@@ -51,6 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 1,
       },
       ...staticPages,
+      ...journalUrls,
       ...categoryUrls,
       ...articleUrls,
     ]

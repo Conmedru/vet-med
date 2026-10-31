@@ -103,6 +103,16 @@ export async function listPublishedJournalIssues(): Promise<JournalIssueApiItem[
   return issues.map(toApiIssue);
 }
 
+export async function getPublishedJournalIssueBySlug(slug: string): Promise<JournalIssueApiItem | null> {
+  const issue = await prisma.journalIssue.findFirst({
+    where: { slug, isPublished: true },
+    select: journalIssueSelect,
+  });
+
+  if (!issue) return null;
+  return toApiIssue(issue);
+}
+
 export async function getJournalIssueById(id: string): Promise<JournalIssueApiItem | null> {
   const issue = await prisma.journalIssue.findUnique({
     where: { id },

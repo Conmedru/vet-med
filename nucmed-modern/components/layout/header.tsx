@@ -207,7 +207,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         {dropdowns.slice(3).map(renderDropdown)}
 
         {FEATURES.PUBLIC_JOURNAL && (
-          <Link href="/journal" className={cn(navItem, pathname === "/journal" ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
+          <Link href="/journal" className={cn(navItem, pathname.startsWith("/journal") ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
             Журнал
           </Link>
         )}

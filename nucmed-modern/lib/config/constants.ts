@@ -59,7 +59,7 @@ export const CONTACT = {
 } as const;
 
 export const FEATURES = {
-  PUBLIC_JOURNAL: false,
+  PUBLIC_JOURNAL: true,
 } as const;
 
 export const PAGINATION = {
