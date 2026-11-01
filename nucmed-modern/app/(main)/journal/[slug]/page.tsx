@@ -127,6 +127,13 @@ export default async function JournalIssuePage({ params }: Props) {
         <section className="mt-12 md:mt-16" aria-label="Чтение онлайн">
           <h2 className="mb-5 text-[26px] font-bold leading-tight tracking-[-0.02em] text-[#0b2a33] md:text-[32px]">Читать онлайн</h2>
           <JournalReader pages={pages} thumbs={thumbs} title={issue.title} />
+          {issue.pdfUrl && (
+            <div className="mt-5 flex justify-center">
+              <a href={issue.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#0b2a33] px-6 py-3 text-[15px] font-semibold text-white shadow-lg shadow-[#0b2a33]/20 transition hover:bg-[#0b3f4c]">
+                <Download className="h-4 w-4" /> Скачать номер в PDF{contents ? ` · ${contents.pdfSizeMb.toLocaleString("ru-RU")} МБ` : ""}
+              </a>
+            </div>
+          )}
         </section>
       )}
 

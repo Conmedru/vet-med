@@ -24,7 +24,7 @@ export const RUBRICS: Rubric[] = [
   { slug: "dogs", name: "Собаки", kind: "animal", description: "Собаки (canine)." },
   { slug: "rodents", name: "Грызуны", kind: "animal", description: "Мыши, крысы, хомяки, морские свинки, декоративные кролики, хорьки." },
   { slug: "birds", name: "Птицы, попугаи", kind: "animal", description: "Декоративные и домашние птицы: попугаи, канарейки и т. п. Не птицеводство." },
-  { slug: "exotics", name: "Экзоты", kind: "animal", description: "Рептилии, амфибии, паукообразные, рыбы, дикие и зоопарковые животные." },
+  { slug: "exotics", name: "Экзоты", kind: "animal", description: "Рептилии, амфибии, паукообразные, декоративные аквариумные рыбы, дикие и зоопарковые животные." },
   {
     slug: "farm-animals",
     name: "Сельскохозяйственные животные",

@@ -105,6 +105,13 @@ export async function ingestSource(sourceId: string, options?: { autoProcess?: b
       durationMs: Date.now() - startedAt,
     }, message);
 
+    // Next try after the source's usual interval: an unreachable site (Archives of Veterinary
+    // Science: «fetch failed» from the server) was retried on every 15-minute run
+    await prisma.source.update({
+      where: { id: source.id },
+      data: { lastScrapedAt: new Date() },
+    });
+
     return result;
   }
 

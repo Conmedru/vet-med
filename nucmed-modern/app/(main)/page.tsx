@@ -4,7 +4,6 @@ import Script from "next/script"
 import { SponsoredPostCard } from "@/components/articles"
 import { EventsCalendar } from "@/components/events/events-calendar"
 import { PersonalFeedSection } from "@/components/home/personal-feed-section"
-import { JournalBanner } from "@/components/journal"
 import {
   AnimalStrip,
   ClinicalCases,
@@ -17,10 +16,8 @@ import {
   SectionTiles,
 } from "@/components/glass/kit"
 import { Rail, SplitFeature } from "@/components/glass/magazine"
-import { FEATURES } from "@/lib/config"
 import { getCurrentMonthKey, listEventsByMonth } from "@/lib/events"
 import { loadHomeData } from "@/lib/home-data"
-import { getLatestJournalIssueForBanner } from "@/lib/magazine"
 import { getActiveSponsoredPosts } from "@/lib/sponsored"
 import { getVetDatesForMonth } from "@/lib/vet-dates"
 
@@ -37,21 +34,19 @@ export default async function Home() {
   const results = await Promise.allSettled([
     loadHomeData(),
     getActiveSponsoredPosts(),
-    FEATURES.PUBLIC_JOURNAL ? getLatestJournalIssueForBanner() : Promise.resolve(null),
     listEventsByMonth(currentEventsMonth),
   ])
 
-  const names = ["loadHomeData", "getActiveSponsoredPosts", "getLatestJournalIssueForBanner", "listEventsByMonth"]
+  const names = ["loadHomeData", "getActiveSponsoredPosts", "listEventsByMonth"]
   results.forEach((r, i) => {
     if (r.status === "rejected") console.error(`[Home] ${names[i]} FAILED:`, r.reason)
   })
 
   const data = results[0].status === "fulfilled" ? results[0].value : null
   const sponsoredPosts = results[1].status === "fulfilled" ? results[1].value : []
-  const latestJournalIssue = results[2].status === "fulfilled" ? results[2].value : null
   const eventsMonth =
-    results[3].status === "fulfilled"
-      ? results[3].value
+    results[2].status === "fulfilled"
+      ? results[2].value
       : { month: currentEventsMonth, events: [], vetDates: getVetDatesForMonth(currentEventsMonth) }
 
   if (!data) {
@@ -131,8 +126,6 @@ export default async function Home() {
             </Link>
           </div>
         </section>
-
-        {FEATURES.PUBLIC_JOURNAL && latestJournalIssue && <JournalBanner issue={latestJournalIssue} />}
 
         <ClinicalCases articles={data.clinicalCases} />
 
