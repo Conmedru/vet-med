@@ -5,6 +5,11 @@
  * Обложки источника (CEG: превью видео, фото пациентов) не трогаются.
  *
  *   npx tsx scripts/regenerate-covers.ts [--limit 200] [--before 2026-10-30T07:00Z] [--dry-run]
+ *   npx tsx scripts/regenerate-covers.ts --golden [--since 2026-10-29] [--dry-run]
+ *
+ * --golden: only covers whose prompt had a golden retriever (article.cover_generated log), in published
+ * since --since and scheduled articles. Old covers still came out from the queue (client, 2026-11-01:
+ * «почему до сих пор так много золотистых ретриверов на главной»).
  *
  * Нужны боевые БД, S3 и REPLICATE_API_TOKEN. Одна обложка ≈ $0.03; счёт Replicate общий
  * с онкокомпасом и Neuro 2.0 — большими пачками не запускать.
@@ -20,9 +25,37 @@ const arg = (name: string) => {
 const limit = Number(arg("--limit")) || 200;
 const before = new Date(arg("--before") || Date.now());
 const dryRun = process.argv.includes("--dry-run");
+const golden = process.argv.includes("--golden");
+const since = new Date(arg("--since") || "2026-10-29");
+
+async function goldenArticles() {
+  const logs = await prisma.activityLog.findMany({
+    where: { action: "article.cover_generated", entityType: "article" },
+    orderBy: { createdAt: "desc" },
+    select: { entityId: true, metadata: true },
+  });
+  const latestPrompt = new Map<string, string>();
+  for (const log of logs) {
+    if (log.entityId && !latestPrompt.has(log.entityId)) {
+      latestPrompt.set(log.entityId, String((log.metadata as { prompt?: unknown } | null)?.prompt ?? ""));
+    }
+  }
+  const ids = [...latestPrompt].filter(([, prompt]) => /golden retriever/i.test(prompt)).map(([id]) => id);
+  const articles = await prisma.article.findMany({
+    where: {
+      id: { in: ids },
+      title: { not: null },
+      OR: [{ status: "PUBLISHED", publishedAt: { gte: since } }, { status: "SCHEDULED" }],
+    },
+    orderBy: { publishedAt: { sort: "desc", nulls: "last" } },
+    select: { id: true, title: true, excerpt: true, category: true },
+  });
+  // An article about golden retrievers keeps its cover
+  return articles.filter((a) => !/ретривер|retriever/i.test(a.title!));
+}
 
 async function main() {
-  const articles = await prisma.article.findMany({
+  const articles = golden ? await goldenArticles() : await prisma.article.findMany({
     where: {
       status: "PUBLISHED",
       rubrics: { hasSome: NON_FARM_ANIMAL_SLUGS },
