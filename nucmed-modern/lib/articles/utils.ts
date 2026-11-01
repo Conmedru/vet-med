@@ -30,5 +30,5 @@ export function getArticleTitle(article: { title: string | null; titleOriginal: 
  * Get display date for article
  */
 export function getArticleDate(article: { originalPublishedAt?: Date | null; publishedAt: Date | null; createdAt: Date }): Date {
-  return article.originalPublishedAt || article.publishedAt || article.createdAt;
+  return article.publishedAt || article.originalPublishedAt || article.createdAt;
 }

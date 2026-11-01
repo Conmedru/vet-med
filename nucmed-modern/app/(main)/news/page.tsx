@@ -73,9 +73,8 @@ function getDateRange(period?: string, from?: string, to?: string) {
 }
 
 // No unstable_cache - coverImageUrl contains Base64 which exceeds 2MB cache limit
-// Sorting logic:
-// - Use originalPublishedAt (date from source) when available
-// - Fall back to publishedAt (our publication date), then createdAt
+// Sorting by our publication date, like onco-compass: by the source date the day's new articles
+// sank among weeks-old ones (client, 2026-11-01: «за сегодня на сайте еще нет статей»)
 async function getPublishedArticles(
   page: number,
   tag?: string,
@@ -118,14 +117,14 @@ async function getPublishedArticles(
   }
 
   if (dateRange) {
-    // Filter by effective date (originalPublishedAt -> publishedAt -> createdAt)
+    // Filter by effective date (publishedAt -> originalPublishedAt -> createdAt)
     if (dateRange.gte) {
-      conditions.push(`COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") >= $${paramIndex}`);
+      conditions.push(`COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") >= $${paramIndex}`);
       params.push(dateRange.gte);
       paramIndex++;
     }
     if (dateRange.lte) {
-      conditions.push(`COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") <= $${paramIndex}`);
+      conditions.push(`COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") <= $${paramIndex}`);
       params.push(dateRange.lte);
       paramIndex++;
     }
@@ -152,7 +151,7 @@ async function getPublishedArticles(
     FROM "articles" a
     LEFT JOIN "sources" s ON a."sourceId" = s."id"
     WHERE ${whereClause}
-    ORDER BY COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") ${sortDirection} NULLS LAST
+    ORDER BY COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") ${sortDirection} NULLS LAST
     LIMIT ${PAGE_SIZE}
     OFFSET ${skip}
   `;

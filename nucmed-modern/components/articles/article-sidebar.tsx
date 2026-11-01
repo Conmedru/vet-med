@@ -36,7 +36,7 @@ export function DBArticleSidebar({ articles, className, currentArticleId }: DBAr
             const isActive = currentArticleId === article.id;
             const title = article.title || article.titleOriginal;
             // Use original source date if available, otherwise our publication date
-            const date = article.originalPublishedAt || article.publishedAt || article.createdAt;
+            const date = article.publishedAt || article.originalPublishedAt || article.createdAt;
             
             return (
               <div key={article.id} className="relative pl-4 pb-4 group">

@@ -3,18 +3,18 @@ import { ArticleStatus } from '@prisma/client';
 
 // ~25–35 articles/day come in after the client journals were connected (DOAJ alone ≈ 12–15/day),
 // so the old 10/day made the queue grow without end. No "backlog mode" on purpose: in
-// onco-compass it released 175 articles in one day.
-const DAILY_LIMIT = 40;
+// onco-compass it released 175 articles in one day. 40/day left a 16-day queue (2026-11-01), now 60.
+export const DAILY_LIMIT = 60;
 // Publishing window in Moscow time
-const START_HOUR = 7;
-const END_HOUR = 22;
-const MIN_INTERVAL_MINUTES = Math.floor(((END_HOUR - START_HOUR) * 60) / DAILY_LIMIT); // ≈ 22 min
+export const START_HOUR = 7;
+export const END_HOUR = 22;
+export const MIN_INTERVAL_MINUTES = Math.floor(((END_HOUR - START_HOUR) * 60) / DAILY_LIMIT); // 15 min
 const MOSCOW_OFFSET_MS = 3 * 60 * 60 * 1000; // UTC+3, no DST
 const MINUTE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
 /** UTC midnight of the Moscow calendar day of `date`, expressed as a real instant */
-function moscowDayStart(date: Date): Date {
+export function moscowDayStart(date: Date): Date {
   const shifted = new Date(date.getTime() + MOSCOW_OFFSET_MS);
   return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) - MOSCOW_OFFSET_MS);
 }
@@ -29,7 +29,7 @@ function atMoscowHour(dayStart: Date, hour: number): Date {
 
 /**
  * Schedules a newly processed article for publishing.
- * Logic: spaced out (~22 min), daily limit (40), 07:00–22:00 Moscow time.
+ * Logic: spaced out (15 min), daily limit (60), 07:00–22:00 Moscow time.
  */
 export async function scheduleNewArticle(articleId: string) {
   const now = new Date();

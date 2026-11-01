@@ -19,7 +19,7 @@ export function articleHref(article: DBArticle) {
 }
 
 export function articleDate(article: DBArticle) {
-  return article.originalPublishedAt || article.publishedAt || article.createdAt;
+  return article.publishedAt || article.originalPublishedAt || article.createdAt;
 }
 
 export function rubricLabel(article: DBArticle) {

@@ -125,7 +125,7 @@ interface ArticleRowProps {
 function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
   const title = article.title || article.titleOriginal;
   // Use original source date if available, otherwise our publication date
-  const date = article.originalPublishedAt || article.publishedAt || article.createdAt;
+  const date = article.publishedAt || article.originalPublishedAt || article.createdAt;
   const articleUrl = `/news/${article.slug || article.id}`;
 
   if (headlinesOnly) {

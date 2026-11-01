@@ -75,9 +75,7 @@ export const getPetArticles = (limit = 20) => getArticlesByRubrics(NON_FARM_ANIM
 // Base64 images are too large for Next.js Data Cache (2MB limit),
 // so we disable caching for list fetching functions until S3 is configured.
 
-// Sorting logic:
-// - Use originalPublishedAt (date from original source) when available
-// - Fall back to publishedAt (our publication date) for manual/new articles
+// Sorting by our publication date (publishedAt), the source date only as a fallback
 export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_ARTICLES) => {
   try {
     const articles = await prisma.$queryRaw<DBArticle[]>`
@@ -85,7 +83,7 @@ export const getPublishedArticles = async (limit: number = PAGINATION.SIDEBAR_AR
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
       WHERE a."status" = 'PUBLISHED' AND ${NOT_FARM_ONLY}
-      ORDER BY COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
+      ORDER BY COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
     return articles;
@@ -111,7 +109,7 @@ export const getArticlesByRubrics = async (slugs: string[], limit = 50, options:
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
       WHERE a."status" = 'PUBLISHED' AND a."rubrics" && ${slugs}::text[] ${farmFilter}
-      ORDER BY COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
+      ORDER BY COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
     return articles;
@@ -129,7 +127,7 @@ export const getFeaturedArticles = async (limit = PAGINATION.FEATURED_ARTICLES) 
       FROM "articles" a
       LEFT JOIN "sources" s ON a."sourceId" = s."id"
       WHERE a."status" = 'PUBLISHED' AND a."significanceScore" >= ${minScore} AND ${NOT_FARM_ONLY}
-      ORDER BY a."significanceScore" DESC, COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
+      ORDER BY a."significanceScore" DESC, COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
     return articles;
@@ -156,8 +154,8 @@ export const getEditorialFeaturedArticles = async (
       WHERE a."status" = 'PUBLISHED'
         AND ${NOT_FARM_ONLY}
         AND a."significanceScore" >= ${minScore}
-        AND COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") >= ${freshnessThreshold}
-      ORDER BY a."significanceScore" DESC, COALESCE(a."originalPublishedAt", a."publishedAt", a."createdAt") DESC NULLS LAST
+        AND COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") >= ${freshnessThreshold}
+      ORDER BY a."significanceScore" DESC, COALESCE(a."publishedAt", a."originalPublishedAt", a."createdAt") DESC NULLS LAST
       LIMIT ${limit}
     `;
 

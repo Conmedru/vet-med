@@ -100,7 +100,7 @@ function generateArticleJsonLd(article: NonNullable<Awaited<ReturnType<typeof ge
   const articleUrl = `${SITE_URL}/news/${article.slug || article.id}`;
   const title = article.title || article.titleOriginal;
   const readingTime = estimateReadingTime(article.content);
-  const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
+  const displayDate = article.publishedAt || article.originalPublishedAt || article.createdAt;
 
   return {
     "@context": "https://schema.org",
@@ -191,7 +191,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const articleUrl = `${SITE_URL}/news/${article.slug || article.id}`;
   const title = article.title || article.titleOriginal;
-  const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
+  const displayDate = article.publishedAt || article.originalPublishedAt || article.createdAt;
 
   // SEO-optimized description with category context
   const categoryPrefix = article.category ? `[${article.category}] ` : "";
@@ -267,7 +267,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
   const locked = article.isGated && !(await getCurrentMember());
   const visibleContent = locked && article.content ? truncateForPaywall(article.content) : article.content;
 
-  const displayDate = article.originalPublishedAt || article.publishedAt || article.createdAt;
+  const displayDate = article.publishedAt || article.originalPublishedAt || article.createdAt;
 
   const relatedArticles = await getRelatedArticles(article.id, article.rubrics, article.category);
   const readingTime = estimateReadingTime(article.content);
@@ -322,6 +322,9 @@ export default async function NewsArticlePage({ params }: PageProps) {
                 >
                   {format(new Date(displayDate), "d MMMM yyyy", { locale: ru })}
                 </time>
+                {article.originalPublishedAt && format(article.originalPublishedAt, "yyyy-MM-dd") !== format(displayDate, "yyyy-MM-dd") && (
+                  <span>· оригинал {format(new Date(article.originalPublishedAt), "d MMMM yyyy", { locale: ru })}</span>
+                )}
               </span>
               <span className="text-muted-foreground flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
