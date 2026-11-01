@@ -37,7 +37,7 @@ async function main() {
   const doneIds = done.map((d) => d.entityId).filter((id): id is string => !!id);
 
   const articles = await prisma.article.findMany({
-    where: { status: 'PUBLISHED', rubrics: { has: EXOTICS }, id: { notIn: doneIds } },
+    where: { status: { in: ['PUBLISHED', 'SCHEDULED'] }, rubrics: { has: EXOTICS }, id: { notIn: doneIds } },
     select: { id: true, title: true, titleOriginal: true, excerpt: true, category: true, rubrics: true },
     orderBy: { publishedAt: 'desc' },
     take: limit,
