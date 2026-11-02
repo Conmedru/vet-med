@@ -53,7 +53,8 @@ export const SOCIAL = {
 } as const;
 
 export const CONTACT = {
-  EMAIL: 'content@con-vet.ru',
+  // Until the con-vet.ru mailboxes are set up (client, 2026-11-02)
+  EMAIL: 'id@con-med.ru',
   PHONE: '+7 (495) 000-00-00',
   ADDRESS: 'Москва, Россия',
 } as const;
