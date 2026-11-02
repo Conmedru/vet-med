@@ -33,11 +33,11 @@ export function MemberMenu({ mobile }: { mobile?: boolean }) {
     if (mobile) {
       return (
         <div className="grid grid-cols-2 gap-2">
-          <Link href="/login" className="btn btn-ghost h-[42px] gap-[6px]">
+          <Link prefetch={false} href="/login" className="btn btn-ghost h-[42px] gap-[6px]">
             <LogIn size={16} />
             Войти
           </Link>
-          <Link href="/register" className="btn btn-primary h-[42px] gap-[6px]">
+          <Link prefetch={false} href="/register" className="btn btn-primary h-[42px] gap-[6px]">
             <UserPlus size={16} />
             Регистрация
           </Link>
@@ -46,10 +46,10 @@ export function MemberMenu({ mobile }: { mobile?: boolean }) {
     }
     return (
       <div className="hidden md:flex items-center gap-[8px]">
-        <Link href="/login" className="btn h-[40px] px-3 text-[var(--ink)] hover:bg-white/70">
+        <Link prefetch={false} href="/login" className="btn h-[40px] px-3 text-[var(--ink)] hover:bg-white/70">
           Войти
         </Link>
-        <Link href="/register" className="btn btn-primary h-[40px]">
+        <Link prefetch={false} href="/register" className="btn btn-primary h-[40px]">
           Регистрация
         </Link>
       </div>
@@ -61,7 +61,7 @@ export function MemberMenu({ mobile }: { mobile?: boolean }) {
   if (mobile) {
     return (
       <div className="flex flex-col gap-2">
-        <Link
+        <Link prefetch={false}
           href="/account"
           className="flex items-center gap-[10px] px-[12px] py-[11px] rounded-[6px]"
           style={{ background: "var(--rule-soft)" }}
@@ -108,7 +108,7 @@ export function MemberMenu({ mobile }: { mobile?: boolean }) {
             {member.email}
           </div>
         </div>
-        <Link
+        <Link prefetch={false}
           href="/account"
           onClick={() => setOpen(false)}
           className="flex items-center gap-[8px] px-3 py-2 rounded-[6px] text-[13.5px] hover:bg-[var(--rule-soft)] transition-colors"
