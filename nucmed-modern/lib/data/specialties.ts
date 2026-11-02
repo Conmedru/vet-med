@@ -25,6 +25,14 @@ export const PRIORITY_SPECIALTIES: Specialty[] = [
   { slug: "orthopedics", name: "Ортопедия" },
   { slug: "epidemiology", name: "Эпидемиология" },
   { slug: "rehabilitation", name: "Реабилитология" },
+  // Diagnostics and exotics are rubrics too, so the feed is set up from them as well
+  { slug: "ultrasound", name: "УЗИ-диагностика" },
+  { slug: "radiology", name: "Визуальная диагностика (рентген, КТ, МРТ)" },
+  { slug: "lab-diagnostics", name: "Лабораторная диагностика" },
+  { slug: "exotics", name: "Экзотические животные (ратология, орнитология, герпетология)" },
+  { slug: "reproduction", name: "Репродуктология и акушерство" },
+  { slug: "vet-assistant", name: "Ветеринарный фельдшер / ассистент" },
+  { slug: "student", name: "Студент ветеринарного вуза" },
 ];
 
 export const OTHER_SPECIALTIES: Specialty[] = [];
