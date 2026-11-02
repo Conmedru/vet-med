@@ -41,7 +41,7 @@ export function Footer() {
 
       <div className="container grid grid-cols-1 gap-10 py-14 md:grid-cols-2 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <Link href="/" className="inline-block">
+          <Link prefetch={false} href="/" className="inline-block">
             <img src="/con-vet-logo-white.png" alt="CON-VET.ru" className="h-7 w-auto md:h-8" />
           </Link>
           <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/75">
@@ -59,7 +59,7 @@ export function Footer() {
             <ul className="mt-3 space-y-2">
               {column.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-[15px] text-white/85 transition-colors hover:text-white">
+                  <Link prefetch={false} href={link.href} className="text-[15px] text-white/85 transition-colors hover:text-white">
                     {link.name}
                   </Link>
                 </li>

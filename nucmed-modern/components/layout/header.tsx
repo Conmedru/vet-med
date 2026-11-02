@@ -138,7 +138,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                 {group.links.map((link) => {
                   const Icon = link.icon
                   return (
-                    <Link
+                    <Link prefetch={false}
                       key={link.href}
                       href={link.href}
                       onClick={() => setOpenDropdown(null)}
@@ -170,7 +170,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
       )}
     >
       <div className="container flex h-16 items-center gap-3 xl:h-[68px]">
-        <Link href="/" className="shrink-0">
+        <Link prefetch={false} href="/" className="shrink-0">
           <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-8 w-auto md:h-9" />
         </Link>
 
@@ -195,7 +195,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         {dropdowns.slice(0, 3).map(renderDropdown)}
 
         {sectionLinks.map((link) => (
-          <Link
+          <Link prefetch={false}
             key={link.href}
             href={link.href}
             className={cn(navItem, pathname === link.href ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}
@@ -207,7 +207,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
         {dropdowns.slice(3).map(renderDropdown)}
 
         {FEATURES.PUBLIC_JOURNAL && (
-          <Link href="/journal" className={cn(navItem, pathname.startsWith("/journal") ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
+          <Link prefetch={false} href="/journal" className={cn(navItem, pathname.startsWith("/journal") ? "bg-white/70 text-primary" : "text-foreground hover:bg-white/70")}>
             Журнал
           </Link>
         )}
@@ -233,7 +233,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                   {isOpen && (
                     <div className="flex flex-wrap gap-1.5 px-2 pb-2 pt-1">
                       {dropdown.groups.flatMap((group) => group.links).map((link) => (
-                        <Link
+                        <Link prefetch={false}
                           key={link.href}
                           href={link.href}
                           className={cn(
@@ -252,12 +252,12 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
 
             <div className="grid gap-1 border-t border-border/60 pt-3">
               {sectionLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
+                <Link prefetch={false} key={link.href} href={link.href} className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
                   {link.name}
                 </Link>
               ))}
               {FEATURES.PUBLIC_JOURNAL && (
-                <Link href="/journal" className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
+                <Link prefetch={false} href="/journal" className="rounded-xl px-3 py-2.5 text-[15px] font-medium text-foreground hover:bg-white/70">
                   Журнал
                 </Link>
               )}
@@ -274,7 +274,7 @@ export function Header({ trendingTags = [] }: { trendingTags?: string[] }) {
                 <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Популярные теги</div>
                 <div className="flex flex-wrap gap-2 px-3">
                   {trendingTags.slice(0, 6).map((tag) => (
-                    <Link
+                    <Link prefetch={false}
                       key={tag}
                       href={`/news?tag=${encodeURIComponent(tag)}`}
                       className="rounded-lg bg-white/70 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-primary"

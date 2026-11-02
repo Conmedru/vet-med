@@ -54,7 +54,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
               {formatDateUTC(date, "d MMM yyyy")}
             </span>
           </div>
-          <Link href={articleUrl} className="group">
+          <Link prefetch={false} href={articleUrl} className="group">
             <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
               {title}
             </h3>
@@ -102,7 +102,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
             <span className="text-primary">{article.category || "Новости"}</span>
           </div>
-          <Link href={articleUrl}>
+          <Link prefetch={false} href={articleUrl}>
             <h4 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
               {title}
             </h4>
@@ -151,7 +151,7 @@ export function DBArticleCard({ article, variant = "default" }: DBArticleCardPro
             {readTime}
           </span>
         </div>
-        <Link href={articleUrl} className="group">
+        <Link prefetch={false} href={articleUrl} className="group">
           <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
             {title}
           </h3>

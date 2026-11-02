@@ -57,7 +57,7 @@ export function LatestNews({ articles, sponsoredPosts = [], maxArticles = 10 }: 
           <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">
             Последние новости
           </h2>
-          <Link 
+          <Link prefetch={false} 
             href="/news" 
             className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-foreground/20 rounded-full hover:bg-foreground hover:text-background transition-colors"
           >
@@ -104,7 +104,7 @@ export function LatestNews({ articles, sponsoredPosts = [], maxArticles = 10 }: 
 
       {/* Mobile: See All Link */}
       <div className="mt-6 sm:hidden">
-        <Link 
+        <Link prefetch={false} 
           href="/news" 
           className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
         >
@@ -143,7 +143,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
           </div>
           
           {/* Title */}
-          <Link href={articleUrl} className="group/link">
+          <Link prefetch={false} href={articleUrl} className="group/link">
             <h3 className="text-lg md:text-xl font-semibold leading-tight group-hover/link:text-primary transition-colors">
               {title}
             </h3>
@@ -155,7 +155,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
               <>
                 {article.tags.slice(0, 4).map((tag, i) => (
                   <span key={tag} className="flex items-center">
-                    <Link 
+                    <Link prefetch={false} 
                       href={`/news?tag=${encodeURIComponent(tag)}`}
                       className="hover:text-primary hover:underline transition-colors"
                     >
@@ -193,7 +193,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
       <div className="flex gap-5">
         {/* Thumbnail */}
         {article.coverImageUrl && (
-          <Link href={articleUrl} className="flex-shrink-0">
+          <Link prefetch={false} href={articleUrl} className="flex-shrink-0">
             <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-lg overflow-hidden bg-muted">
               <Image
                 src={article.coverImageUrl}
@@ -214,7 +214,7 @@ function ArticleRow({ article, headlinesOnly, index }: ArticleRowProps) {
           </span>
           
           {/* Title */}
-          <Link href={articleUrl} className="group/link">
+          <Link prefetch={false} href={articleUrl} className="group/link">
             <h3 className="text-lg md:text-xl font-semibold leading-tight group-hover/link:text-primary transition-colors line-clamp-2">
               {title}
             </h3>

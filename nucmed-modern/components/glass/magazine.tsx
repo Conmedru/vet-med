@@ -11,14 +11,15 @@ import { RailScroller } from "./rail-scroller";
  * full-bleed topic rails. Reference: Expedia Magazine (Refero).
  */
 
-export function SplitFeature({ article, tone, reverse = false, kicker, compact = false }: { article: DBArticle; tone: keyof typeof GRADIENTS; reverse?: boolean; kicker: string; compact?: boolean }) {
+/** `priority`: the first screen's picture (LCP) loads at once, not lazily */
+export function SplitFeature({ article, tone, reverse = false, kicker, compact = false, priority = false }: { article: DBArticle; tone: keyof typeof GRADIENTS; reverse?: boolean; kicker: string; compact?: boolean; priority?: boolean }) {
   const g = GRADIENTS[tone];
   return (
-    <Link href={articleHref(article)} className="group grid grid-cols-1 overflow-hidden rounded-[32px] md:grid-cols-2">
+    <Link prefetch={false} href={articleHref(article)} className="group grid grid-cols-1 overflow-hidden rounded-[32px] md:grid-cols-2">
       <div className={`relative min-h-[300px] overflow-hidden bg-[#0b2a33] md:min-h-[460px] ${reverse ? "md:order-2" : ""}`}>
         {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && (
-          <Image src={article.coverImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+          <Image src={article.coverImageUrl} alt="" fill priority={priority} sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
         )}
       </div>
       <div className={`flex min-w-0 flex-col justify-center gap-4 bg-gradient-to-br ${compact ? "p-7 md:p-9" : "p-8 md:p-12"} ${g.tile}`}>
@@ -39,7 +40,7 @@ export function SplitFeature({ article, tone, reverse = false, kicker, compact =
 
 export function RailCard({ article }: { article: DBArticle }) {
   return (
-    <Link href={articleHref(article)} className="group w-[260px] shrink-0 snap-start md:w-[300px]">
+    <Link prefetch={false} href={articleHref(article)} className="group w-[260px] shrink-0 snap-start md:w-[300px]">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#0b2a33]">
         {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && <Image src={article.coverImageUrl} alt="" fill sizes="300px" className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />}
@@ -62,7 +63,7 @@ export function Rail({ title, kicker, href, articles }: { title: string; kicker?
         {articles.map((article) => (
           <RailCard key={article.id} article={article} />
         ))}
-        <Link href={href} className={`flex w-[200px] shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[24px] text-[15px] font-semibold text-[#0e7490] ${GLASS}`}>
+        <Link prefetch={false} href={href} className={`flex w-[200px] shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[24px] text-[15px] font-semibold text-[#0e7490] ${GLASS}`}>
           <ArrowRight className="h-6 w-6" /> Смотреть все
         </Link>
       </RailScroller>

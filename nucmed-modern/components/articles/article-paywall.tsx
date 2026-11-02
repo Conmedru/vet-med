@@ -35,13 +35,13 @@ export function ArticlePaywall({ redirectPath }: { redirectPath: string }) {
         </p>
 
         <div className="flex items-center justify-center gap-4 flex-wrap mb-8">
-          <Link href={loginHref} className="btn btn-ghost h-[42px] px-6">
+          <Link prefetch={false} href={loginHref} className="btn btn-ghost h-[42px] px-6">
             Войти
           </Link>
           <span className="text-[13px]" style={{ color: "var(--ink-3)" }}>
             или
           </span>
-          <Link href={registerHref} className="btn btn-primary h-[42px] px-6">
+          <Link prefetch={false} href={registerHref} className="btn btn-primary h-[42px] px-6">
             Зарегистрироваться
           </Link>
         </div>

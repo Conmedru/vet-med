@@ -21,7 +21,7 @@ export function DBArticleSidebar({ articles, className, currentArticleId }: DBAr
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-lg uppercase tracking-tight">Лента новостей</h3>
         </div>
-        <Link 
+        <Link prefetch={false} 
           href="/news" 
           className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors group"
         >
@@ -48,7 +48,7 @@ export function DBArticleSidebar({ articles, className, currentArticleId }: DBAr
                     : "bg-muted-foreground/30 group-hover:bg-primary group-hover:scale-125"
                 )} />
                 
-                <Link href={`/news/${article.slug || article.id}`} className="block">
+                <Link prefetch={false} href={`/news/${article.slug || article.id}`} className="block">
                   <div className="flex items-baseline gap-1.5 mb-1 text-[10px] uppercase tracking-wider font-semibold">
                     <span className={cn(
                       "transition-colors",

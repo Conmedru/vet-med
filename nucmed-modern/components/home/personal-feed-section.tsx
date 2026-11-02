@@ -40,10 +40,10 @@ export function PersonalFeedSection() {
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <Link href="/register" className="rounded-xl bg-white px-5 py-2.5 text-[14px] font-semibold text-[#0b4553] hover:bg-white/90">
+            <Link prefetch={false} href="/register" className="rounded-xl bg-white px-5 py-2.5 text-[14px] font-semibold text-[#0b4553] hover:bg-white/90">
               Зарегистрироваться
             </Link>
-            <Link href="/login" className="rounded-xl border border-white/30 px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-white/10">
+            <Link prefetch={false} href="/login" className="rounded-xl border border-white/30 px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-white/10">
               Войти
             </Link>
           </div>
@@ -58,7 +58,7 @@ export function PersonalFeedSection() {
     <section>
       <div className="mb-5 flex items-end justify-between gap-4">
         <h2 className="text-[26px] font-bold tracking-[-0.02em] md:text-[32px]">Моя лента</h2>
-        <Link href="/account" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+        <Link prefetch={false} href="/account" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
           {data?.personalized ? "Вся лента" : "Настроить ленту"} <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -79,7 +79,7 @@ export function PersonalFeedSection() {
       ) : articles.length === 0 ? (
         <p className="text-muted-foreground">
           По выбранным рубрикам пока нет материалов.{" "}
-          <Link href="/account" className="text-primary hover:underline">
+          <Link prefetch={false} href="/account" className="text-primary hover:underline">
             Изменить рубрики
           </Link>
         </p>

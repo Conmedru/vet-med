@@ -94,7 +94,7 @@ export function Heading({ title, href, kicker, flush = false }: { title: string;
         <h2 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-[#0b2a33] md:text-[32px] [text-wrap:balance]">{title}</h2>
       </div>
       {href && (
-        <Link href={href} className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-sm font-semibold text-[#0b2a33] shadow-sm backdrop-blur-xl hover:bg-white">
+        <Link prefetch={false} href={href} className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-sm font-semibold text-[#0b2a33] shadow-sm backdrop-blur-xl hover:bg-white">
           Все <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       )}
@@ -104,7 +104,7 @@ export function Heading({ title, href, kicker, flush = false }: { title: string;
 
 export function Card({ article, lead = false }: { article: DBArticle; lead?: boolean }) {
   return (
-    <Link href={articleHref(article)} className="group flex h-full flex-col">
+    <Link prefetch={false} href={articleHref(article)} className="group flex h-full flex-col">
       <div className={`relative overflow-hidden rounded-[22px] bg-[#e6eef0] ${lead ? "aspect-[16/10]" : "aspect-[4/3]"}`}>
         {!article.coverImageUrl && <CoverFallback />}
         {article.coverImageUrl && (
@@ -131,7 +131,7 @@ export function Card({ article, lead = false }: { article: DBArticle; lead?: boo
 
 export function Row({ article }: { article: DBArticle }) {
   return (
-    <Link href={articleHref(article)} className="group flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white/70">
+    <Link prefetch={false} href={articleHref(article)} className="group flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white/70">
       {!article.coverImageUrl && (
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px]">
           <CoverFallback />
@@ -153,7 +153,7 @@ export function Row({ article }: { article: DBArticle }) {
 /** Image-led lead story: full-bleed photo with a liquid-glass caption panel */
 export function LeadStory({ article }: { article: DBArticle }) {
   return (
-    <Link href={articleHref(article)} className="group relative block h-full min-h-[460px] overflow-hidden rounded-[28px] bg-[#0b2a33] md:min-h-[540px]">
+    <Link prefetch={false} href={articleHref(article)} className="group relative block h-full min-h-[460px] overflow-hidden rounded-[28px] bg-[#0b2a33] md:min-h-[540px]">
       {!article.coverImageUrl && <CoverFallback />}
       {article.coverImageUrl && (
         <Image src={article.coverImageUrl} alt="" fill priority sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
@@ -207,7 +207,7 @@ export function AnimalStrip({ counts, className = "" }: { counts: Record<string,
             {ANIMALS.map(({ slug, title, icon: Icon }) => {
               const count = counts[slug] || 0;
               return (
-                <Link key={slug} href={`/category/${slug}`} className={`group flex min-w-[170px] shrink-0 items-center gap-3 rounded-[18px] px-3 py-2.5 transition-transform hover:-translate-y-0.5 ${GLASS}`}>
+                <Link prefetch={false} key={slug} href={`/category/${slug}`} className={`group flex min-w-[170px] shrink-0 items-center gap-3 rounded-[18px] px-3 py-2.5 transition-transform hover:-translate-y-0.5 ${GLASS}`}>
                   <span className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-gradient-to-br from-[#22c3d6] to-[#0e7490] text-white shadow-[0_10px_24px_-10px_rgba(14,116,144,0.7)] transition-transform group-hover:rotate-[-6deg]">
                     <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent" />
                     <Icon className="relative h-[22px] w-[22px]" strokeWidth={2.1} />
@@ -232,7 +232,7 @@ export function FreshPanel({ articles, title = "Свежее" }: { articles: DBA
             <div className={`${GLASS} p-4 md:p-5`}>
               <div className="mb-1 flex items-center justify-between px-2">
                 <h2 className="text-lg font-bold text-[#0b2a33]">{title}</h2>
-                <Link href="/news" className="text-sm font-semibold text-[#0e7490] hover:underline">
+                <Link prefetch={false} href="/news" className="text-sm font-semibold text-[#0e7490] hover:underline">
                   Вся лента
                 </Link>
               </div>
@@ -328,7 +328,7 @@ export function GuidelinesPanel({ items }: { items: _HomeData["guidelines"] }) {
             <div className="mb-4 flex items-center gap-3">
               <GlossyIcon icon={BookOpen} tone="sand" size="sm" />
               <h2 className="flex-1 text-2xl font-bold tracking-[-0.02em] text-[#0b2a33]">Рекомендации</h2>
-              <Link href="/guidelines" className="text-sm font-semibold text-[#0e7490] hover:underline">
+              <Link prefetch={false} href="/guidelines" className="text-sm font-semibold text-[#0e7490] hover:underline">
                 Все
               </Link>
             </div>
@@ -358,7 +358,7 @@ export function CalculatorsPanel({ items }: { items: _HomeData["calculators"] })
             <div className="mb-4 flex items-center gap-3">
               <GlossyIcon icon={Calculator} tone="teal" size="sm" />
               <h2 className="flex-1 text-2xl font-bold tracking-[-0.02em] text-[#0b2a33]">Калькуляторы</h2>
-              <Link href="/calculators" className="text-sm font-semibold text-[#0e7490] hover:underline">
+              <Link prefetch={false} href="/calculators" className="text-sm font-semibold text-[#0e7490] hover:underline">
                 Все
               </Link>
             </div>
@@ -391,7 +391,7 @@ export function DiagnosticsPanel({ articles }: { articles: DBArticle[] }) {
               <div className={`${GLASS} mt-6 p-4 md:p-5`}>
                 <div className="mb-1 flex items-center justify-between px-2">
                   <h3 className="text-lg font-bold text-[#0b2a33]">Диагностика</h3>
-                  <Link href="/category/radiology" className="text-sm font-semibold text-[#0e7490] hover:underline">
+                  <Link prefetch={false} href="/category/radiology" className="text-sm font-semibold text-[#0e7490] hover:underline">
                     Все
                   </Link>
                 </div>
@@ -420,10 +420,10 @@ export function NewsletterBand() {
             </div>
             <div className="rounded-[24px] border border-white/30 bg-white/15 p-2 shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] backdrop-blur-xl md:ml-auto md:w-[420px]">
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Link href="/register" className="flex-1 rounded-[18px] bg-white px-5 py-3 text-center font-semibold text-[#0b4553] hover:bg-white/90">
+                <Link prefetch={false} href="/register" className="flex-1 rounded-[18px] bg-white px-5 py-3 text-center font-semibold text-[#0b4553] hover:bg-white/90">
                   Зарегистрироваться
                 </Link>
-                <Link href="/newsletter" className="flex-1 rounded-[18px] px-5 py-3 text-center font-semibold text-white hover:bg-white/10">
+                <Link prefetch={false} href="/newsletter" className="flex-1 rounded-[18px] px-5 py-3 text-center font-semibold text-white hover:bg-white/10">
                   Только рассылка
                 </Link>
               </div>
@@ -439,7 +439,7 @@ export function GradientTile({ tile, counts, className = "", size = "md" }: { ti
   const count = tile.countKey ? counts[tile.countKey] : undefined;
   const meta = tile.countKey ? (count ? `${count} ${plural(count, ["материал", "материала", "материалов"])}` : "раздел наполняется") : tile.meta;
   return (
-    <Link
+    <Link prefetch={false}
       href={tile.href}
       className={`group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br shadow-[0_1px_0_0_rgba(255,255,255,0.9)_inset] transition-transform hover:-translate-y-1 ${size === "md" ? "p-5" : "p-4"} ${g.tile} ${className}`}
     >
@@ -466,7 +466,7 @@ export function FeedList({ articles }: { articles: DBArticle[] }) {
   return (
     <div className={`${GLASS} grid grid-cols-1 gap-x-8 px-4 py-2 md:grid-cols-2 md:px-6`}>
       {articles.map((article, i) => (
-        <Link
+        <Link prefetch={false}
           key={article.id}
           href={articleHref(article)}
           className="group flex items-start gap-4 border-b border-[#0b2a33]/[0.07] py-4 last:border-b-0 md:[&:nth-last-child(2):nth-child(odd)]:border-b-0"

@@ -112,7 +112,7 @@ export default async function Home() {
 
       <div className="container space-y-14 py-6 md:py-8">
         <div className="space-y-5">
-          <SplitFeature article={featured} tone="teal" kicker="Главное" />
+          <SplitFeature article={featured} tone="teal" kicker="Главное" priority />
           <AnimalStrip counts={counts} />
         </div>
 

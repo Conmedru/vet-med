@@ -76,7 +76,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
           </div>
           
           {/* Title */}
-          <Link href={articleUrl} className="group/link">
+          <Link prefetch={false} href={articleUrl} className="group/link">
             <h3 className="text-lg md:text-xl font-semibold leading-tight group-hover/link:text-primary transition-colors">
               {title}
             </h3>
@@ -88,7 +88,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
               <>
                 {article.tags.slice(0, 4).map((tag: string, i: number) => (
                   <span key={tag} className="flex items-center">
-                    <Link 
+                    <Link prefetch={false} 
                       href={`/news?tag=${encodeURIComponent(tag)}`}
                       className="hover:text-primary hover:underline transition-colors"
                     >
@@ -118,7 +118,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
         {/* Cover Image (if available) */}
         {article.coverImageUrl && (
           <div className="md:col-span-1">
-            <Link href={articleUrl} className="block relative aspect-video md:aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+            <Link prefetch={false} href={articleUrl} className="block relative aspect-video md:aspect-[4/3] overflow-hidden rounded-lg bg-muted">
               <Image
                 src={article.coverImageUrl}
                 alt={title}
@@ -146,7 +146,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
             </span>
           </div>
 
-          <Link href={articleUrl}>
+          <Link prefetch={false} href={articleUrl}>
             <h2 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors leading-tight mb-2">
               {title}
             </h2>
@@ -159,7 +159,7 @@ function NewsItem({ article, headlinesOnly, index }: NewsItemProps) {
           )}
 
           <div className="flex items-center gap-2 text-sm text-primary font-medium mt-auto">
-            <Link href={articleUrl} className="flex items-center gap-1 hover:underline">
+            <Link prefetch={false} href={articleUrl} className="flex items-center gap-1 hover:underline">
               Читать далее
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
