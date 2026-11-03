@@ -11,7 +11,7 @@ export function AccountView() {
   const { member } = useMemberSession()
 
   return (
-    <div className="container py-10 md:py-14">
+    <div className="ym-hide-content ym-disable-keys container py-10 md:py-14">
       <div className="mb-8">
         <div className="eyebrow eyebrow-teal mb-2">Личный кабинет</div>
         <h1 className="font-bold tracking-tight text-[28px] md:text-[32px]" style={{ color: "var(--ink)" }}>

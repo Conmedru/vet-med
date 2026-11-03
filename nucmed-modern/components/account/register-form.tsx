@@ -106,7 +106,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="ym-hide-content ym-disable-keys space-y-6">
       {error && (
         <div
           className="text-[13px] px-4 py-3 rounded-[6px]"

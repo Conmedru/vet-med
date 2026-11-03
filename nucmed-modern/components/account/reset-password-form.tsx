@@ -66,7 +66,7 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="ym-hide-content ym-disable-keys space-y-5">
       {error && (
         <div
           className="text-[13px] px-4 py-3 rounded-[6px]"
