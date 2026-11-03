@@ -10,9 +10,11 @@ export const metadata: Metadata = {
 export default function VerifyEmailPage() {
   return (
     <AuthShell title="Подтверждение email">
-      <Suspense fallback={null}>
-        <VerifyEmailStatus />
-      </Suspense>
+      <div className="ym-hide-content">
+        <Suspense fallback={null}>
+          <VerifyEmailStatus />
+        </Suspense>
+      </div>
     </AuthShell>
   );
 }

@@ -81,7 +81,7 @@ export default function PreferencesPage() {
 
   if (loading) {
     return (
-      <div className="container max-w-2xl py-20 flex justify-center">
+      <div className="ym-hide-content ym-disable-keys container max-w-2xl py-20 flex justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -89,7 +89,7 @@ export default function PreferencesPage() {
 
   if (error || !prefs) {
     return (
-      <div className="container max-w-2xl py-20">
+      <div className="ym-hide-content ym-disable-keys container max-w-2xl py-20">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto">
             <AlertCircle className="h-8 w-8 text-red-500" />
@@ -105,7 +105,7 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="container max-w-2xl py-10 md:py-16">
+    <div className="ym-hide-content ym-disable-keys container max-w-2xl py-10 md:py-16">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
