@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { YandexMetrika } from "@/components/analytics/yandex-metrika";
 import { getTrendingTags } from "@/lib/articles";
 
 export default async function MainLayout({
@@ -21,6 +22,7 @@ export default async function MainLayout({
       <Header trendingTags={trendingTags} />
       <main className="flex-1">{children}</main>
       <Footer />
+      <YandexMetrika />
     </div>
   );
 }
