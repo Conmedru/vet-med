@@ -11,6 +11,8 @@ import { journalAssetKey } from '@/lib/magazine/issues';
  * Выкладывает номер журнала «Ветеринарный консилиум» из PDF: сам PDF, обложку (стр. 1)
  * и страницы для онлайн-чтения (webp, с миниатюрами) — в S3, затем создаёт или обновляет JournalIssue.
  * Оглавление номера — в lib/magazine/issues.ts. Нужен pdftoppm (poppler).
+ * Каждая выкладка — в новую папку <slug>/<версия>/: новая версия номера после корректуры
+ * не застревает в кеше браузеров и оптимизатора картинок под старыми адресами.
  *
  * Запуск:
  *   npx tsx scripts/publish-journal-issue.ts <file.pdf> --slug 2026-1 --number "1/2026" --date 2026-10-23 [--publish]
@@ -38,6 +40,8 @@ async function main() {
     throw new Error('Usage: publish-journal-issue.ts <file.pdf> --slug 2026-1 --number "1/2026" --date 2026-10-23 [--publish]');
   }
   const pdf = readFileSync(pdfPath);
+  const version = Date.now().toString(36);
+  const key = (name: string) => journalAssetKey(slug, `${version}/${name}`);
   const dir = mkdtempSync(join(tmpdir(), 'journal-'));
   try {
     // 200 dpi of A4 is ~1650 px wide: enough for the 1600 px pages and the cover
@@ -45,16 +49,16 @@ async function main() {
     const pages = readdirSync(dir).filter((f) => f.endsWith('.png')).sort();
     console.log(`Pages: ${pages.length}`);
 
-    const pdfUrl = await uploadImage(pdf, journalAssetKey(slug, 'issue.pdf'), 'application/pdf');
+    const pdfUrl = await uploadImage(pdf, key('issue.pdf'), 'application/pdf');
     const cover = await sharp(join(dir, pages[0])).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
-    const coverImageUrl = await uploadImage(cover, journalAssetKey(slug, 'cover.jpg'), 'image/jpeg');
+    const coverImageUrl = await uploadImage(cover, key('cover.jpg'), 'image/jpeg');
 
     for (const [i, file] of pages.entries()) {
       const n = String(i + 1).padStart(2, '0');
       const page = await sharp(join(dir, file)).resize({ width: PAGE_WIDTH }).webp({ quality: 82 }).toBuffer();
-      await uploadImage(page, journalAssetKey(slug, `pages/${n}.webp`), 'image/webp');
+      await uploadImage(page, key(`pages/${n}.webp`), 'image/webp');
       const thumb = await sharp(join(dir, file)).resize({ width: THUMB_WIDTH }).webp({ quality: 75 }).toBuffer();
-      await uploadImage(thumb, journalAssetKey(slug, `pages/thumb-${n}.webp`), 'image/webp');
+      await uploadImage(thumb, key(`pages/thumb-${n}.webp`), 'image/webp');
       process.stdout.write('.');
     }
     console.log();
