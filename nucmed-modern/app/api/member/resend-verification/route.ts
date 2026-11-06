@@ -30,7 +30,12 @@ export async function POST() {
         },
       }),
     ]);
-    await sendMemberVerificationEmail(member.email, `${member.firstName} ${member.lastName}`, token);
+    try {
+      await sendMemberVerificationEmail(member.email, `${member.firstName} ${member.lastName}`, token);
+    } catch (error) {
+      console.error("[member/resend-verification] Email not sent:", error);
+      return NextResponse.json({ error: "Не удалось отправить письмо. Попробуйте позже." }, { status: 502 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (e) {

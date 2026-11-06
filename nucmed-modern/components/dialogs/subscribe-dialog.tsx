@@ -88,10 +88,6 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
       if (!res.ok) {
         throw new Error("Не удалось подписаться. Проверьте email и попробуйте ещё раз")
       }
-      // Known address: a hint, not a re-subscription
-      if (data.status === "member" || data.status === "known") {
-        throw new Error(data.message)
-      }
 
       setStatus("success")
       setEmail("")

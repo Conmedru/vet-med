@@ -163,7 +163,7 @@ export const unisender = {
    * Send a single email (transactional or simple notification)
    */
   async sendEmail(email: string, subject: string, html: string, senderName = UNISENDER_FROM_NAME, senderEmail = UNISENDER_FROM_EMAIL) {
-    return this.request("sendEmail", {
+    const result = await this.request("sendEmail", {
       email,
       sender_name: senderName,
       sender_email: senderEmail,
@@ -171,6 +171,10 @@ export const unisender = {
       body: html,
       list_id: VET_SERVICE_LIST_ID,
     });
+    // An API error comes back as a value: thrown, so callers log it instead of reporting «sent»
+    // (2026-11-06: «Use your custom domain email with authentication» for every letter, unnoticed)
+    if (result?.error) throw new Error(`Unisender sendEmail: ${result.error}`);
+    return result;
   },
 
   /**

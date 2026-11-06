@@ -38,19 +38,9 @@ export function NewsletterForm() {
         throw new Error("Не удалось подписаться. Проверьте email и попробуйте ещё раз")
       }
 
-      if (data.status === "member" || data.status === "known") {
-        // Known address: a hint, not a re-subscription
-        setStatus("error")
-        setMessage(data.message)
-        return
-      }
-      if (data.status === "already_subscribed") {
-        setStatus("success")
-        setMessage("Вы уже подписаны!")
-      } else {
-        setStatus("success")
-        setMessage("Вы подписаны!")
-      }
+      // The same answer for any address (the form does not tell who is registered or subscribed)
+      setStatus("success")
+      setMessage(data.message || "Готово!")
       setEmail("")
     } catch (error) {
       setStatus("error")
@@ -92,10 +82,10 @@ export function NewsletterForm() {
       )}
 
       {status === "success" ? (
-        <Button type="button" variant="secondary" className="w-full gap-2 cursor-default bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300">
-          <CheckCircle2 className="h-4 w-4" />
-          {message || "Вы подписаны!"}
-        </Button>
+        <p className="flex items-start gap-2 rounded-md bg-emerald-100 px-3 py-2 text-[13px] leading-snug text-emerald-800">
+          <CheckCircle2 className="mt-[1px] h-4 w-4 shrink-0" />
+          {message || "Готово!"}
+        </p>
       ) : (
         <Button type="submit" className="w-full" disabled={status === "loading"}>
           {status === "loading" ? (

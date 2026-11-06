@@ -94,7 +94,8 @@ test('рассылка: регистрация с согласием → каб�
   await page.locator('main form input[type="email"]').fill(digestEmail.toUpperCase());
   await page.locator('main form input[type="checkbox"]').check();
   await page.locator('main').getByRole('button', { name: 'Подписаться' }).click();
-  await expect(page.locator('main form')).toContainText('включите дайджест в личном кабинете');
+  // Ответ тот же, что для любого адреса: форма не выдаёт, кто зарегистрирован
+  await expect(page.locator('main form')).toContainText('Если этот адрес ещё не получает дайджест');
 
   const after = await (await page.request.get(`${BASE}/api/member/profile`)).json();
   expect(after.member.digestEnabled).toBe(false);
@@ -110,8 +111,8 @@ test('рассылка без регистрации: нужно согласи�
 
   await form.locator('input[type="checkbox"]').check();
   await page.locator('main').getByRole('button', { name: 'Подписаться' }).click();
-  await expect(form).toContainText('Вы подписаны');
+  await expect(form).toContainText('Если этот адрес ещё не получает дайджест');
 
   const again = await page.request.post(`${BASE}/api/newsletter/subscribe`, { data: { email: subEmail, type: 'digest' } });
-  expect((await again.json()).status).toBe('already_subscribed');
+  expect((await again.json()).status).toBe('ok');
 });
