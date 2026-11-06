@@ -26,14 +26,14 @@ export default function ContactPage() {
           <CardContent className="space-y-2">
             <p>
               <strong>Редакция и общие вопросы:</strong><br />
-              <a href="mailto:id@con-med.ru" className="text-primary hover:underline">
-                id@con-med.ru
+              <a href="mailto:content@icon-media.ru" className="text-primary hover:underline">
+                content@icon-media.ru
               </a>
             </p>
             <p>
               <strong>Реклама и партнёрство:</strong><br />
-              <a href="mailto:id@con-med.ru" className="text-primary hover:underline">
-                id@con-med.ru
+              <a href="mailto:sale@icon-media.ru" className="text-primary hover:underline">
+                sale@icon-media.ru
               </a>
             </p>
           </CardContent>
@@ -64,7 +64,7 @@ export default function ContactPage() {
         <h3>Предложить новость</h3>
         <p>
           Если вы хотите предложить тему для публикации или у вас есть эксклюзивная информация
-          в области ветеринарной медицины, напишите на <a href="mailto:id@con-med.ru">id@con-med.ru</a>
+          в области ветеринарной медицины, напишите на <a href="mailto:content@icon-media.ru">content@icon-media.ru</a>
           с темой письма «Предложение новости».
         </p>
 
@@ -78,7 +78,7 @@ export default function ContactPage() {
         <p>
           Мы открыты к партнёрству с ветеринарными клиниками, исследовательскими центрами,
           фармацевтическими компаниями и профессиональными организациями.
-          Обсудим возможности сотрудничества на <a href="mailto:id@con-med.ru">id@con-med.ru</a>.
+          Обсудим возможности сотрудничества на <a href="mailto:sale@icon-media.ru">sale@icon-media.ru</a>.
         </p>
 
         <h3>Подписка на рассылку</h3>

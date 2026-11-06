@@ -53,8 +53,8 @@ export const SOCIAL = {
 } as const;
 
 export const CONTACT = {
-  // Until the con-vet.ru mailboxes are set up (client, 2026-11-02)
-  EMAIL: 'id@con-med.ru',
+  // The client's mailboxes on icon-media.ru (2026-11-06): content@ — editorial, sale@ — advertising
+  EMAIL: 'content@icon-media.ru',
   PHONE: '+7 (495) 000-00-00',
   ADDRESS: 'Москва, Россия',
 } as const;

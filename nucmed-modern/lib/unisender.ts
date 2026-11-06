@@ -2,9 +2,11 @@ import { CACHE } from "@/lib/config";
 import { format } from "date-fns";
 
 const UNISENDER_API_KEY = process.env.UNISENDER || process.env.UNISENDER_API_KEY;
-// Sender of the digest and service emails (client, 2026-10-29): info@con-vet.ru, verified in
-// Unisender with SPF/DKIM on con-vet.ru. The env overrides it until the mailbox is ready.
-const UNISENDER_FROM_EMAIL = process.env.UNISENDER_FROM_EMAIL || "info@con-vet.ru";
+// Sender of the digest and service emails: the client's mailbox on icon-media.ru (Yandex 360,
+// client 2026-11-06), confirmed in Unisender as a sender. Fixed in code like the list ids:
+// UNISENDER_FROM_EMAIL in the env is a free-mail address, which Unisender rejects
+// («Use your custom domain email with authentication»).
+const UNISENDER_FROM_EMAIL = "content@icon-media.ru";
 const UNISENDER_FROM_NAME = process.env.UNISENDER_FROM_NAME || "CON-VET.ru";
 const UNISENDER_LOGIN = process.env.UNISENDER_LOGIN;
 const BASE_URL = "https://api.unisender.com/ru/api";

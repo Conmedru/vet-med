@@ -98,7 +98,7 @@ export default function TermsPage() {
         <h2>8. Контакты</h2>
         <p>
           По вопросам, связанным с настоящими Условиями, обращайтесь:<br />
-          Email: <a href="mailto:content@con-vet.ru" className="text-primary hover:underline">content@con-vet.ru</a>
+          Email: <a href="mailto:content@icon-media.ru" className="text-primary hover:underline">content@icon-media.ru</a>
         </p>
       </div>
     </div>

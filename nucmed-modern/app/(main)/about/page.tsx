@@ -52,7 +52,7 @@ export default function AboutPage() {
         <h2>Связаться с нами</h2>
         <p>
           Есть вопросы, предложения или хотите сотрудничать?
-          Напишите нам на <a href="mailto:id@con-med.ru" className="text-primary hover:underline">id@con-med.ru</a>
+          Напишите нам на <a href="mailto:content@icon-media.ru" className="text-primary hover:underline">content@icon-media.ru</a>
           или посетите страницу <a href="/contact" className="text-primary hover:underline">Контакты</a>.
         </p>
       </div>
