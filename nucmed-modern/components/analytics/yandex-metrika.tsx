@@ -13,7 +13,7 @@ const METRIKA_ID = 114041065;
 
 // Pages with tokens in the link (password reset, email confirmation, newsletter settings) or
 // personal data: not counted, so neither the token nor the page reaches Metrika
-const PRIVATE_PATHS = ["/account", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/newsletter"];
+const PRIVATE_PATHS = ["/account", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/newsletter/preferences"];
 // Only these query parameters reach Metrika; anything else (token, email…) is cut off
 const SAFE_PARAMS = ["q", "page", "sort", "period", "tag", "category"];
 

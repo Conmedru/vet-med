@@ -33,6 +33,8 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
     initialCategory ? [initialCategory] : []
   )
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle")
+  // Consent to mailings is required (38-ФЗ / 152-ФЗ), as in the registration form
+  const [consent, setConsent] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState("")
 
   React.useEffect(() => {
@@ -60,6 +62,11 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
+    if (!consent) {
+      setStatus("error")
+      setErrorMessage("Подтвердите согласие на получение рассылки")
+      return
+    }
 
     setStatus("loading")
     setErrorMessage("")
@@ -79,7 +86,11 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to subscribe")
+        throw new Error("Не удалось подписаться. Проверьте email и попробуйте ещё раз")
+      }
+      // Known address: a hint, not a re-subscription
+      if (data.status === "member" || data.status === "known") {
+        throw new Error(data.message)
       }
 
       setStatus("success")
@@ -91,7 +102,7 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
       }, 2500)
     } catch (error) {
       setStatus("error")
-      setErrorMessage(error instanceof Error ? error.message : "Something went wrong")
+      setErrorMessage(error instanceof Error ? error.message : "Не удалось подписаться")
     }
   }
 
@@ -324,6 +335,19 @@ export function SubscribeDialog({ trigger, initialCategory }: SubscribeDialogPro
                     <p className="text-xs text-destructive">{errorMessage}</p>
                   )}
                 </div>
+
+                <label className="flex cursor-pointer items-start gap-2 text-[12px] leading-snug text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-[2px] h-3.5 w-3.5 shrink-0 accent-primary"
+                  />
+                  <span>
+                    Соглашаюсь на получение рассылки и обработку персональных данных согласно{" "}
+                    <a href="/privacy" target="_blank" className="underline">политике конфиденциальности</a>
+                  </span>
+                </label>
 
                 <Button type="submit" className="w-full" disabled={status === "loading"}>
                   {status === "loading" ? (

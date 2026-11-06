@@ -10,10 +10,17 @@ export function NewsletterForm() {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [message, setMessage] = useState("")
+  // Consent to mailings is required (38-ФЗ / 152-ФЗ), as in the registration form
+  const [consent, setConsent] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
+    if (!consent) {
+      setStatus("error")
+      setMessage("Подтвердите согласие на получение рассылки")
+      return
+    }
 
     setStatus("loading")
     setMessage("")
@@ -28,10 +35,16 @@ export function NewsletterForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to subscribe")
+        throw new Error("Не удалось подписаться. Проверьте email и попробуйте ещё раз")
       }
 
-      if (data.status === 'already_subscribed') {
+      if (data.status === "member" || data.status === "known") {
+        // Known address: a hint, not a re-subscription
+        setStatus("error")
+        setMessage(data.message)
+        return
+      }
+      if (data.status === "already_subscribed") {
         setStatus("success")
         setMessage("Вы уже подписаны!")
       } else {
@@ -41,12 +54,12 @@ export function NewsletterForm() {
       setEmail("")
     } catch (error) {
       setStatus("error")
-      setMessage(error instanceof Error ? error.message : "Something went wrong")
+      setMessage(error instanceof Error ? error.message : "Не удалось подписаться")
     }
   }
 
   return (
-    <form className="space-y-2" onSubmit={handleSubmit}>
+    <form className="ym-disable-keys space-y-2" onSubmit={handleSubmit}>
       <div className="relative">
         <Input
           type="email"
@@ -60,6 +73,20 @@ export function NewsletterForm() {
         />
       </div>
       
+      <label className="flex cursor-pointer items-start gap-2 px-1 text-[12px] leading-snug opacity-80">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          disabled={status === "loading" || status === "success"}
+          className="mt-[2px] h-3.5 w-3.5 shrink-0 accent-current"
+        />
+        <span>
+          Соглашаюсь на получение рассылки и обработку персональных данных согласно{" "}
+          <a href="/privacy" target="_blank" className="underline">политике конфиденциальности</a>
+        </span>
+      </label>
+
       {status === "error" && (
         <p className="text-xs text-destructive/90 px-1">{message}</p>
       )}

@@ -69,3 +69,49 @@ test('вход: неверный пароль, затем верный', async (
   await page.waitForURL(/\/account/);
   await expect(page.getByText(email).or(page.getByText('Тест').first())).toBeVisible();
 });
+
+test('рассылка: регистрация с согласием → кабинет → отписка → открытая форма не переподписывает', async ({ page }) => {
+  const digestEmail = `e2e-digest-${Date.now()}@example.test`;
+  const reg = await page.request.post(`${BASE}/api/member/register`, {
+    data: {
+      lastName: 'Тестов', firstName: 'Тест', middleName: 'Тестович', specialty: 'surgery', email: digestEmail, password,
+      country: 'Россия', city: 'Москва', interests: [], consentHealthcare: true, consentPd152: true,
+      consentPd156: true, consentMarketing: true,
+    },
+  });
+  expect(reg.status()).toBe(200);
+
+  // Регистрация с согласием на рассылку — дайджест в кабинете уже включён
+  const profile = await (await page.request.get(`${BASE}/api/member/profile`)).json();
+  expect(profile.member.digestEnabled).toBe(true);
+
+  // Отписка в кабинете
+  const off = await page.request.patch(`${BASE}/api/member/feed-settings`, { data: { digestEnabled: false } });
+  expect((await off.json()).digestEnabled).toBe(false);
+
+  // Открытая форма «Только рассылка» не возвращает в рассылку зарегистрированного врача
+  await page.goto(`${BASE}/newsletter`);
+  await page.locator('main form input[type="email"]').fill(digestEmail.toUpperCase());
+  await page.locator('main form input[type="checkbox"]').check();
+  await page.locator('main').getByRole('button', { name: 'Подписаться' }).click();
+  await expect(page.locator('main form')).toContainText('включите дайджест в личном кабинете');
+
+  const after = await (await page.request.get(`${BASE}/api/member/profile`)).json();
+  expect(after.member.digestEnabled).toBe(false);
+});
+
+test('рассылка без регистрации: нужно согласие, повторная подписка не меняет запись', async ({ page }) => {
+  const subEmail = `e2e-sub-${Date.now()}@example.test`;
+  await page.goto(`${BASE}/newsletter`);
+  const form = page.locator('main form');
+  await form.locator('input[type="email"]').fill(subEmail);
+  await page.locator('main').getByRole('button', { name: 'Подписаться' }).click();
+  await expect(form).toContainText('Подтвердите согласие');
+
+  await form.locator('input[type="checkbox"]').check();
+  await page.locator('main').getByRole('button', { name: 'Подписаться' }).click();
+  await expect(form).toContainText('Вы подписаны');
+
+  const again = await page.request.post(`${BASE}/api/newsletter/subscribe`, { data: { email: subEmail, type: 'digest' } });
+  expect((await again.json()).status).toBe('already_subscribed');
+});
