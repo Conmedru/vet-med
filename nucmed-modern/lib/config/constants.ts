@@ -1,7 +1,12 @@
+// Public address of the site for canonical, sitemap, share links and emails. Fixed in code:
+// NEXT_PUBLIC_SITE_URL on the hosting points to the technical domain vet-umbriel.tw1.ru, which
+// leaked into canonical, sitemap and Telegram shares (client, 2026-11-07).
+export const SITE_URL = 'https://con-vet.ru';
+
 export const SITE = {
   NAME: 'CON-VET.ru',
   NAME_EN: 'vetmed',
-  URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru',
+  URL: SITE_URL,
   LOCALE: 'ru-RU',
 } as const;
 

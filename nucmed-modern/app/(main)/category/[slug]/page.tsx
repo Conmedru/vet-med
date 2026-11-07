@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import { notFound, permanentRedirect } from "next/navigation"
 import { DIAGNOSTICS_SLUGS, getRubric, LEGACY_RUBRIC_REDIRECTS, NON_FARM_ANIMAL_SLUGS, RUBRIC_KIND_LABELS } from "@/lib/rubrics"
 import { getPublishedArticles, getArticlesByRubrics } from "@/lib/articles"
@@ -20,7 +21,6 @@ interface CategoryPageProps {
   }>
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 const ALL_DESCRIPTION = "Полный архив новостей, исследований и клинических случаев ветеринарной медицины."
 

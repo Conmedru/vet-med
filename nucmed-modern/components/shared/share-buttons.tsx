@@ -15,11 +15,15 @@ export function ShareButtons({ title, url, className }: ShareButtonsProps) {
 
   const encodedTitle = encodeURIComponent(title);
   const encodedUrl = encodeURIComponent(url);
+  // Message text from the client (2026-11-07): intro, title, link at the end
+  const message = `Делюсь интересным материалом с портала CON-VET.RU:\n\n${title}\n\n${url}`;
+  const encodedMessage = encodeURIComponent(message);
 
   const shareLinks = {
-    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
+    // With url + text Telegram puts the link first; the whole message in url keeps the order
+    telegram: `https://t.me/share/url?url=${encodedMessage}`,
     vk: `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`,
-    email: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
+    email: `mailto:?subject=${encodedTitle}&body=${encodedMessage}`,
   };
 
   const copyToClipboard = async () => {

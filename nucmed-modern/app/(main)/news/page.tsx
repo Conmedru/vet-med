@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -6,7 +7,6 @@ import { Pagination } from "@/components/ui/pagination-custom";
 import { NewsList, NewsFilters } from "@/components/articles";
 import type { Metadata } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 export const metadata: Metadata = {
   title: "Новости ветеринарной медицины",

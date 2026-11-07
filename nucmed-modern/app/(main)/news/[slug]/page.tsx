@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import Link from "next/link";
 import { jsonLd } from "@/lib/utils/safe-html";
 import { notFound, redirect } from "next/navigation";
@@ -21,7 +22,6 @@ import type { Image as PrismaImage } from "@prisma/client";
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 const SITE_NAME = "CON-VET.ru";
 
 /** Breadcrumb link for the article's main rubric (old articles fall back to the category) */
@@ -436,8 +436,8 @@ export default async function NewsArticlePage({ params }: PageProps) {
           {(article.externalUrl || article.source) && (
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="text-sm text-foreground/80">
-                <span className="font-medium">Источник: </span>
-                {article.source?.name || ""}
+                Источник:{" "}
+                <span className="font-semibold text-foreground">{article.source?.name || ""}</span>
                 {article.externalUrl && (
                   <>
                     {" "}
@@ -445,10 +445,9 @@ export default async function NewsArticlePage({ params }: PageProps) {
                       href={article.externalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline inline-flex items-center gap-1"
+                      className="text-primary hover:underline break-all"
                     >
                       {article.source?.url || article.externalUrl}
-                      <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-6 w-auto opacity-50" />
                     </a>
                   </>
                 )}

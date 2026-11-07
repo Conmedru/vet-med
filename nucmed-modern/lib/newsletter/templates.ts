@@ -1,10 +1,10 @@
+import { SITE_URL } from "@/lib/config";
 import { NewsletterArticle, NewsletterDigest } from './index';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 // Constants
 const SITE_NAME = 'CON-VET.ru';
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru';
 
 // User provided styles
 const HEAD_STYLES = `

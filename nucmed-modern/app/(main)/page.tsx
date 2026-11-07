@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import Link from "next/link"
 import { jsonLd } from "@/lib/utils/safe-html"
 import Script from "next/script"
@@ -84,7 +85,6 @@ export default async function Home() {
     .slice(0, 10)
   const sponsored = sponsoredPosts[0]
 
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru"
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",

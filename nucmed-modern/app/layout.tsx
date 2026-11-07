@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import type { Metadata } from "next";
 import { Onest } from "next/font/google";
 import "./globals.css";
@@ -12,7 +13,6 @@ const onest = Onest({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

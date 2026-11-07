@@ -1,8 +1,7 @@
+import { SITE_URL } from "@/lib/config";
 import { unisender } from "@/lib/unisender";
 
 const SITE_NAME = "CON-VET.RU";
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru";
 
 /** Names come from the public registration form: escape before putting them into HTML */
 function escapeHtml(value: string): string {

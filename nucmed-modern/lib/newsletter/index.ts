@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 /**
  * Newsletter Service
  * Generates weekly digest emails with top articles
@@ -38,7 +39,6 @@ export interface NewsletterDigest {
   createdAt: Date;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru';
 const SITE_NAME = 'CON-VET.ru';
 
 export async function sendNewArticleNotification(articleId: string) {

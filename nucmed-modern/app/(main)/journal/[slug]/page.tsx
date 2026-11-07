@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -12,7 +13,6 @@ import { formatDateUTC } from "@/lib/utils/date"
 export const dynamic = "force-dynamic"
 export const revalidate = 60
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://con-vet.ru"
 
 type Props = { params: Promise<{ slug: string }> }
 

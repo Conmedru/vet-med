@@ -1,10 +1,11 @@
+import { SITE_URL } from "@/lib/config";
 import { MetadataRoute } from 'next'
 import { RUBRICS } from '@/lib/rubrics'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://con-vet.ru'
+const BASE_URL = SITE_URL
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
