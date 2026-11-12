@@ -31,23 +31,47 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   exact?: boolean;
-  badgeKey?: string;
+  badgeKey?: "unreadCount";
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/admin", label: "Обзор", icon: LayoutDashboard, exact: true },
-  { href: "/admin/queue", label: "Очередь", icon: FileText, badgeKey: "unreadCount" },
-  { href: "/admin/articles/new", label: "Новая статья", icon: PenSquare },
-  { href: "/admin/sources", label: "Источники", icon: Rss },
-  { href: "/admin/images", label: "Изображения", icon: ImageIcon },
-  { href: "/admin/journal", label: "Журнал", icon: BookOpen },
-  { href: "/admin/newsletter", label: "Рассылка", icon: Mail },
-  { href: "/admin/members", label: "Пользователи", icon: Users },
-  { href: "/admin/sponsored", label: "Реклама", icon: Megaphone },
-  { href: "/admin/events", label: "Мероприятия", icon: CalendarDays },
-  { href: "/admin/calendar", label: "Календарь", icon: Calendar },
-  { href: "/admin/settings", label: "Настройки", icon: Settings },
+/*
+ * Menu by groups, as on onco-compass: content, what is visible on the site, catalog setup.
+ * «Новая статья» is a button above the menu (an action, not a section); settings,
+ * the link to the site and the profile with logout stay at the bottom.
+ */
+const NAV_GROUPS: { title?: string; items: NavItem[] }[] = [
+  {
+    title: "Контент",
+    items: [
+      { href: "/admin", label: "Обзор", icon: LayoutDashboard, exact: true },
+      { href: "/admin/queue", label: "Очередь", icon: FileText, badgeKey: "unreadCount" },
+      { href: "/admin/calendar", label: "Календарь публикаций", icon: Calendar },
+      { href: "/admin/journal", label: "Журнал", icon: BookOpen },
+      { href: "/admin/images", label: "Изображения", icon: ImageIcon },
+    ],
+  },
+  {
+    title: "Сайт",
+    items: [
+      { href: "/admin/events", label: "Мероприятия", icon: CalendarDays },
+      { href: "/admin/sponsored", label: "Реклама", icon: Megaphone },
+      { href: "/admin/newsletter", label: "Рассылка", icon: Mail },
+    ],
+  },
+  {
+    title: "Структура",
+    items: [{ href: "/admin/sources", label: "Источники", icon: Rss }],
+  },
+  { items: [{ href: "/admin/members", label: "Пользователи", icon: Users }] },
 ];
+
+const itemClass = (active: boolean) =>
+  cn(
+    "group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
+    active ? "bg-stone-100 font-medium text-stone-900" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900",
+  );
+const iconClass = (active: boolean) =>
+  cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-stone-400 group-hover:text-stone-600");
 
 export default function AdminLayout({
   children,
@@ -145,86 +169,76 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-72 bg-white border-r border-stone-200/60 z-40 transition-transform lg:translate-x-0 flex flex-col",
+          "fixed top-0 left-0 h-full w-64 bg-white border-r border-stone-200/70 z-40 transition-transform lg:translate-x-0 flex flex-col pt-16 lg:pt-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Logo */}
-        <div className="p-6">
-          <Link href="/admin" className="flex items-center">
-            <img src="/con-vet-logo.png" alt="CON-VET.ru Logo" className="h-8 w-auto" />
+        <div className="shrink-0 px-5 pt-5 pb-4">
+          <Link href="/admin" className="hidden lg:block">
+            <img src="/con-vet-logo.png" alt="CON-VET.ru" className="h-7 w-auto" />
           </Link>
-          <div className="text-xs text-stone-400 mt-2">Панель управления</div>
+          <div className="mt-1.5 hidden text-[11px] uppercase lg:block tracking-[0.08em] text-stone-400">Панель управления</div>
+          <Link
+            href="/admin/articles/new"
+            onClick={() => setSidebarOpen(false)}
+            className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+          >
+            <PenSquare className="h-4 w-4" />
+            Новая статья
+          </Link>
         </div>
 
-        {/* User Profile Snippet */}
-        {user && (
-          <div className="px-6 mb-6">
-            <div className="p-3 bg-stone-50 rounded-xl border border-stone-100 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center">
-                <User className="h-4 w-4 text-stone-500" />
-              </div>
-              <div className="overflow-hidden">
-                <div className="text-sm font-medium text-stone-900 truncate">{user.name || "User"}</div>
-                <div className="text-xs text-stone-500 truncate">{user.email}</div>
+        {/* Menu scrolls on its own: the bottom of the panel stays on screen */}
+        <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi} className={cn(gi > 0 && "mt-4")}>
+              {group.title && (
+                <div className="px-2.5 pb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-stone-400">{group.title}</div>
+              )}
+              <div className="space-y-px">
+                {group.items.map((item) => {
+                  const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                  const badgeCount = item.badgeKey === "unreadCount" ? unreadCount : 0;
+                  return (
+                    <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} className={itemClass(isActive)}>
+                      <item.icon className={iconClass(isActive)} />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {badgeCount > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-[11px] font-semibold tabular-nums text-amber-800">
+                          {badgeCount > 99 ? "99+" : badgeCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            const badgeCount = item.badgeKey === "unreadCount" ? unreadCount : 0;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                  isActive
-                    ? "bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/20"
-                    : "text-stone-600 hover:bg-stone-100"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="flex-1">{item.label}</span>
-                {badgeCount > 0 && (
-                  <span className={cn(
-                    "min-w-5 h-5 px-1.5 flex items-center justify-center text-xs font-bold rounded-full",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-primary text-white"
-                  )}>
-                    {badgeCount > 99 ? "99+" : badgeCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+          ))}
         </nav>
 
-        {/* Bottom */}
-        <div className="p-4 border-t border-stone-100">
-          <Link
-            href="/"
-            target="_blank"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-stone-500 hover:bg-stone-100 transition-all mb-1"
-          >
-            <Home className="h-5 w-5 shrink-0" />
-            <span className="flex-1">На сайт</span>
+        <div className="shrink-0 space-y-px border-t border-stone-100 px-3 py-3">
+          <Link href="/admin/settings" onClick={() => setSidebarOpen(false)} className={itemClass(pathname.startsWith("/admin/settings"))}>
+            <Settings className={iconClass(pathname.startsWith("/admin/settings"))} />
+            Настройки
           </Link>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-stone-500 hover:bg-red-50 hover:text-red-600 transition-all"
-          >
-            <LogOut className="h-5 w-5 shrink-0" />
-            <span className="flex-1 text-left">Выйти</span>
-          </button>
+          <Link href="/" target="_blank" className={itemClass(false)}>
+            <Home className={iconClass(false)} />
+            На сайт
+          </Link>
+          {user && (
+            <div className="mt-2 flex items-center gap-2.5 rounded-lg px-2.5 py-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-100">
+                <User className="h-3.5 w-3.5 text-stone-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-medium text-stone-800">{user.name || user.email}</div>
+                {user.name && <div className="truncate text-[11px] text-stone-400">{user.email}</div>}
+              </div>
+              <button onClick={handleLogout} title="Выйти" aria-label="Выйти" className="shrink-0 rounded-md p-1.5 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-600">
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -237,7 +251,7 @@ export default function AdminLayout({
       )}
 
       {/* Main content */}
-      <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
         {children}
       </main>
 
