@@ -40,6 +40,9 @@ interface AIArticle {
   rubrics?: unknown;
   tags?: string[];
   significanceScore?: number;
+  /** Not veterinary (food technology, human medicine…): held for an editor, never auto-published */
+  offTopic?: boolean;
+  offTopicReason?: string;
 }
 
 /** Below this the source is a title or citation only: the model would invent the article */
@@ -59,6 +62,19 @@ const NO_SOURCE_MARKER = "no-source:";
  * auto-publish path must leave such DRAFTs to an editor.
  */
 export const FACTCHECK_HOLD_PREFIX = "factcheck|";
+
+/**
+ * Marker of an article the model found off-topic for a veterinary portal (quail fillet
+ * marination and an almond yogurt were published, client 2026-11-16). Held in DRAFT like a
+ * fact-check hold: an editor publishes it by hand if the topic fits after all.
+ */
+export const TOPIC_HOLD_PREFIX = "topic|";
+
+/** Holds an editor releases by publishing or scheduling the article */
+export function isEditorHold(processingError: string | null | undefined): boolean {
+  const note = processingError ?? "";
+  return note.startsWith(FACTCHECK_HOLD_PREFIX) || note.startsWith(TOPIC_HOLD_PREFIX);
+}
 
 function holdReason(fidelity: FidelityResult | null, factCheck: FactCheckResult | null): string {
   const parts: string[] = [];
@@ -185,6 +201,8 @@ export async function processAndGenerateCover(
         continue;
       }
       result = parsed;
+      // Off-topic: no checks and no regeneration, the article goes to an editor as is
+      if (parsed.offTopic === true) break;
 
       fidelity = checkFidelity({
         source: fidelitySource,
@@ -222,8 +240,13 @@ export async function processAndGenerateCover(
     }
     const title = result.title;
 
-    const passed = !!fidelity?.ok && (!factCheckEnabled || (!!factCheck && factCheck.verdict !== "major"));
-    const holdNote = passed ? null : holdReason(fidelity, factCheck);
+    const offTopic = result.offTopic === true;
+    const passed = !offTopic && !!fidelity?.ok && (!factCheckEnabled || (!!factCheck && factCheck.verdict !== "major"));
+    const holdNote = offTopic
+      ? `${TOPIC_HOLD_PREFIX}${String(result.offTopicReason || "не по теме ветеринарного портала").slice(0, 300)}`
+      : passed
+        ? null
+        : holdReason(fidelity, factCheck);
 
     const rubrics = withSourceRubrics(rubricsFromAI(result.rubrics), article.source?.adapterConfig);
     const category = primaryRubricName(rubrics) || "Общая ветеринария";

@@ -1,4 +1,4 @@
-import { FACTCHECK_HOLD_PREFIX } from "@/lib/ai/process-article";
+import { isEditorHold } from "@/lib/ai/process-article";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateAdminAuth, validateAuthWithDevBypass, getAuthUser } from "@/lib/auth";
@@ -117,10 +117,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const rubrics = data.rubrics ? filterRubricSlugs(data.rubrics) : undefined;
 
-    // An editor scheduling or publishing a held article has reviewed it: drop the fact-check hold
+    // An editor scheduling or publishing a held article has reviewed it: drop the hold
+    // (fact-check or off-topic)
     const releasesHold =
       (targetStatus === 'PUBLISHED' || targetStatus === 'SCHEDULED') &&
-      (existing.processingError ?? '').startsWith(FACTCHECK_HOLD_PREFIX);
+      isEditorHold(existing.processingError);
 
     const article = await prisma.article.update({
       where: { id },

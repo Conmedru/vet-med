@@ -658,7 +658,15 @@ export default function ArticleEditorPage({ params }: { params: Promise<{ id: st
 
           {/* Processing Error */}
           {article.processingError && (
-            article.processingError.startsWith("factcheck|") ? (
+            article.processingError.startsWith("topic|") ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <p className="text-sm text-amber-800">
+                  <strong>Похоже, не по теме портала.</strong> Автоматически не публикуется.
+                  Если тема всё же ветеринарная, опубликуйте вручную.
+                </p>
+                <p className="mt-2 text-sm text-amber-900">{article.processingError.slice("topic|".length)}</p>
+              </div>
+            ) : article.processingError.startsWith("factcheck|") ? (
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                 <p className="text-sm text-amber-800">
                   <strong>Задержано проверкой по исходнику.</strong> Текст расходится с оригиналом, автоматически не публикуется.
