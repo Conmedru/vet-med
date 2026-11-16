@@ -1,5 +1,4 @@
 import { CACHE } from "@/lib/config";
-import { format } from "date-fns";
 
 const UNISENDER_API_KEY = process.env.UNISENDER || process.env.UNISENDER_API_KEY;
 // Sender of the digest and service emails: the client's mailbox on icon-media.ru (Yandex 360,
@@ -147,18 +146,24 @@ export const unisender = {
       params[`fields[${key}]`] = value;
     }
 
-    return this.request("subscribe", params);
+    // Thrown, like sendEmail: a missing key returned «API key missing» as a value, and the
+    // account digest toggle reported success while list 7 stayed empty (2026-11-16)
+    const result = await this.request("subscribe", params);
+    if (result?.error) throw new Error(`Unisender subscribe: ${result.error}`);
+    return result;
   },
 
   /**
    * Remove an email from lists (stays in the account, no further campaigns from these lists)
    */
   async exclude(email: string, listIds: string | string[]) {
-    return this.request("exclude", {
+    const result = await this.request("exclude", {
       contact_type: "email",
       contact: email,
       list_ids: Array.isArray(listIds) ? listIds.join(",") : listIds,
     });
+    if (result?.error) throw new Error(`Unisender exclude: ${result.error}`);
+    return result;
   },
 
   /**
@@ -199,7 +204,8 @@ export const unisender = {
     // 2. Create campaign
     const campaignRes = await this.request("createCampaign", {
       message_id: messageId,
-      start_time: format(new Date(), "yyyy-MM-dd HH:mm"), // Format required: YYYY-MM-DD hh:mm
+      // No start_time: the campaign starts at once. The container clock is UTC and Unisender
+      // reads start_time in the account time zone (onco-compass ran into it)
       track_read: 1,
       track_links: 1,
       // contacts parameter removed as it causes "list empty" error when message is already linked to list

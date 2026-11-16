@@ -1,10 +1,39 @@
 import { SITE_URL } from "@/lib/config";
-import { NewsletterArticle, NewsletterDigest } from './index';
+import type { NewsletterDigest } from './index';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { digestUtm, NOTIFICATION_UTM, withUtm, type Utm } from '@/lib/analytics/utm';
 
 // Constants
 const SITE_NAME = 'CON-VET.ru';
+
+// CON-VET brand: the site's primary teal (hsl(192 82% 31%)) and ink; logo as PNG —
+// WebP and SVG are not shown by Outlook and part of webmail clients
+const BRAND = '#0E7490';
+const INK = '#0B2A33';
+const MUTED = '#5B6B70';
+const BG = '#EEF5F7';
+const FONT = "Helvetica, Arial, sans-serif";
+const LOGO_URL = `${SITE_URL}/con-vet-logo.png`; // 740×117
+const SUPPORT_EMAIL = 'content@icon-media.ru';
+const PREFERENCES_URL = `${SITE_URL}/account?tab=digest`;
+
+/** Text from the database goes into HTML: titles may contain <, > and & */
+export function escapeHtml(value: string | null | undefined): string {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+/** «9–15 ноября 2026» or «26 октября – 1 ноября 2026» */
+export function digestDateRange(start: Date, end: Date): string {
+    const year = format(end, 'yyyy');
+    return start.getMonth() === end.getMonth()
+        ? `${format(start, 'd')}–${format(end, 'd MMMM', { locale: ru })} ${year}`
+        : `${format(start, 'd MMMM', { locale: ru })} – ${format(end, 'd MMMM', { locale: ru })} ${year}`;
+}
 
 // User provided styles
 const HEAD_STYLES = `
@@ -76,13 +105,23 @@ const HEAD_STYLES = `
     }
 `;
 
-const BASE_TEMPLATE = (title: string, preheader: string, content: string) => `
+const logo = (href: string, width: number) =>
+    `<a href="${href}" target="_blank" style="text-decoration: none;"><img src="${LOGO_URL}" alt="CON-VET.ru" width="${width}" height="${Math.round((width * 117) / 740)}" style="display: block; width: ${width}px; height: auto; border: 0;"></a>`;
+
+const button = (href: string, label: string) => `
+    <table cellpadding="0" cellspacing="0" border="0"><tr>
+        <td align="center" valign="middle" bgcolor="${BRAND}" style="border-radius: 8px; background-color: ${BRAND};">
+            <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 22px; font-family: ${FONT}; font-size: 15px; line-height: 20px; font-weight: bold; color: #ffffff; text-decoration: none;">${label}</a>
+        </td>
+    </tr></table>`;
+
+const BASE_TEMPLATE = (title: string, preheader: string, content: string, utm: Utm) => `
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head>
+<html lang="ru"><head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="x-apple-disable-message-reformatting">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${title}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400&display=swap" em-class="em-font-Inter-Regular">
+    <title>${escapeHtml(title)}</title>
     <style type="text/css">
 		${HEAD_STYLES}
 	</style>
@@ -95,56 +134,47 @@ const BASE_TEMPLATE = (title: string, preheader: string, content: string) => `
 	</xml>
 	<![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #F8F8F8;">
-    <span class="preheader" style="display: none !important; visibility: hidden; opacity: 0; color: #F8F8F8; height: 0; width: 0; font-size: 1px;">${preheader}</span>
+<body style="margin: 0; padding: 0; background-color: ${BG};">
+    <span class="preheader" style="display: none !important; visibility: hidden; opacity: 0; color: ${BG}; height: 0; width: 0; font-size: 1px; mso-hide: all;">${escapeHtml(preheader)}</span>
     <!--[if !mso]><!-->
-    <div style="font-size:0px;color:transparent;opacity:0;">
-        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-    </div>
+    <div style="display: none; font-size: 0px; line-height: 0px; max-height: 0px; overflow: hidden; opacity: 0;">&#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847; &#8199;&#847;</div>
     <!--<![endif]-->
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 1px; line-height: normal;" bgcolor="#F8F8F8">
-        <tr em="group">
-            <td align="center" style="padding-top: 20px; padding-bottom: 20px;" class="em-mob-padding_top-0 em-mob-padding_right-0 em-mob-padding_bottom-0 em-mob-padding_left-0">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 1px; line-height: normal;" bgcolor="${BG}">
+        <tr>
+            <td align="center" style="padding-top: 24px; padding-bottom: 24px;" class="em-mob-padding_top-0 em-mob-padding_right-0 em-mob-padding_bottom-0 em-mob-padding_left-0">
                 <!--[if (gte mso 9)|(IE)]>
 				<table cellpadding="0" cellspacing="0" border="0" width="660"><tr><td>
 				<![endif]-->
                 <table cellpadding="0" cellspacing="0" width="100%" border="0" style="max-width: 660px; min-width: 660px; width: 660px;" class="em-narrow-table">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 24px 20px 20px 20px; background-color: #ffffff; border-bottom: 3px solid ${BRAND};" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+                          <td valign="middle">${logo(withUtm(SITE_URL, utm), 190)}</td>
+                          <td valign="middle" align="right">
+                            <a href="${withUtm(`${SITE_URL}/news`, utm)}" target="_blank" style="font-family: ${FONT}; font-size: 14px; line-height: 20px; color: ${BRAND}; text-decoration: none; font-weight: bold; white-space: nowrap;">Все новости&nbsp;→</a>
+                          </td>
+                        </tr></table>
+                      </td>
+                    </tr>
+
                     ${content}
-                    
+
                     <!-- Footer -->
-                    <tr em="block" class="em-structure">
-                      <td align="center" style="padding: 40px; background-color: #ffffff;" class="em-mob-padding_top-20 em-mob-padding_right-20 em-mob-padding_bottom-20 em-mob-padding_left-20" bgcolor="#FFFFFF">
-                        <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-                          <tr>
-                            <td width="280" valign="top" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-48perc">
-                                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 20px;" class="em-mob-padding_bottom-30">
-                                    <a href="${SITE_URL}" style="text-decoration: none; font-size: 24px; font-weight: bold; font-family: Inter, sans-serif; color: #121212;">
-                                        Vet<span style="color: #0891B2;">Med</span>
-                                    </a>
-                                </td></tr></table>
-                            </td>
-                            <td width="20" class="em-mob-wrap em-mob-wrap-cancel">&nbsp;</td>
-                            <td width="280" valign="top" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-48perc"></td>
-                          </tr></table>
-                            <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-                          <tr>
-                            <td width="580" valign="middle" class="em-mob-wrap em-mob-width-100perc">
-                                        <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-                                            <td>
-                                                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 5px;">
-                                                    <div style="font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #656565;" class="em-font-Inter-Regular">© ${new Date().getFullYear()} ${SITE_NAME}</div>
-                                                </td></tr></table><table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 5px;">
-                                                    <div style="font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #656565;" class="em-font-Inter-Regular">Все права защищены.</div>
-                                                </td></tr></table>
-                                            <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="left" class="em-mob-text-align-left" style="padding-bottom: 20px;">
-                                        <a href="mailto:content@icon-media.ru" target="_blank" style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; text-decoration: underline; color: #656565;">Поддержка</a>
-                                        <span style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #A3ADBB;">&nbsp; &nbsp; &nbsp;<a href="${SITE_URL}/newsletter/preferences" target="_blank" style="text-decoration: underline solid; color: #656565;">Настроить подписку</a>&nbsp; &nbsp; &nbsp;<a href="{{UnsubscribeUrl}}" target="_blank" style="text-decoration: underline solid; color: #656565;">Отписаться</a></span>
-                                    </td></tr></table></td>
-                                            <td>
-                    </td>
-                                        </tr></table>
-                                    </td>
-                                </tr></table>
+                    <tr>
+                      <td style="padding: 28px 20px 32px 20px; background-color: #ffffff; border-top: 1px solid #DCE7EA;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                          <tr><td style="padding-bottom: 14px;">${logo(withUtm(SITE_URL, utm), 130)}</td></tr>
+                          <tr><td style="padding-bottom: 14px; font-family: ${FONT}; font-size: 13px; line-height: 20px; color: ${MUTED};">
+                            Профессиональный портал для ветеринарных врачей.<br>Вы получили это письмо, потому что подписались на дайджест на&nbsp;сайте ${SITE_NAME}.
+                          </td></tr>
+                          <tr><td style="font-family: ${FONT}; font-size: 13px; line-height: 20px; color: ${MUTED};">
+                            <a href="mailto:${SUPPORT_EMAIL}" target="_blank" style="color: ${MUTED}; text-decoration: underline;">Написать редакции</a>&nbsp;&nbsp;·&nbsp;
+                            <a href="${PREFERENCES_URL}" target="_blank" style="color: ${MUTED}; text-decoration: underline;">Настроить подписку</a>&nbsp;&nbsp;·&nbsp;
+                            <a href="{{UnsubscribeUrl}}" target="_blank" style="color: ${MUTED}; text-decoration: underline;">Отписаться</a>
+                          </td></tr>
+                          <tr><td style="padding-top: 14px; font-family: ${FONT}; font-size: 12px; line-height: 18px; color: #8A979B;">© ${new Date().getFullYear()} ${SITE_NAME}</td></tr>
+                        </table>
                       </td>
                     </tr>
                 </table>
@@ -158,112 +188,53 @@ const BASE_TEMPLATE = (title: string, preheader: string, content: string) => `
 
 export function generateDigestHtml(digest: NewsletterDigest): string {
     const { articles, dateRange } = digest;
-    const dateRangeStr = `${format(dateRange.start, 'd MMMM', { locale: ru })} - ${format(dateRange.end, 'd MMMM', { locale: ru })}`;
-    const year = format(dateRange.end, 'yyyy');
-
-    // Group articles
-    const articlesByCategory: Record<string, NewsletterArticle[]> = {};
-    articles.forEach(a => {
-        const cat = a.category || 'Другое';
-        if (!articlesByCategory[cat]) articlesByCategory[cat] = [];
-        articlesByCategory[cat].push(a);
-    });
+    const utm = digestUtm(digest.id);
 
     let content = `
-    <!-- Header Block -->
-    <tr em="block" class="em-structure">
-      <td align="center" style="padding: 20px;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
-        <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-          <tr>
-            <td width="300" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-auto">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td>
-                    <a href="${SITE_URL}" style="text-decoration: none; font-size: 28px; font-weight: bold; font-family: Inter, sans-serif; color: #121212;">
-                        Vet<span style="color: #0891B2;">Med</span>
-                    </a>
-                </td></tr></table>
-            </td>
-            <td width="20" class="em-mob-wrap em-mob-wrap-cancel">&nbsp;</td>
-            <td width="300" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-auto">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="right">
-                    <table cellpadding="0" cellspacing="0" border="0" class="em-mob-width-100perc">
-                        <tr>
-                            <td align="center" valign="middle" height="30" style="border-radius: 5px; height: 30px; padding: 0px 40px; border-color: #121212; border-width: 1px; border-style: solid;">
-                                <a href="${SITE_URL}/news" target="_blank" style="display: block; width: 100%; height: 30px; font-family: Helvetica, Arial, sans-serif; color: #121212; font-size: 16px; line-height: 30px; text-decoration: none; white-space: nowrap;" class="em-font-Inter-Regular">Все новости</a>
-                            </td>
-                        </tr></table>
-                </td></tr></table>
-            </td>
-          </tr></table>
-      </td>
-    </tr>
-
-    <!-- Intro Block -->
-    <tr em="block" class="em-structure">
-      <td align="center" style="padding: 20px; background-color: #ffffff;" class="em-mob-padding_left-20 em-mob-padding_right-20" bgcolor="#FFFFFF">
-        <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-          <tr>
-            <td width="620" valign="top" class="em-mob-wrap em-mob-width-100perc">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 2px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 21px; color: #121212; text-transform: uppercase;" class="em-font-Inter-Regular">Дайджест <br></div>
-                </td></tr></table>
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 10px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 21px; color: #121212; text-transform: uppercase;" class="em-font-Inter-Regular">${dateRangeStr} ${year}<br></div>
-                </td></tr></table>
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 10px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 21px; color: #121212;" class="em-font-Inter-Regular">
-                    Главные события ветеринарной медицины за неделю. Мы собрали для вас самые важные новости и обновления.
-                  </div>
-                </td></tr></table>
-            </td>
-          </tr></table>
+    <!-- Intro -->
+    <tr>
+      <td style="padding: 28px 20px 8px 20px; background-color: #ffffff;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
+        <div style="font-family: ${FONT}; font-size: 12px; line-height: 16px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; color: ${BRAND};">Еженедельный дайджест</div>
+        <div style="padding-top: 6px; font-family: ${FONT}; font-size: 26px; line-height: 32px; font-weight: bold; color: ${INK};">${digestDateRange(dateRange.start, dateRange.end)}</div>
+        <div style="padding-top: 10px; font-family: ${FONT}; font-size: 15px; line-height: 22px; color: ${MUTED};">Главные материалы недели для ветеринарных врачей: исследования, клинические случаи и новости отрасли.</div>
       </td>
     </tr>
     `;
 
-    // Articles Blocks
-    for (const [category, catArticles] of Object.entries(articlesByCategory)) {
-        for (const article of catArticles) {
-            const imageUrl = article.imageUrl || '';
-            const articleContent = `
-            <tr em="block" class="em-structure">
-              <td align="center" style="padding: 20px; background-color: #ffffff;" class="em-mob-padding_left-20 em-mob-padding_right-20" bgcolor="#FFFFFF">
-                <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
+    for (const article of articles) {
+        const imageUrl = article.imageUrl || '';
+        const title = escapeHtml(article.title);
+        content += `
+            <tr>
+              <td style="padding: 20px; background-color: #ffffff;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
+                <table border="0" cellspacing="0" cellpadding="0" width="100%" class="em-mob-width-100perc" style="border-top: 1px solid #E3ECEE;">
                   <tr>
                     ${imageUrl ? `
-                    <td width="300" valign="top" class="em-mob-wrap em-mob-width-100perc">
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td>
-                          <img src="${imageUrl}" width="300" border="0" alt="" style="display: block; width: 100%; max-width: 300px; border-radius: 4px;">
-                        </td></tr></table>
+                    <td width="240" valign="top" style="padding-top: 20px;" class="em-mob-wrap em-mob-width-100perc">
+                      <a href="${article.url}" target="_blank" style="text-decoration: none;"><img src="${imageUrl}" width="240" border="0" alt="${title}" style="display: block; width: 100%; max-width: 240px; height: auto; border-radius: 8px;" class="em-mob-width-100perc"></a>
                     </td>
-                    <td width="20" class="em-mob-wrap"></td>
+                    <td width="20" class="em-mob-wrap">&nbsp;</td>
                     ` : ''}
-                    <td width="${imageUrl ? '300' : '620'}" valign="top" class="em-mob-wrap em-mob-width-100perc">
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-right: 0px; padding-bottom: 20px; padding-left: 0px;" class="em-mob-padding_top-15">
-                          <div style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 28px; color: #121212; text-transform: uppercase;" class="em-font-Inter-Regular"><strong>${article.title}</strong></div>
-                        </td></tr></table>
-                        ${article.excerpt ? `
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 20px;">
-                          <div style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 21px; color: #121212;" class="em-font-Inter-Regular">${article.excerpt}</div>
-                        </td></tr></table>
-                        ` : ''}
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="${imageUrl ? 'right' : 'left'}">
-                                <table cellpadding="0" cellspacing="0" border="0" class="${imageUrl ? '' : 'em-mob-width-auto'}">
-                                    <tr>
-                                        <td align="center" valign="middle" height="30" style="border-radius: 5px; height: 30px; padding: 0px 40px; border-color: #121212; border-width: 1px; border-style: solid;">
-                                            <a href="${article.url}" target="_blank" style="display: block; width: 100%; height: 30px; font-family: Helvetica, Arial, sans-serif; color: #121212; font-size: 16px; line-height: 30px; text-decoration: none; white-space: nowrap;" class="em-font-Inter-Regular">ЧИТАТЬ</a>
-                                        </td>
-                                    </tr></table>
-                            </td></tr></table>
+                    <td valign="top" style="padding-top: 20px;" class="em-mob-wrap em-mob-width-100perc">
+                      ${article.category ? `<div style="font-family: ${FONT}; font-size: 12px; line-height: 16px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: bold; color: ${BRAND}; padding-bottom: 6px;">${escapeHtml(article.category)}</div>` : ''}
+                      <a href="${article.url}" target="_blank" style="font-family: ${FONT}; font-size: 18px; line-height: 24px; font-weight: bold; color: ${INK}; text-decoration: none;">${title}</a>
+                      ${article.excerpt ? `<div style="padding-top: 8px; font-family: ${FONT}; font-size: 14px; line-height: 21px; color: ${MUTED};">${escapeHtml(article.excerpt)}</div>` : ''}
+                      <div style="padding-top: 12px;"><a href="${article.url}" target="_blank" style="font-family: ${FONT}; font-size: 14px; line-height: 20px; font-weight: bold; color: ${BRAND}; text-decoration: none;">Читать&nbsp;→</a></div>
                     </td>
                   </tr></table>
               </td>
             </tr>
             `;
-            content += articleContent;
-        }
     }
 
-    return BASE_TEMPLATE(digest.subject, digest.preheader, content);
+    content += `
+    <tr>
+      <td align="center" style="padding: 12px 20px 32px 20px; background-color: #ffffff;" bgcolor="#FFFFFF">
+        ${button(withUtm(`${SITE_URL}/news`, utm), 'Все новости на сайте')}
+      </td>
+    </tr>`;
+
+    return BASE_TEMPLATE(digest.subject, digest.preheader, content, utm);
 }
 
 export function generateNotificationHtml(article: {
@@ -275,73 +246,19 @@ export function generateNotificationHtml(article: {
 }): string {
     const subject = `Новая статья: ${article.title}`;
     const preheader = article.excerpt ? article.excerpt.substring(0, 100) : 'Читайте новую статью на CON-VET.ru';
+    const title = escapeHtml(article.title);
 
     const content = `
-    <!-- Header Block -->
-    <tr em="block" class="em-structure">
-      <td align="center" style="padding: 20px;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
-        <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-          <tr>
-            <td width="300" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-auto">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td>
-                    <a href="${SITE_URL}" style="text-decoration: none; font-size: 28px; font-weight: bold; font-family: Inter, sans-serif; color: #121212;">
-                        Vet<span style="color: #0891B2;">Med</span>
-                    </a>
-                </td></tr></table>
-            </td>
-            <td width="20" class="em-mob-wrap em-mob-wrap-cancel">&nbsp;</td>
-            <td width="300" class="em-mob-wrap em-mob-wrap-cancel em-mob-width-auto">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="right">
-                    <table cellpadding="0" cellspacing="0" border="0" class="em-mob-width-100perc">
-                        <tr>
-                            <td align="center" valign="middle" height="30" style="border-radius: 5px; height: 30px; padding: 0px 40px; border-color: #121212; border-width: 1px; border-style: solid;">
-                                <a href="${SITE_URL}/news" target="_blank" style="display: block; width: 100%; height: 30px; font-family: Helvetica, Arial, sans-serif; color: #121212; font-size: 16px; line-height: 30px; text-decoration: none; white-space: nowrap;" class="em-font-Inter-Regular">Все новости</a>
-                            </td>
-                        </tr></table>
-                </td></tr></table>
-            </td>
-          </tr></table>
-      </td>
-    </tr>
-
-    <!-- Content Block -->
-    <tr em="block" class="em-structure">
-      <td align="center" style="padding: 20px; background-color: #ffffff;" class="em-mob-padding_left-20 em-mob-padding_right-20" bgcolor="#FFFFFF">
-        <table border="0" cellspacing="0" cellpadding="0" class="em-mob-width-100perc">
-          <tr>
-            <td width="620" valign="top" class="em-mob-wrap em-mob-width-100perc">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 2px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 21px; color: #10b981; text-transform: uppercase;" class="em-font-Inter-Regular">${article.category || 'НОВОСТЬ'}<br></div>
-                </td></tr></table>
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 20px; padding-top: 10px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 24px; line-height: 32px; color: #121212; text-transform: uppercase;" class="em-font-Inter-Regular"><strong>${article.title}</strong><br></div>
-                </td></tr></table>
-                
-                ${article.imageUrl ? `
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 20px;">
-                  <img src="${article.imageUrl}" width="620" border="0" alt="" style="display: block; width: 100%; max-width: 620px; border-radius: 4px;">
-                </td></tr></table>
-                ` : ''}
-
-                ${article.excerpt ? `
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td style="padding-bottom: 20px;">
-                  <div style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 26px; color: #121212;" class="em-font-Inter-Regular">${article.excerpt}</div>
-                </td></tr></table>
-                ` : ''}
-                
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" em="atom"><tr><td align="center" style="padding-top: 20px;">
-                    <table cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <td align="center" valign="middle" height="40" style="border-radius: 5px; height: 40px; padding: 0px 50px; background-color: #10b981; border: 1px solid #10b981;">
-                                <a href="${article.url}" target="_blank" style="display: block; width: 100%; height: 40px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; font-size: 16px; line-height: 40px; text-decoration: none; white-space: nowrap; font-weight: bold;" class="em-font-Inter-Regular">ЧИТАТЬ ПОЛНОСТЬЮ</a>
-                            </td>
-                        </tr></table>
-                </td></tr></table>
-            </td>
-          </tr></table>
+    <tr>
+      <td style="padding: 28px 20px; background-color: #ffffff;" bgcolor="#FFFFFF" class="em-mob-padding_left-20 em-mob-padding_right-20">
+        <div style="font-family: ${FONT}; font-size: 12px; line-height: 16px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; color: ${BRAND};">${escapeHtml(article.category || 'Новость')}</div>
+        <div style="padding-top: 8px; padding-bottom: 20px; font-family: ${FONT}; font-size: 24px; line-height: 30px; font-weight: bold; color: ${INK};">${title}</div>
+        ${article.imageUrl ? `<a href="${article.url}" target="_blank"><img src="${article.imageUrl}" width="620" border="0" alt="${title}" style="display: block; width: 100%; max-width: 620px; height: auto; border-radius: 8px;"></a>` : ''}
+        ${article.excerpt ? `<div style="padding-top: 20px; font-family: ${FONT}; font-size: 16px; line-height: 24px; color: ${INK};">${escapeHtml(article.excerpt)}</div>` : ''}
+        <div style="padding-top: 24px;">${button(article.url, 'Читать полностью')}</div>
       </td>
     </tr>
     `;
 
-    return BASE_TEMPLATE(subject, preheader, content);
+    return BASE_TEMPLATE(subject, preheader, content, NOTIFICATION_UTM);
 }

@@ -7,9 +7,10 @@ import { SITE_URL } from "@/lib/config";
 import { prisma } from '@/lib/prisma';
 import { articleRubrics, PET_SLUGS } from '@/lib/rubrics';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
-import { ru } from 'date-fns/locale';
 import { unisender, DEFAULT_LIST_ID } from '@/lib/unisender';
-import { generateDigestHtml, generateNotificationHtml } from './templates';
+import { digestDateRange, generateDigestHtml, generateNotificationHtml } from './templates';
+import { emailImageUrl } from './email-images';
+import { digestUtm, NOTIFICATION_UTM, withUtm } from '@/lib/analytics/utm';
 
 export interface NewsletterArticle {
   id: string;
@@ -41,6 +42,19 @@ export interface NewsletterDigest {
 
 const SITE_NAME = 'CON-VET.ru';
 
+/** Letters in the digest; 15 latest of Sunday was the old choice, now the best of the week */
+const DIGEST_SIZE = 12;
+/** «Общая ветеринария» is most of the flow: without a cap it fills the whole letter */
+const DIGEST_PER_CATEGORY = 3;
+
+function materials(n: number): string {
+  const tens = n % 100, ones = n % 10;
+  if (tens >= 11 && tens <= 14) return `${n} главных материалов`;
+  if (ones === 1) return `${n} главный материал`;
+  if (ones >= 2 && ones <= 4) return `${n} главных материала`;
+  return `${n} главных материалов`;
+}
+
 export async function sendNewArticleNotification(articleId: string) {
   console.log(`[Newsletter] Starting notification for article: ${articleId}`);
   const article = await prisma.article.findUnique({
@@ -67,8 +81,9 @@ export async function sendNewArticleNotification(articleId: string) {
     return;
   }
 
-  const articleUrl = `${SITE_URL}/news/${article.slug || article.id}`;
-  const imageUrl = article.coverImageUrl || article.images[0]?.storedUrl || article.images[0]?.originalUrl;
+  const articleUrl = withUtm(`${SITE_URL}/news/${article.slug || article.id}`, NOTIFICATION_UTM);
+  const cover = article.coverImageUrl || article.images[0]?.storedUrl || article.images[0]?.originalUrl || null;
+  const imageUrl = await emailImageUrl(cover, `notification/${article.id}`);
 
   const html = generateNotificationHtml({
     title: article.title || article.titleOriginal || 'Без заголовка',
@@ -130,10 +145,13 @@ export async function sendWeeklyDigest(digest: NewsletterDigest) {
     return;
   }
 
+  // Email-safe images only for a real send: the admin preview stays fast
+  const prepared = await withEmailImages(digest);
+
   console.log(`Sending weekly digest ${digest.id}...`);
   const result = await unisender.createCampaign(
-    digest.subject,
-    digest.html,
+    prepared.subject,
+    prepared.html,
     listId
   );
 
@@ -152,7 +170,7 @@ export async function sendWeeklyDigest(digest: NewsletterDigest) {
         type: 'DIGEST',
         status: 'SENT',
         externalId: result.result?.campaign_id ? String(result.result.campaign_id) : undefined,
-        content: digest.html,
+        content: prepared.html,
         metadata: {
           digestId: digest.id,
           articleCount: digest.articles.length,
@@ -167,6 +185,15 @@ export async function sendWeeklyDigest(digest: NewsletterDigest) {
   }
 
   return result;
+}
+
+/** The digest with JPEG copies of the covers on our S3 (see emailImageUrl) */
+async function withEmailImages(digest: NewsletterDigest): Promise<NewsletterDigest> {
+  const articles = await Promise.all(
+    digest.articles.map(async (a) => ({ ...a, imageUrl: await emailImageUrl(a.imageUrl, `${digest.id}/${a.id}`) })),
+  );
+  const prepared = { ...digest, articles };
+  return { ...prepared, html: generateDigestHtml(prepared) };
 }
 
 /** Subscribers of any of the given categories (subscriptions store rubric/category names) */
@@ -281,19 +308,24 @@ export async function generateWeeklyDigest(
   const weekStart = startOfWeek(targetDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(targetDate, { weekStartsOn: 1 });
 
-  // Fetch top articles from the week
-  const articles = await prisma.article.findMany({
+  const digestId = `digest-${format(weekStart, 'yyyy-MM-dd')}`;
+
+  // The best of the week, not the latest: ~60 articles a day, so «15 latest» was
+  // Sunday afternoon only, scores 1–2 included (2026-11-16)
+  const candidates = await prisma.article.findMany({
     where: {
       status: 'PUBLISHED',
+      title: { not: null },
       publishedAt: {
         gte: weekStart,
         lte: weekEnd,
       },
     },
     orderBy: [
+      { significanceScore: { sort: 'desc', nulls: 'last' } },
       { publishedAt: 'desc' },
     ],
-    take: 15,
+    take: 300,
     include: {
       images: {
         where: { isCover: true },
@@ -301,6 +333,14 @@ export async function generateWeeklyDigest(
       },
     },
   });
+
+  const perCategory: Record<string, number> = {};
+  const articles = candidates.filter((a) => {
+    const cat = a.category || 'Другое';
+    if ((perCategory[cat] ?? 0) >= DIGEST_PER_CATEGORY) return false;
+    perCategory[cat] = (perCategory[cat] ?? 0) + 1;
+    return true;
+  }).slice(0, DIGEST_SIZE);
 
   // Calculate stats
   const byCategory: Record<string, number> = {};
@@ -315,16 +355,17 @@ export async function generateWeeklyDigest(
     excerpt: a.excerpt,
     category: a.category,
     publishedAt: a.publishedAt,
-    url: `${SITE_URL}/news/${a.id}`,
+    // By slug: /news/<id> redirects to the slug and loses the UTM tags
+    url: withUtm(`${SITE_URL}/news/${a.slug || a.id}`, digestUtm(digestId)),
     imageUrl: a.coverImageUrl || a.images[0]?.storedUrl || a.images[0]?.originalUrl || null,
   }));
 
-  const dateRangeStr = `${format(weekStart, 'd MMMM', { locale: ru })} - ${format(weekEnd, 'd MMMM yyyy', { locale: ru })}`;
+  const dateRangeStr = digestDateRange(weekStart, weekEnd);
 
   const digest: NewsletterDigest = {
-    id: `digest-${format(weekStart, 'yyyy-MM-dd')}`,
-    subject: `${SITE_NAME}: Дайджест за ${dateRangeStr}`,
-    preheader: `${articles.length} новостей ветеринарной медицины за прошедшую неделю`,
+    id: digestId,
+    subject: `${SITE_NAME}: дайджест за ${dateRangeStr}`,
+    preheader: `${materials(articles.length)} недели для ветеринарных врачей: ${newsletterArticles[0]?.title ?? ''}`,
     dateRange: { start: weekStart, end: weekEnd },
     articles: newsletterArticles,
     stats: {
@@ -345,7 +386,7 @@ export async function generateWeeklyDigest(
 
 function generateDigestPlainText(digest: NewsletterDigest): string {
   const { articles, dateRange, stats } = digest;
-  const dateRangeStr = `${format(dateRange.start, 'd MMMM', { locale: ru })} - ${format(dateRange.end, 'd MMMM yyyy', { locale: ru })}`;
+  const dateRangeStr = digestDateRange(dateRange.start, dateRange.end);
 
   let text = `${SITE_NAME} — Еженедельный дайджест\n`;
   text += `${dateRangeStr} • ${stats.totalArticles} публикаций\n\n`;
@@ -372,7 +413,7 @@ function generateDigestPlainText(digest: NewsletterDigest): string {
 
   text += `${'='.repeat(50)}\n\n`;
   text += `Все новости: ${SITE_URL}/news\n`;
-  text += `Отписаться: ${SITE_URL}/unsubscribe\n`;
+  text += `Настроить или отключить дайджест: ${SITE_URL}/account?tab=digest\n`;
 
   return text;
 }

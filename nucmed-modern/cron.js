@@ -42,10 +42,12 @@ setInterval(() => {
   runTask('Publish Scheduled', '/api/cron/publish');
 }, 5 * 60 * 1000);
 
-// 2. Newsletter Digest: Every hour
+// 2. Newsletter Digest: every 15 minutes; the route sends only in the scheduled hour, once.
+// An hourly timer counts from the container start: a deploy inside the hour moved the next
+// tick past it, and the week was skipped silently (onco-compass, same fix)
 setInterval(() => {
   runTask('Newsletter Digest', '/api/cron/digest');
-}, 60 * 60 * 1000);
+}, 15 * 60 * 1000);
 
 // 3. Scrape Sources: every 15 minutes and after startup. The route scrapes only sources whose
 // own interval (scrapeIntervalMinutes) has passed, so frequent calls are cheap. A 2-hour

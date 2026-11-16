@@ -25,3 +25,22 @@ test('темы в дайджесте сохраняются в рубриках 
   await page.getByRole('button', { name: 'Кошки', exact: true }).click();
   await expect.poll(async () => (await (await page.request.get(`${BASE}/api/member/profile`)).json()).member.rubrics.length).toBe(before.length + 1);
 });
+
+test('ссылка «Настроить подписку» из письма открывает вкладку дайджеста', async ({ page }) => {
+  // Без входа — на вход с возвратом на ту же вкладку
+  await page.goto(`${BASE}/account?tab=digest`);
+  await expect(page).toHaveURL(/\/login\?redirect=%2Faccount%3Ftab%3Ddigest/);
+
+  const email = `e2e-tab-${Date.now()}@example.test`;
+  const reg = await page.request.post(`${BASE}/api/member/register`, {
+    data: {
+      lastName: 'Тестов', firstName: 'Тест', middleName: 'Тестович', specialty: 'other', specialtyOther: 'тест', email,
+      password: 'e2e-Test-pass-123', country: 'Россия', city: 'Москва', interests: [], consentHealthcare: true,
+      consentPd152: true, consentPd156: true, consentMarketing: true,
+    },
+  });
+  expect(reg.status()).toBe(200);
+  await page.goto(`${BASE}/account?tab=digest`);
+  await expect(page.getByRole('tab', { name: 'Еженедельный дайджест' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByText('Интересующие темы')).toBeVisible();
+});

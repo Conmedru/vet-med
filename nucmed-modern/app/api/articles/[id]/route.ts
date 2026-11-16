@@ -5,7 +5,6 @@ import { validateAdminAuth, validateAuthWithDevBypass, getAuthUser } from "@/lib
 import { ArticleUpdateSchema } from "@/lib/schemas/article";
 import { filterRubricSlugs, primaryRubricName } from "@/lib/rubrics";
 import { revalidatePath } from "next/cache";
-import { sendNewArticleNotification } from "@/lib/newsletter";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -164,21 +163,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Handle Newsletter Notification
-    // If article was just published (status changed to PUBLISHED or it was already published but we want to re-trigger? No, only on transition)
-    // Simpler check: if we are setting status to PUBLISHED and it wasn't before
-    console.log(`[API/Articles/${id}] Target status: ${targetStatus}, NewStatus: ${newStatus}`);
-    if (newStatus === 'PUBLISHED' && existing.status !== 'PUBLISHED') {
-      console.log(`[API/Articles/${id}] Newsletter trigger condition met. Article status transition to PUBLISHED.`);
-      // Send notification asynchronously without blocking the response
-      // Wrapping in setTimeout ensure it's pushed to the next tick and clearly detached from the current flow
-      setTimeout(() => {
-        console.log(`[Newsletter] Triggering background notification for article ${article.id}`);
-        sendNewArticleNotification(article.id).catch(err => {
-          console.error("[Newsletter] Failed to send notification:", err);
-        });
-      }, 0);
-    }
+    // No email per published article: subscribers get the Monday digest only (2026-11-16)
 
     // Revalidate cached pages
     revalidatePath("/");

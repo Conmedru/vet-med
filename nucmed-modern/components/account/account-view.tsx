@@ -7,7 +7,7 @@ import { FeedTab } from "./tabs/feed-tab"
 import { ProfileTab } from "./tabs/profile-tab"
 import { useMemberSession } from "@/lib/hooks/use-member-session"
 
-export function AccountView() {
+export function AccountView({ initialTab = "feed" }: { initialTab?: "feed" | "digest" | "profile" }) {
   const { member } = useMemberSession()
 
   return (
@@ -26,7 +26,7 @@ export function AccountView() {
 
       {member && !member.emailVerified && <VerifyEmailBanner email={member.email} />}
 
-      <Tabs defaultValue="feed" className="w-full">
+      <Tabs defaultValue={initialTab} className="w-full">
         <TabsList className="mb-8">
           <TabsTrigger value="feed">Лента новостей</TabsTrigger>
           <TabsTrigger value="digest">Еженедельный дайджест</TabsTrigger>

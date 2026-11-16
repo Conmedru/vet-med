@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth/cron";
 import { generateWeeklyDigest, saveDigestToDb, sendWeeklyDigest } from "@/lib/newsletter";
 import { prisma } from "@/lib/prisma";
+import { acquireCronLock, releaseCronLock } from "@/lib/cron-lock";
 
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/cron/digest
  * Weekly Digest Generation and Sending
- * Runs hourly via Vercel Cron
+ * Called every 15 minutes by cron.js; sends once in the scheduled hour
  */
 export async function GET(request: NextRequest) {
+  let lock: Awaited<ReturnType<typeof acquireCronLock>> | null = null;
   try {
     // 1. Authorization
     if (!isCronAuthorized(request)) {
@@ -82,6 +84,12 @@ export async function GET(request: NextRequest) {
         }
     }
 
+    // Two containers overlap during a deploy, and both would send in the same hour
+    lock = await acquireCronLock("digest", 10 * 60 * 1000);
+    if (!lock.acquired) {
+      return NextResponse.json({ success: true, skipped: true, reason: lock.reason });
+    }
+
     console.log("[Cron Digest] Starting weekly digest generation...");
 
     // 5. Determine Week Offset
@@ -147,5 +155,7 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    if (lock?.acquired) await releaseCronLock("digest");
   }
 }

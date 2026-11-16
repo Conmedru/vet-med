@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth/cron";
 import { prisma } from "@/lib/prisma";
-import { sendNewArticleNotification } from "@/lib/newsletter";
 
 /**
  * GET /api/cron/publish
@@ -78,11 +77,8 @@ export async function GET(request: NextRequest) {
           },
         });
 
-        // Trigger newsletter notification
-        console.log(`[Cron Publish] Triggering newsletter for ${article.id}`);
-        sendNewArticleNotification(article.id).catch(err => {
-            console.error(`[Cron Publish] Failed to send newsletter for ${article.id}:`, err);
-        });
+        // No email per article: it was a campaign to the digest list for each of ~60 articles
+        // a day, while subscribers signed up for one letter on Mondays (2026-11-16)
 
         results.push({
           id: article.id,

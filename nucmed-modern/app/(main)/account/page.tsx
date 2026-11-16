@@ -7,11 +7,16 @@ export const metadata: Metadata = {
   title: "Личный кабинет",
 };
 
-export default async function AccountPage() {
+const TABS = ["feed", "digest", "profile"] as const;
+
+/** ?tab=digest: the «Настроить подписку» link of the digest letter opens its tab */
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
+  const initialTab = TABS.find((t) => t === tab) ?? "feed";
   const member = await getCurrentMember();
   if (!member) {
-    redirect("/login?redirect=/account");
+    redirect(`/login?redirect=${encodeURIComponent(initialTab === "feed" ? "/account" : `/account?tab=${initialTab}`)}`);
   }
 
-  return <AccountView />;
+  return <AccountView initialTab={initialTab} />;
 }
